@@ -28,6 +28,20 @@ function App() {
     setInput("");
   };
 
+  // Toggle the completed state
+  const toggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  // Delete a task
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
   // Allow adding by pressing "Enter"
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
