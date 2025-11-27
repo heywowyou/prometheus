@@ -1,58 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import TodoItem from "./components/TodoItem";
+import { useTodos } from "./hooks/useTodos";
 
 function App() {
-  // Load from LocalStorage
-  const [todos, setTodos] = useState(() => {
-    const saved = localStorage.getItem("prometheus-todos");
-    // If we found data, parse it. If not, return an empty array.
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Get data and handlers from our Hook
+  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos();
 
-  // Text currently being typed
+  // Input handling
   const [input, setInput] = useState("");
 
-  // Saving for persistence
-  useEffect(() => {
-    localStorage.setItem("prometheus-todos", JSON.stringify(todos));
-  }, [todos]);
-
-  // Add a new task
-  const addTodo = () => {
-    if (!input.trim()) return;
-
-    const newTodo = {
-      id: Date.now(),
-      text: input,
-      completed: false,
-    };
-
-    // Create a brand new array with the old items + the new one
-    setTodos([...todos, newTodo]);
-
-    // Clear the input field
+  const handleAdd = () => {
+    addTodo(input);
     setInput("");
-  };
-
-  // Toggle the completed state
-  const toggleTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  // Delete a task
-  const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
   };
 
   // Allow adding by pressing "Enter"
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      addTodo();
-    }
+    if (e.key === "Enter") handleAdd();
   };
 
   return (
@@ -81,7 +45,7 @@ function App() {
           />
           <button
             // Run the function on click
-            onClick={addTodo}
+            onClick={handleAdd}
             className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold px-6 py-3 rounded-lg transition-colors cursor-pointer"
           >
             Add
