@@ -1,23 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
-  // Load from LocalStorage if available, otherwise use defaults
+  // Load from LocalStorage
   const [todos, setTodos] = useState(() => {
     const saved = localStorage.getItem("prometheus-todos");
-    if (saved) {
-      return JSON.parse(saved);
-    } else {
-      return [
-        { id: 1, text: "Initialize Prometheus Project", completed: true },
-        { id: 2, text: "Design the UI Skeleton", completed: true },
-        { id: 3, text: "Wire up the Add button", completed: true },
-        { id: 4, text: "Implement LocalStorage Persistence", completed: false },
-      ];
-    }
+    // If we found data, parse it. If not, return an empty array.
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Text currently being typed
   const [input, setInput] = useState("");
+
+  // Saving for persistence
+  useEffect(() => {
+    localStorage.setItem("prometheus-todos", JSON.stringify(todos));
+  }, [todos]);
 
   // Add a new task
   const addTodo = () => {
