@@ -1,12 +1,20 @@
 import { useState } from "react";
 
 function App() {
-  // List of tasks
-  const [todos, setTodos] = useState([
-    { id: 1, text: "Initialize Prometheus Project", completed: true },
-    { id: 2, text: "Design the UI Skeleton", completed: false },
-    { id: 3, text: "Wire up the Add button", completed: false },
-  ]);
+  // Load from LocalStorage if available, otherwise use defaults
+  const [todos, setTodos] = useState(() => {
+    const saved = localStorage.getItem("prometheus-todos");
+    if (saved) {
+      return JSON.parse(saved);
+    } else {
+      return [
+        { id: 1, text: "Initialize Prometheus Project", completed: true },
+        { id: 2, text: "Design the UI Skeleton", completed: true },
+        { id: 3, text: "Wire up the Add button", completed: true },
+        { id: 4, text: "Implement LocalStorage Persistence", completed: false },
+      ];
+    }
+  });
 
   // Text currently being typed
   const [input, setInput] = useState("");
