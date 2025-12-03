@@ -24,7 +24,7 @@ function App() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-emerald-400 tracking-tight">
+          <h1 className="text-4xl font-bold text-emerald-400 tracking-wider">
             PROMETHEUS
           </h1>
           <p className="text-slate-400 mt-2">Bring forethought to your day.</p>
