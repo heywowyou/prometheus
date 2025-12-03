@@ -36,13 +36,40 @@ export const useTodos = () => {
     fetchTodos();
   }, []); // Empty dependency array ensures it runs only once on mount
 
+  // Toggle completed state)
+  const toggleTodo = async (id) => {
+    try {
+      // API call to update the status in the database
+      const response = await axios.put(API_URL + id);
+      const updatedTodo = response.data;
+
+      // Update local state by mapping through the array and replacing the matching item
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) => (todo._id === id ? updatedTodo : todo))
+      );
+    } catch (error) {
+      console.error("Failed to toggle todo:", error);
+    }
+  };
+
+  // Remove a Todo)
+  const deleteTodo = async (id) => {
+    try {
+      // API call to delete the item from the database
+      await axios.delete(API_URL + id);
+
+      // Update local state by filtering out the deleted item
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
+    } catch (error) {
+      console.error("Failed to delete todo:", error);
+    }
+  };
+
   return {
     todos,
     loading,
     createTodo,
-    toggleTodo: (id) => console.log(`[STUB] Toggling todo ${id}`),
-    deleteTodo: (id) => console.log(`[STUB] Deleting todo ${id}`),
+    toggleTodo,
+    deleteTodo,
   };
 };
-
-export default useTodos;

@@ -62,7 +62,7 @@ function App() {
 
           {todos.map((todo) => (
             <TodoItem
-              key={todo.id}
+              key={todo._id}
               todo={todo}
               onToggle={toggleTodo}
               onDelete={deleteTodo}

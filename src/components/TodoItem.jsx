@@ -9,7 +9,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
     >
       {/* Checkbox area */}
       <div
-        onClick={() => onToggle(todo.id)}
+        onClick={() => onToggle(todo._id)}
         className={`cursor-pointer w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${
           todo.completed
             ? "border-emerald-500 bg-emerald-500/20"
@@ -23,7 +23,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
 
       {/* Text */}
       <span
-        onClick={() => onToggle(todo.id)}
+        onClick={() => onToggle(todo._id)}
         className={`flex-1 cursor-pointer transition-colors select-none ${
           todo.completed ? "line-through text-slate-500" : "text-slate-100"
         }`}
@@ -33,7 +33,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
 
       {/* Delete button */}
       <button
-        onClick={() => onDelete(todo.id)}
+        onClick={() => onDelete(todo._id)}
         className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all p-2"
         title="Delete task"
       >
