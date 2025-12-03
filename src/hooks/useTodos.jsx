@@ -1,51 +1,48 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 
-export function useTodos() {
-  // Load from LocalStorage
-  const [todos, setTodos] = useState(() => {
-    const saved = localStorage.getItem("prometheus-todos");
-    // If we found data, parse it. If not, return an empty array.
-    return saved ? JSON.parse(saved) : [];
-  });
+const API_URL = "http://localhost:3000/api/todos/";
 
-  // Saving for persistence
+export const useTodos = () => {
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetching all Todos
+  const fetchTodos = async () => {
+    try {
+      const response = await axios.get(API_URL);
+      setTodos(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch todos:", error);
+      setLoading(false);
+    }
+  };
+
+  // Adding a new Todo
+  const createTodo = async (text) => {
+    try {
+      const response = await axios.post(API_URL, { text });
+
+      // Update local state by appending the new todo returned from the API
+      setTodos((prevTodos) => [...prevTodos, response.data]);
+    } catch (error) {
+      console.error("Failed to create todo:", error);
+    }
+  };
+
+  // Use useEffect to fetch data when the component mounts
   useEffect(() => {
-    localStorage.setItem("prometheus-todos", JSON.stringify(todos));
-  }, [todos]);
+    fetchTodos();
+  }, []); // Empty dependency array ensures it runs only once on mount
 
-  // Add a new task
-  const addTodo = (text) => {
-    if (!text.trim()) return;
-
-    const newTodo = {
-      id: Date.now(),
-      text: text,
-      completed: false,
-    };
-
-    // Create a brand new array with the old items + the new one
-    setTodos([...todos, newTodo]);
-  };
-
-  // Toggle the completed state
-  const toggleTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
-
-  // Delete a task
-  const deleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
-  // Return only what the UI needs
   return {
     todos,
-    addTodo,
-    toggleTodo,
-    deleteTodo,
+    loading,
+    createTodo,
+    toggleTodo: (id) => console.log(`[STUB] Toggling todo ${id}`),
+    deleteTodo: (id) => console.log(`[STUB] Deleting todo ${id}`),
   };
-}
+};
+
+export default useTodos;

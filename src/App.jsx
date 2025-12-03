@@ -4,13 +4,13 @@ import { useTodos } from "./hooks/useTodos";
 
 function App() {
   // Get data and handlers from our Hook
-  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos();
+  const { todos, createTodo, toggleTodo, deleteTodo } = useTodos();
 
   // Input handling
   const [input, setInput] = useState("");
 
   const handleAdd = () => {
-    addTodo(input);
+    createTodo(input);
     setInput("");
   };
 
