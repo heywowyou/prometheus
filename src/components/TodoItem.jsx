@@ -3,8 +3,8 @@ function TodoItem({ todo, onToggle, onDelete }) {
     <div
       className={`group flex items-center p-4 rounded-lg border transition-all ${
         todo.completed
-          ? "bg-slate-900/50 border-slate-800"
-          : "bg-slate-800 border-slate-700 hover:border-slate-600"
+          ? "bg-gray-900/50 border-gray-800"
+          : "bg-gray-800 border-gray-700 hover:border-gray-600"
       }`}
     >
       {/* Checkbox area */}
@@ -12,12 +12,12 @@ function TodoItem({ todo, onToggle, onDelete }) {
         onClick={() => onToggle(todo._id)}
         className={`cursor-pointer w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${
           todo.completed
-            ? "border-emerald-500 bg-emerald-500/20"
-            : "border-slate-500 hover:border-emerald-400"
+            ? "border-teal-500 bg-teal-500/20"
+            : "border-gray-500 hover:border-teal-400"
         }`}
       >
         {todo.completed && (
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+          <div className="w-2.5 h-2.5 rounded-full bg-teal-500" />
         )}
       </div>
 
@@ -25,7 +25,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
       <span
         onClick={() => onToggle(todo._id)}
         className={`flex-1 cursor-pointer transition-colors select-none ${
-          todo.completed ? "line-through text-slate-500" : "text-slate-100"
+          todo.completed ? "line-through text-gray-500" : "text-gray-100"
         }`}
       >
         {todo.text}
@@ -34,7 +34,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
       {/* Delete button */}
       <button
         onClick={() => onDelete(todo._id)}
-        className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all p-2"
+        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all p-2"
         title="Delete task"
       >
         <svg
