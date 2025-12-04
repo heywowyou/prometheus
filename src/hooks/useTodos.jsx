@@ -101,10 +101,14 @@ export const useTodos = () => {
   };
 
   // Create: Add a new Todo
-  const createTodo = async (text) => {
+  const createTodo = async (text, recurrenceType = "none") => {
     try {
       const config = await createConfig();
-      const response = await axios.post(API_URL, { text }, config);
+      const response = await axios.post(
+        API_URL,
+        { text, recurrenceType },
+        config
+      );
 
       // Update local state by appending the new todo returned from the API
       setTodos((prevTodos) => [...prevTodos, response.data]);
