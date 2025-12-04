@@ -90,14 +90,34 @@ function App() {
                 </p>
               )}
 
-              {todos.map((todo) => (
-                <TodoItem
-                  key={todo._id}
-                  todo={todo}
-                  onToggle={toggleTodo}
-                  onDelete={deleteTodo}
-                />
-              ))}
+              {todos
+                // Create a shallow copy (.slice()) to avoid mutating the original state array.
+                .slice()
+                // Apply the custom sort function.
+                .sort((a, b) => {
+                  // If 'a' is completed (true) and 'b' is not completed (false),
+                  // 'a' goes after 'b' (return 1).
+                  if (a.completed && !b.completed) {
+                    return 1;
+                  }
+                  // If 'a' is not completed (false) and 'b' is completed (true),
+                  // 'a' goes before 'b' (return -1).
+                  if (!a.completed && b.completed) {
+                    return -1;
+                  }
+                  // If both have the same status (both active or both completed),
+                  // maintain their existing order.
+                  return 0;
+                })
+                // Render the sorted list
+                .map((todo) => (
+                  <TodoItem
+                    key={todo._id}
+                    todo={todo}
+                    onToggle={toggleTodo}
+                    onDelete={deleteTodo}
+                  />
+                ))}
             </div>
           </>
         )}
