@@ -2,31 +2,18 @@ import { useState } from "react";
 import TodoItem from "./components/TodoItem";
 import { useTodos } from "./hooks/useTodos";
 import { SignInButton, SignOutButton, useUser } from "@clerk/clerk-react";
+import NewTaskModal from "./components/NewTaskModal";
 
 function App() {
   // Get data and handlers from our Hook
   const { todos, createTodo, toggleTodo, deleteTodo } = useTodos();
-
-  // isLoaded: Checks if Clerk's script has finished loading.
-  // isSignedIn: Checks if a user session exists.
   const { isLoaded, isSignedIn } = useUser();
 
-  // Input handling
-  const [input, setInput] = useState("");
-
-  const handleAdd = () => {
-    createTodo(input);
-    setInput("");
-  };
-
-  // Allow adding by pressing "Enter"
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleAdd();
-  };
+  // Modal control
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Loading & Auth check
   if (!isLoaded) {
-    // If Clerk is still loading the session, display a loading screen
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100 flex justify-center items-center">
         Loading...
@@ -39,7 +26,7 @@ function App() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="mb-8 text-center relative">
-          {/* Sign Out Button (Only shows when signed in) */}
+          {/* Sign Out Button */}
           {isSignedIn && (
             <div className="absolute top-0 right-0">
               <SignOutButton>
@@ -56,9 +43,8 @@ function App() {
           <p className="text-slate-400 mt-2">Bring forethought to your day.</p>
         </div>
 
-        {/* Auth gate */}
+        {/* Auth Gate and Modal Component */}
         {!isSignedIn ? (
-          // State A: User is NOT signed in
           <div className="bg-slate-800 p-8 rounded-lg shadow-xl text-center border border-slate-700">
             <h2 className="text-xl font-semibold mb-4 text-slate-200">
               Please Sign In
@@ -73,31 +59,34 @@ function App() {
             </SignInButton>
           </div>
         ) : (
-          // State B: User IS signed in (Render the App)
           <>
-            {/* Input form */}
-            <div className="flex gap-2 mb-8">
-              <input
-                type="text"
-                placeholder="What needs to be done?"
-                className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors text-slate-100"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-              />
-              <button
-                onClick={handleAdd}
-                className="bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold px-6 py-3 rounded-lg transition-colors cursor-pointer"
+            {/* Modal Trigger Button */}
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold py-3 rounded-lg transition-colors cursor-pointer mb-8 flex items-center justify-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={3}
+                stroke="currentColor"
+                className="w-5 h-5"
               >
-                Add
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+              New Task
+            </button>
 
             {/* List */}
             <div className="space-y-3">
               {todos.length === 0 && (
                 <p className="text-center text-slate-600 italic">
-                  No tasks yet. Start by adding one above.
+                  No tasks yet. Click 'New Task' to begin.
                 </p>
               )}
 
@@ -112,6 +101,13 @@ function App() {
             </div>
           </>
         )}
+
+        {/* Modal Component */}
+        <NewTaskModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onCreate={createTodo} // Pass the handler function down
+        />
       </div>
     </div>
   );
