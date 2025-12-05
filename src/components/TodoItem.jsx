@@ -49,7 +49,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
 
       {/* Delete button */}
       <button
-        onClick={() => onDelete(todo._id)}
+        onClick={() => onDelete(todo)}
         className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all p-2"
         title="Delete task"
       >

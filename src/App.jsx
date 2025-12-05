@@ -3,6 +3,7 @@ import TodoItem from "./components/TodoItem";
 import { useTodos } from "./hooks/useTodos";
 import { SignInButton, SignOutButton, useUser } from "@clerk/clerk-react";
 import NewTaskModal from "./components/NewTaskModal";
+import DeleteConfirmModal from "./components/DeleteConfirmModal";
 
 function App() {
   // Get data and handlers from our Hook
@@ -11,6 +12,24 @@ function App() {
 
   // Modal control
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Delete Confirmation State
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  // Holds the task object being considered for deletion
+  const [taskToDelete, setTaskToDelete] = useState(null);
+
+  // Handler: always open the modal
+  const handleSmartDelete = (todo) => {
+    setTaskToDelete(todo);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  // Final deletion handler, called from the confirmation modal
+  const handleFinalDelete = (id) => {
+    deleteTodo(id);
+    setIsDeleteConfirmOpen(false);
+    setTaskToDelete(null); // Clear the reference
+  };
 
   // Loading & Auth check
   if (!isLoaded) {
@@ -115,18 +134,25 @@ function App() {
                     key={todo._id}
                     todo={todo}
                     onToggle={toggleTodo}
-                    onDelete={deleteTodo}
+                    onDelete={handleSmartDelete}
                   />
                 ))}
             </div>
           </>
         )}
 
-        {/* Modal Component */}
+        {/* Task Creation Modal */}
         <NewTaskModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onCreate={createTodo} // Pass the handler function down
+        />
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmModal
+          isOpen={isDeleteConfirmOpen}
+          onClose={() => setIsDeleteConfirmOpen(false)}
+          task={taskToDelete}
+          onConfirm={handleFinalDelete}
         />
       </div>
     </div>
