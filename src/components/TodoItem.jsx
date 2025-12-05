@@ -1,4 +1,8 @@
+import { Flame } from "lucide-react";
+
 function TodoItem({ todo, onToggle, onDelete }) {
+  // Check if the tally should be displayed (if recurring AND the count is > 0)
+  const showTally = todo.recurrenceType !== "none" && todo.completionCount > 0;
   return (
     <div
       className={`group flex items-center p-4 rounded-lg border transition-all ${
@@ -21,14 +25,26 @@ function TodoItem({ todo, onToggle, onDelete }) {
         )}
       </div>
 
-      {/* Text */}
+      {/* Text and Tally Container */}
       <span
         onClick={() => onToggle(todo._id)}
-        className={`flex-1 cursor-pointer transition-colors select-none ${
-          todo.completed ? "line-through text-gray-500" : "text-gray-100"
+        className={`flex-1 cursor-pointer transition-colors select-none flex items-center justify-between ${
+          todo.completed ? "text-gray-500" : "text-gray-100"
         }`}
       >
-        {todo.text}
+        {/* Task Text */}
+        <span className={todo.completed ? "line-through" : ""}>
+          {todo.text}
+        </span>
+
+        {/* Tally Icon and Counter */}
+        {showTally && (
+          <div className="flex items-center text-xs font-semibold text-orange-400 bg-gray-700/50 px-2 py-1 rounded-full ml-4">
+            <Flame className="w-3.5 h-3.5 mr-1" strokeWidth={2.5} />
+
+            {todo.completionCount}
+          </div>
+        )}
       </span>
 
       {/* Delete button */}
