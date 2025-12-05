@@ -18,7 +18,6 @@ function App() {
   // Holds the task object being considered for deletion
   const [taskToDelete, setTaskToDelete] = useState(null);
 
-  // Handler: always open the modal
   const handleSmartDelete = (todo) => {
     setTaskToDelete(todo);
     setIsDeleteConfirmOpen(true);
@@ -40,9 +39,26 @@ function App() {
     );
   }
 
+  // Task Filtering and Sorting
+  // Separate the tasks into two groups for the side-by-side display
+  const activeTodos = todos
+    .filter((todo) => !todo.completed)
+    .slice()
+    .sort((a, b) => a._id.localeCompare(b._id)); // Sort by creation time (oldest first)
+
+  const completedTodos = todos
+    .filter((todo) => todo.completed)
+    .slice()
+    // Sort by most recent completion first (descending completion date)
+    .sort((a, b) => {
+      const dateA = new Date(a.lastCompletedAt || 0);
+      const dateB = new Date(b.lastCompletedAt || 0);
+      return dateB - dateA; // Newest first
+    });
+
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex justify-center py-20 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex justify-center py-12 px-6">
+      <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="mb-8 text-center relative">
           {/* Sign Out Button */}
@@ -101,42 +117,47 @@ function App() {
               New Task
             </button>
 
-            {/* List */}
-            <div className="space-y-3">
-              {todos.length === 0 && (
-                <p className="text-center text-gray-600 italic">
-                  No tasks yet. Click 'New Task' to begin.
-                </p>
-              )}
+            {/* TWO COLUMN GRID LAYOUT */}
+            {todos.length === 0 && (
+              <p className="text-center text-gray-600 italic">
+                No tasks yet. Click 'New Task' to begin.
+              </p>
+            )}
 
-              {todos
-                // Create a shallow copy (.slice()) to avoid mutating the original state array.
-                .slice()
-                // Apply the custom sort function.
-                .sort((a, b) => {
-                  // If 'a' is completed (true) and 'b' is not completed (false),
-                  // 'a' goes after 'b' (return 1).
-                  if (a.completed && !b.completed) {
-                    return 1;
-                  }
-                  // If 'a' is not completed (false) and 'b' is completed (true),
-                  // 'a' goes before 'b' (return -1).
-                  if (!a.completed && b.completed) {
-                    return -1;
-                  }
-                  // If both have the same status (both active or both completed),
-                  // maintain their existing order.
-                  return 0;
-                })
-                // Render the sorted list
-                .map((todo) => (
-                  <TodoItem
-                    key={todo._id}
-                    todo={todo}
-                    onToggle={toggleTodo}
-                    onDelete={handleSmartDelete}
-                  />
-                ))}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+              {/* COLUMN 1: ACTIVE TASKS */}
+              <div>
+                <h2 className="text-2xl font-semibold text-teal-400 mb-4 border-b border-teal-800 pb-2">
+                  Active ({activeTodos.length})
+                </h2>
+                <div className="space-y-3">
+                  {activeTodos.map((todo) => (
+                    <TodoItem
+                      key={todo._id}
+                      todo={todo}
+                      onToggle={toggleTodo}
+                      onDelete={handleSmartDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* COLUMN 2: COMPLETED TASKS */}
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-500 mb-4 border-b border-gray-700 pb-2">
+                  Completed ({completedTodos.length})
+                </h2>
+                <div className="space-y-3">
+                  {completedTodos.map((todo) => (
+                    <TodoItem
+                      key={todo._id}
+                      todo={todo}
+                      onToggle={toggleTodo}
+                      onDelete={handleSmartDelete}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </>
         )}
