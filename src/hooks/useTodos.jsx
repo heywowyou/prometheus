@@ -6,24 +6,30 @@ import { useAuth } from "@clerk/clerk-react";
 const API_URL = "http://localhost:3000/api/todos/";
 
 // Helper: Determine the recurrence reset time
-// This calculates the exact time when a completed recurring task should become active again.
 const getNextResetTime = (lastCompletedAt, type) => {
-  // If the completion date is missing, the task is always active (returns a very old date).
+  // If the completion date is missing, the task is always active.
   if (!lastCompletedAt) return new Date(0);
 
   const date = new Date(lastCompletedAt);
 
-  // Logic for supported recurrence types
+  // 1. Daily: Reset at midnight of the NEXT day
   if (type === "daily") {
-    // Daily reset occurs at midnight of the NEXT day.
     date.setDate(date.getDate() + 1);
-    date.setHours(0, 0, 0, 0);
-    return date;
   }
 
-  // Default: For unsupported types (e.g., weekly, monthly, until implemented),
-  // set the reset time far in the future to keep the task visually completed.
-  return new Date(Date.now() + 3153600000000);
+  // 2. Weekly: Reset at midnight 7 days later
+  else if (type === "weekly") {
+    date.setDate(date.getDate() + 7);
+  }
+
+  // 3. Monthly: Reset at midnight 1 month later
+  else if (type === "monthly") {
+    date.setMonth(date.getMonth() + 1);
+  }
+
+  // Normalize to Midnight (00:00:00)
+  date.setHours(0, 0, 0, 0);
+  return date;
 };
 
 export const useTodos = () => {
