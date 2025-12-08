@@ -1,4 +1,4 @@
-import { Flame, Repeat2 } from "lucide-react";
+import { Flame, Repeat2, CalendarSync } from "lucide-react";
 
 // Helper to map recurrence type to the appropriate display number (1, 7, or 30)
 const getRecurrenceNumber = (type) => {
@@ -90,7 +90,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
       {/* Delete button */}
       <button
         onClick={() => onDelete(todo)}
-        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all p-2"
+        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-all p-2 pl-4"
         title="Delete task"
       >
         <svg
