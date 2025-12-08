@@ -59,7 +59,8 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
             >
               <option value="none">One-Time Task</option>
               <option value="daily">Daily Recurrence</option>
-              {/* Add weekly/monthly options here later */}
+              <option value="weekly">Weekly Recurrence</option>
+              <option value="monthly">Monthly Recurrence</option>
             </select>
           </div>
 
