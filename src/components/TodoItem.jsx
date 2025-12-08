@@ -1,5 +1,19 @@
 import { Flame, Repeat2 } from "lucide-react";
 
+// Helper to map recurrence type to the appropriate display number (1, 7, or 30)
+const getRecurrenceNumber = (type) => {
+  switch (type) {
+    case "daily":
+      return 1;
+    case "weekly":
+      return 7;
+    case "monthly":
+      return 30;
+    default:
+      return null;
+  }
+};
+
 function TodoItem({ todo, onToggle, onDelete }) {
   // Check if the tally should be displayed (if recurring AND the count is > 0)
   const showTally = todo.recurrenceType !== "none" && todo.completionCount > 0;
@@ -29,7 +43,7 @@ function TodoItem({ todo, onToggle, onDelete }) {
         )}
       </div>
 
-      {/* Text and Icon/Tally Container (flex-1 and justify-between separate left and right content) */}
+      {/* Text and Icon/Tally Container */}
       <span
         onClick={() => onToggle(todo._id)}
         className={`flex-1 cursor-pointer transition-colors select-none flex items-center justify-between ${
@@ -43,14 +57,24 @@ function TodoItem({ todo, onToggle, onDelete }) {
 
         {/* RIGHT SIDE: Metadata Icons */}
         <div className="flex items-center gap-3">
-          {/* Recurrence Icon */}
+          {/* Recurrence Icon + Number */}
           {isRecurring && (
-            <Repeat2
-              className={`w-4 h-4 transition-colors ${
+            <div
+              className={`flex items-center transition-colors ${
                 todo.completed ? "text-gray-500" : "text-teal-400"
               }`}
-              strokeWidth={2}
-            />
+              title={`Resets every ${getRecurrenceNumber(
+                todo.recurrenceType
+              )} days`}
+            >
+              <Repeat2
+                className="w-5 h-5 mr-1 relative top-px"
+                strokeWidth={2}
+              />
+              <span className="text-sm font-medium">
+                {getRecurrenceNumber(todo.recurrenceType)}
+              </span>
+            </div>
           )}
 
           {/* Tally Box */}
