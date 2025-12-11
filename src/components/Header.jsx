@@ -1,0 +1,46 @@
+import React from "react";
+import { useUser, SignOutButton, SignInButton } from "@clerk/clerk-react";
+import { Flame } from "lucide-react";
+
+function Header() {
+  const { isSignedIn } = useUser();
+
+  return (
+    <header className="w-full bg-gray-900 border-b border-gray-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-80">
+      <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Logo Section */}
+        <div className="flex items-center gap-2">
+          <div className="bg-teal-500/10 p-1.5 rounded-lg">
+            <Flame
+              className="w-5 h-5 text-teal-400"
+              fill="currentColor"
+              fillOpacity={0.2}
+            />
+          </div>
+          <span className="text-xl font-bold tracking-wider text-gray-100">
+            Prometheus
+          </span>
+        </div>
+
+        {/* User / Navigation Section */}
+        <div>
+          {isSignedIn ? (
+            <SignOutButton>
+              <button className="text-sm font-medium text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-gray-800">
+                Sign Out
+              </button>
+            </SignOutButton>
+          ) : (
+            <SignInButton mode="modal">
+              <button className="text-sm font-medium bg-teal-500 hover:bg-teal-400 text-gray-900 px-4 py-2 rounded-md transition-colors shadow-lg shadow-teal-500/20">
+                Sign In
+              </button>
+            </SignInButton>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default Header;
