@@ -6,10 +6,10 @@ function Header() {
   const { isSignedIn } = useUser();
 
   return (
-    <header className="w-full bg-gray-900 border-b border-gray-800 sticky top-0 z-40 backdrop-blur-md bg-opacity-80">
-      <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+    <header className="w-full bg-ashe sticky top-0 z-40">
+      <div className="max-w-4xl mx-auto px-6 h-[72px] flex items-center justify-between">
         {/* Logo Section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="bg-teal-500/10 p-1.5 rounded-lg">
             <Flame
               className="w-5 h-5 text-teal-400"
@@ -17,9 +17,7 @@ function Header() {
               fillOpacity={0.2}
             />
           </div>
-          <span className="text-xl font-bold tracking-wider text-gray-100">
-            Prometheus
-          </span>
+          <span className="text-3xl font-bold text-gray-100">Prometheus</span>
         </div>
 
         {/* User / Navigation Section */}
