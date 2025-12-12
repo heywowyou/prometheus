@@ -116,12 +116,17 @@ export const useTodos = () => {
   };
 
   // Create: Add a new Todo
-  const createTodo = async (text, recurrenceType = "none") => {
+  const createTodo = async (
+    text,
+    recurrenceType,
+    interactionType,
+    durationGoal
+  ) => {
     try {
       const config = await createConfig();
       const response = await axios.post(
         API_URL,
-        { text, recurrenceType },
+        { text, recurrenceType, interactionType, durationGoal },
         config
       );
 
@@ -155,6 +160,22 @@ export const useTodos = () => {
     }
   };
 
+  // Update task details (text, settings, etc.)
+  const updateTask = async (id, updates) => {
+    let apiId = id.toString().replace("-active", "");
+    try {
+      const config = await createConfig();
+      const response = await axios.put(API_URL + apiId, updates, config);
+      const updatedTodo = response.data;
+
+      setTodos((prevTodos) => {
+        return prevTodos.map((t) => (t._id === id ? updatedTodo : t));
+      });
+    } catch (error) {
+      console.error("Failed to update task:", error);
+    }
+  };
+
   // Delete: Remove a Todo
   const deleteTodo = async (id) => {
     try {
@@ -179,6 +200,7 @@ export const useTodos = () => {
     loading,
     createTodo,
     toggleTodo,
+    updateTask,
     deleteTodo,
   };
 };
