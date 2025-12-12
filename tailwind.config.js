@@ -3,9 +3,15 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      colors: { ashe: "#14181c", powder: "283038" },
+      colors: {
+        powder: "#0e0f11",
+        ashe: "#181a1c",
+        coal: "#242527",
+        cloud: "#e4e6ea",
+      },
       fontFamily: {
         sans: ["Roboto", "sans-serif"],
+        serif: ["EB Garamond", "serif"],
       },
     },
   },

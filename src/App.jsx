@@ -4,13 +4,19 @@ import { useTodos } from "./hooks/useTodos";
 import { useUser, SignInButton } from "@clerk/clerk-react";
 import NewTaskModal from "./components/NewTaskModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import EditTaskModal from "./components/EditTaskModal";
 import Header from "./components/Header";
 
 function App() {
-  const { todos, createTodo, toggleTodo, deleteTodo } = useTodos();
+  const { todos, createTodo, toggleTodo, deleteTodo, updateTask } = useTodos();
   const { isLoaded, isSignedIn } = useUser();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Edit state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
+
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
 
@@ -23,6 +29,12 @@ function App() {
     deleteTodo(id);
     setIsDeleteConfirmOpen(false);
     setTaskToDelete(null);
+  };
+
+  // Handler for opening the edit modal
+  const handleEditClick = (todo) => {
+    setTaskToEdit(todo);
+    setIsEditModalOpen(true);
   };
 
   if (!isLoaded) {
@@ -53,7 +65,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 font-sans">
+    <div className="min-h-screen bg-powder text-gray-100 font-sans">
       {/* 1. Permanent Header */}
       <Header />
 
@@ -70,7 +82,7 @@ function App() {
                 Sign in to access your synchronized task list.
               </p>
               <SignInButton mode="modal">
-                <button className="w-full py-3 px-4 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold rounded-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-teal-500/20">
+                <button className="w-full py-3 px-4 bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold rounded-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-cyan-500/20">
                   Sign In to Continue
                 </button>
               </SignInButton>
@@ -80,11 +92,11 @@ function App() {
           // User Dashboard
           <>
             {/* Action Bar (Top of Dashboard) */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-8 bg-ashe rounded-xl p-6">
               <h2 className="text-2xl font-semibold text-gray-100">My Tasks</h2>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold px-5 py-2.5 rounded-lg transition-colors shadow-lg shadow-teal-500/10"
+                className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-gray-900 font-bold px-5 py-2.5 rounded-lg transition-colors shadow-lg shadow-cyan-500/10"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -110,7 +122,7 @@ function App() {
                 <p className="text-gray-500 mb-4">Your workspace is empty.</p>
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="text-teal-400 hover:underline"
+                  className="text-cyan-400 hover:underline"
                 >
                   Create your first habit
                 </button>
@@ -120,15 +132,15 @@ function App() {
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
               {/* Left Column: Active */}
-              <div className="space-y-8">
+              <div className="space-y-8 bg-ashe rounded-xl p-6">
                 {Object.keys(groupedActive).map((key) => {
                   const list = groupedActive[key];
                   if (list.length === 0) return null;
 
                   const titleMap = {
-                    today: "Today",
-                    week: "This Week",
-                    month: "This Month",
+                    today: "Daily",
+                    week: "Weekly",
+                    month: "Monthly",
                   };
 
                   return (
@@ -146,6 +158,7 @@ function App() {
                             todo={todo}
                             onToggle={toggleTodo}
                             onDelete={handleSmartDelete}
+                            onEdit={handleEditClick}
                           />
                         ))}
                       </div>
@@ -155,7 +168,7 @@ function App() {
               </div>
 
               {/* Right Column: Completed */}
-              <div>
+              <div className="bg-ashe rounded-xl p-6">
                 {completedTodos.length > 0 && (
                   <>
                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
@@ -171,6 +184,7 @@ function App() {
                           todo={todo}
                           onToggle={toggleTodo}
                           onDelete={handleSmartDelete}
+                          onEdit={handleEditClick}
                         />
                       ))}
                     </div>
@@ -186,6 +200,12 @@ function App() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onCreate={createTodo}
+        />
+        <EditTaskModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          task={taskToEdit}
+          onUpdate={updateTask}
         />
         <DeleteConfirmModal
           isOpen={isDeleteConfirmOpen}
