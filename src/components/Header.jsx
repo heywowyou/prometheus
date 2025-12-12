@@ -9,17 +9,15 @@ function Header() {
     <header className="w-full bg-ashe sticky top-0 z-40">
       <div className="max-w-4xl mx-auto px-6 h-[72px] flex items-center justify-between">
         {/* Logo Section */}
-        <div className="flex items-center gap-3">
-          <div className="bg-cyan-500/10 p-1.5 rounded-lg">
+        <div className="flex items-center gap-2">
+          <div>
             <Flame
-              className="w-5 h-5 text-cyan-400"
+              className="w-10 h-10 text-cyan-300"
               fill="currentColor"
-              fillOpacity={0.2}
+              fillOpacity={0.1}
             />
           </div>
-          <span className="text-3xl font-bold tracking-wide text-gray-100">
-            Prometheus
-          </span>
+          <span className="text-2xl font-semibold tracking-wider text-gray-100"></span>
         </div>
 
         {/* User / Navigation Section */}
