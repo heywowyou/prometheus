@@ -101,7 +101,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
       {/* Progress fill bar */}
       {isHoldTask && !todo.completed && (
         <div
-          className="absolute inset-0 bg-cyan-900/40 z-0 rounded-lg"
+          className="absolute inset-0 bg-cyan-900/30 z-0 rounded-lg"
           style={{
             width: isHolding ? "100%" : "0%",
             transition: isHolding
@@ -169,7 +169,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
         </span>
 
         {/* --- MENU SECTION --- */}
-        <div className="relative ml-2" ref={menuRef}>
+        <div className="relative" ref={menuRef}>
           <button
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
@@ -182,7 +182,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
             }`}
             title="More options"
           >
-            <CircleEllipsis className="w-5 h-5" />
+            <CircleEllipsis className="w-6 h-6" />
           </button>
 
           {isMenuOpen && (

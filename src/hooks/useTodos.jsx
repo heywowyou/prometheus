@@ -3,7 +3,8 @@ import axios from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
 // API Endpoint Definition
-const API_URL = "http://localhost:3000/api/todos/";
+const API_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/todos/";
 
 // Helper: Determine the recurrence reset time
 const getNextResetTime = (lastCompletedAt, type) => {
