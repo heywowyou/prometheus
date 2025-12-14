@@ -12,12 +12,12 @@ function Header() {
         <div className="flex items-center gap-2">
           <div>
             <Flame
-              className="w-10 h-10 text-cyan-300"
+              className="w-10 h-10 text-gray-100"
               fill="currentColor"
               fillOpacity={0}
             />
           </div>
-          <span className="text-2xl font-semibold tracking-wider text-gray-100"></span>
+          <span className="text-3xl font-semibold tracking-wider text-gray-100"></span>
         </div>
 
         {/* User / Navigation Section */}

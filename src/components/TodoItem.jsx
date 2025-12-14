@@ -88,7 +88,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
   // --- RENDER ---
   return (
     <div
-      className={`group relative flex items-center bg-powder-800 p-4 rounded-2xl transition-all select-none cursor-pointer ${
+      className={`group relative flex items-center bg-powder-800 border border-powder-700 p-5 rounded-2xl transition-all select-none cursor-pointer ${
         isMenuOpen ? "z-20" : "z-auto"
       }`}
       onMouseDown={isHoldTask ? handleHoldStart : undefined}
@@ -101,7 +101,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
       {/* Progress fill bar */}
       {isHoldTask && !todo.completed && (
         <div
-          className="absolute inset-0 bg-cyan-500/30 z-0 rounded-2xl"
+          className="absolute inset-0 bg-powder-900 z-0 rounded-2xl"
           style={{
             width: isHolding ? "100%" : "0%",
             transition: isHolding
@@ -130,7 +130,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
 
         {/* Text Content */}
         <span
-          className={`flex-1 transition-colors flex items-center justify-between ${
+          className={`flex-1 transition-colors flex items-center justify-between gap-3 ${
             todo.completed ? "text-gray-500" : "text-gray-100"
           }`}
         >
@@ -139,7 +139,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
               {todo.text}
             </span>
             {isHoldTask && todo.durationGoal > 0 && (
-              <span className="text-xs text-cyan-300 mt-0.5">
+              <span className="text-xs text-electric-500 mt-0.5">
                 {todo.durationGoal} mins
               </span>
             )}
@@ -149,7 +149,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
           <div className="flex items-center gap-2">
             {isRecurring && (
               <div
-                className={`flex items-center transition-colors text-cloud-500`}
+                className={`flex items-center transition-colors text-electric-500`}
                 title={`Resets every ${getRecurrenceNumber(
                   todo.recurrenceType
                 )} days`}
