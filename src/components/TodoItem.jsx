@@ -29,7 +29,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
   const menuRef = useRef(null);
 
   // Constants
-  const HOLD_DURATION = 2000;
+  const HOLD_DURATION = 1000; //1 sec
 
   // --- HANDLERS ---
   const handleHoldStart = () => {
@@ -88,7 +88,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
   // --- RENDER ---
   return (
     <div
-      className={`group relative flex items-center bg-powder p-4 rounded-lg transition-all select-none cursor-pointer ${
+      className={`group relative flex items-center bg-powder-800 p-4 rounded-2xl transition-all select-none cursor-pointer ${
         isMenuOpen ? "z-20" : "z-auto"
       }`}
       onMouseDown={isHoldTask ? handleHoldStart : undefined}
@@ -101,12 +101,12 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
       {/* Progress fill bar */}
       {isHoldTask && !todo.completed && (
         <div
-          className="absolute inset-0 bg-cyan-900/30 z-0 rounded-lg"
+          className="absolute inset-0 bg-cyan-500/30 z-0 rounded-2xl"
           style={{
             width: isHolding ? "100%" : "0%",
             transition: isHolding
               ? `width ${HOLD_DURATION}ms linear`
-              : "width 0.2s ease-out",
+              : "width 0.3s ease-out",
           }}
         />
       )}
@@ -118,12 +118,12 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
           <div
             className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${
               todo.completed
-                ? "border-cyan-500 bg-cyan-500/20"
-                : "border-ashe group-hover:border-cyan-400"
+                ? "border-cyan-300 bg-cyan-300/20"
+                : "border-cloud-400 group-hover:border-cyan-300"
             }`}
           >
             {todo.completed && (
-              <div className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
+              <div className="w-2.5 h-2.5 rounded-full bg-cyan-300" />
             )}
           </div>
         )}
@@ -139,29 +139,27 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
               {todo.text}
             </span>
             {isHoldTask && todo.durationGoal > 0 && (
-              <span className="text-xs text-cyan-500/80 font-medium mt-0.5">
-                Target: {todo.durationGoal} mins
+              <span className="text-xs text-cyan-300 mt-0.5">
+                {todo.durationGoal} mins
               </span>
             )}
           </div>
 
           {/* Metadata Icons */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {isRecurring && (
               <div
-                className={`flex items-center transition-colors ${
-                  todo.completed ? "text-gray-500" : "text-cyan-300"
-                }`}
+                className={`flex items-center transition-colors text-cloud-500`}
                 title={`Resets every ${getRecurrenceNumber(
                   todo.recurrenceType
                 )} days`}
               >
-                <Repeat2 className="w-5 h-5 mr-1" strokeWidth={2} />
+                <Repeat2 className="w-5 h-5" strokeWidth={2} />
               </div>
             )}
             {showTally && (
-              <div className="flex items-center text-xs font-semibold text-orange-400 bg-ashe px-2 py-1 rounded-full">
-                <Flame className="w-3.5 h-3.5 mr-1" strokeWidth={2.5} />
+              <div className="flex items-center text-xs font-medium text-orange-400">
+                <Flame className="w-4 h-4 mr-1" strokeWidth={2.5} />
                 {todo.completionCount}
               </div>
             )}
@@ -177,7 +175,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
               e.stopPropagation();
               setIsMenuOpen(!isMenuOpen);
             }}
-            className={`text-gray-500 hover:text-gray-400 transition-all p-2 ${
+            className={`text-cloud-500 hover:text-cloud-400 transition-all p-2 px-3 ${
               isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             }`}
             title="More options"

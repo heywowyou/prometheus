@@ -6,7 +6,7 @@ function Header() {
   const { isSignedIn } = useUser();
 
   return (
-    <header className="w-full bg-ashe sticky top-0 z-40">
+    <header className="w-full bg-powder-800 sticky top-0 z-40">
       <div className="max-w-4xl mx-auto px-6 h-[72px] flex items-center justify-between">
         {/* Logo Section */}
         <div className="flex items-center gap-2">
@@ -14,7 +14,7 @@ function Header() {
             <Flame
               className="w-10 h-10 text-cyan-300"
               fill="currentColor"
-              fillOpacity={0.1}
+              fillOpacity={0}
             />
           </div>
           <span className="text-2xl font-semibold tracking-wider text-gray-100"></span>

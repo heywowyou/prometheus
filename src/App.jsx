@@ -65,7 +65,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-powder text-gray-100 font-sans">
+    <div className="min-h-screen bg-powder-900 text-gray-100 font-sans">
       {/* 1. Permanent Header */}
       <Header />
 
@@ -145,9 +145,9 @@ function App() {
 
                   return (
                     <div key={key}>
-                      <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                      <h3 className="text-sm font-bold text-cloud-400 uppercase tracking-wider mb-4 border-b border-cloud-400 pb-2">
                         {titleMap[key]}{" "}
-                        <span className="text-gray-600 ml-1 font-normal">
+                        <span className="text-cloud-400 ml-1 font-normal">
                           ({list.length})
                         </span>
                       </h3>
@@ -171,9 +171,9 @@ function App() {
               <div className="bg-ashe rounded-xl p-6">
                 {completedTodos.length > 0 && (
                   <>
-                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-800 pb-2">
+                    <h3 className="text-sm font-bold text-cloud-500 uppercase tracking-wider mb-4 border-b border-cloud-500 pb-2">
                       Completed{" "}
-                      <span className="text-gray-600 ml-1 font-normal">
+                      <span className="text-cloud-500 ml-1 font-normal">
                         ({completedTodos.length})
                       </span>
                     </h3>
