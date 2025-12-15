@@ -45,8 +45,23 @@ function App() {
     );
   }
 
-  // Filtering Logic
-  const activeTodos = todos.filter((todo) => !todo.completed);
+  // Filtering & Sorting Logic
+  const activeTodos = todos
+    .filter((todo) => !todo.completed)
+    .sort((a, b) => {
+      // 1. Primary Sort: Interaction Type
+      // We want "checkbox" (Toggle) tasks to appear before "hold" tasks.
+      // Since "c" comes before "h" in the alphabet, a simple string comparison works.
+      const typeA = a.interactionType || "checkbox";
+      const typeB = b.interactionType || "checkbox";
+
+      if (typeA !== typeB) {
+        return typeA.localeCompare(typeB);
+      }
+
+      // 2. Secondary Sort: Alphabetical by content
+      return a.text.localeCompare(b.text);
+    });
   const completedTodos = todos
     .filter((todo) => todo.completed)
     .slice()
