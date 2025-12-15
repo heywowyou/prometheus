@@ -62,13 +62,26 @@ function App() {
       // 2. Secondary Sort: Alphabetical by content
       return a.text.localeCompare(b.text);
     });
+  // Sort: Interaction Type -> Most Recently Completed
   const completedTodos = todos
     .filter((todo) => todo.completed)
-    .slice()
-    .sort(
-      (a, b) =>
-        new Date(b.lastCompletedAt || 0) - new Date(a.lastCompletedAt || 0)
-    );
+    .sort((a, b) => {
+      // 1. Primary Sort: Interaction Type (Checkbox vs Hold)
+      const typeA = a.interactionType || "checkbox";
+      const typeB = b.interactionType || "checkbox";
+
+      if (typeA !== typeB) {
+        return typeA.localeCompare(typeB);
+      }
+
+      // 2. Secondary Sort: Reverse Chronological (Newest First)
+      // We use lastCompletedAt. If missing, fall back to 0.
+      const dateA = new Date(a.lastCompletedAt || 0);
+      const dateB = new Date(b.lastCompletedAt || 0);
+
+      // b - a gives us descending order (newest at the top)
+      return dateB - dateA;
+    });
 
   // Group active todos
   const groupedActive = {
