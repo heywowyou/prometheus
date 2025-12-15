@@ -1,6 +1,6 @@
 import React from "react";
 import { useUser, SignOutButton, SignInButton } from "@clerk/clerk-react";
-import { Flame } from "lucide-react";
+import logo from "../assets/logo.png";
 
 function Header() {
   const { isSignedIn } = useUser();
@@ -9,16 +9,11 @@ function Header() {
     <header className="w-full bg-powder-800 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
         {/* Logo Section */}
-        <div className="flex items-center gap-2">
-          <div>
-            <Flame
-              className="w-10 h-10 text-gray-100"
-              fill="currentColor"
-              fillOpacity={0}
-            />
-          </div>
-          <span className="text-3xl font-semibold tracking-wider text-gray-100"></span>
-        </div>
+        <img
+          src={logo}
+          alt="App Logo"
+          className="w-48 object-contain" // object-contain keeps the aspect ratio
+        />
 
         {/* User / Navigation Section */}
         <div>
