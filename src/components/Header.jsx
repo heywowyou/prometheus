@@ -7,7 +7,7 @@ function Header() {
 
   return (
     <header className="w-full bg-powder-800 sticky top-0 z-40">
-      <div className="max-w-4xl mx-auto px-6 h-[72px] flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
         {/* Logo Section */}
         <div className="flex items-center gap-2">
           <div>

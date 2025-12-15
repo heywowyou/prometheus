@@ -57,11 +57,10 @@ function App() {
 
   // Group active todos
   const groupedActive = {
-    today: activeTodos.filter(
-      (t) => t.recurrenceType === "daily" || t.recurrenceType === "none"
-    ),
-    week: activeTodos.filter((t) => t.recurrenceType === "weekly"),
-    month: activeTodos.filter((t) => t.recurrenceType === "monthly"),
+    oneTime: activeTodos.filter((t) => t.recurrenceType === "none"),
+    daily: activeTodos.filter((t) => t.recurrenceType === "daily"),
+    weekly: activeTodos.filter((t) => t.recurrenceType === "weekly"),
+    monthly: activeTodos.filter((t) => t.recurrenceType === "monthly"),
   };
 
   return (
@@ -70,7 +69,7 @@ function App() {
       <Header />
 
       {/* 2. Main Content Container */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-6 py-12">
         {!isSignedIn ? (
           // --- GUEST VIEW ---
           <div className="flex flex-col items-center justify-center mt-20 text-center space-y-6">
@@ -130,55 +129,72 @@ function App() {
             )}
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              {/* Left Column: Active */}
-              <div className="space-y-8 bg-ashe rounded-xl p-6">
-                {Object.keys(groupedActive).map((key) => {
-                  const list = groupedActive[key];
-                  if (list.length === 0) return null;
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+              {/* Left column: Active Tasks (Takes 2/3 width) */}
+              <div className="xl:col-span-2 space-y-6">
+                {/* 2x2 Grid for the Task Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Object.keys(groupedActive).map((key) => {
+                    const list = groupedActive[key];
+                    const titleMap = {
+                      oneTime: "Temporary",
+                      daily: "Daily",
+                      weekly: "Weekly",
+                      monthly: "Monthly",
+                    };
 
-                  const titleMap = {
-                    today: "Daily",
-                    week: "Weekly",
-                    month: "Monthly",
-                  };
+                    // Even if the list is empty, we render the box so the grid stays stable
+                    return (
+                      <div
+                        key={key}
+                        className="bg-ashe rounded-xl p-6 min-h-[200px] flex flex-col"
+                      >
+                        <h3 className="text-sm font-bold text-cloud-400 capitalize tracking-wider mb-4 border-b border-cloud-400 pb-2 flex justify-between">
+                          {titleMap[key]}
+                          <span className="text-cloud-400 ml-1 font-normal">
+                            ({list.length})
+                          </span>
+                        </h3>
 
-                  return (
-                    <div key={key}>
-                      <h3 className="text-sm font-bold text-cloud-400 uppercase tracking-wider mb-4 border-b border-cloud-400 pb-2">
-                        {titleMap[key]}{" "}
-                        <span className="text-cloud-400 ml-1 font-normal">
-                          ({list.length})
-                        </span>
-                      </h3>
-                      <div className="space-y-3">
-                        {list.map((todo) => (
-                          <TodoItem
-                            key={todo._id}
-                            todo={todo}
-                            onToggle={toggleTodo}
-                            onDelete={handleSmartDelete}
-                            onEdit={handleEditClick}
-                          />
-                        ))}
+                        <div className="space-y-3 flex-1">
+                          {list.length === 0 ? (
+                            <p className="text-gray-600 text-sm italic mt-4">
+                              No active tasks
+                            </p>
+                          ) : (
+                            list.map((todo) => (
+                              <TodoItem
+                                key={todo._id}
+                                todo={todo}
+                                onToggle={toggleTodo}
+                                onDelete={handleSmartDelete}
+                                onEdit={handleEditClick}
+                              />
+                            ))
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Right Column: Completed */}
-              <div className="bg-ashe rounded-xl p-6">
-                {completedTodos.length > 0 && (
-                  <>
-                    <h3 className="text-sm font-bold text-cloud-500 uppercase tracking-wider mb-4 border-b border-cloud-500 pb-2">
-                      Completed{" "}
-                      <span className="text-cloud-500 ml-1 font-normal">
-                        ({completedTodos.length})
-                      </span>
-                    </h3>
-                    <div className="space-y-3 opacity-60 hover:opacity-100 transition-opacity duration-300">
-                      {completedTodos.map((todo) => (
+              {/* Right column: Completed (Takes 1/3 width) */}
+              <div className="xl:col-span-1">
+                <div className="bg-ashe rounded-xl p-6 sticky top-24">
+                  <h3 className="text-sm font-bold text-cloud-500 capitalize tracking-wider mb-4 border-b border-cloud-500 pb-2">
+                    History
+                    <span className="text-cloud-500 ml-1 font-normal">
+                      ({completedTodos.length})
+                    </span>
+                  </h3>
+                  <div className="space-y-3 opacity-60 hover:opacity-100 transition-opacity duration-300">
+                    {completedTodos.length === 0 ? (
+                      <p className="text-gray-600 text-sm italic">
+                        No completed tasks yet.
+                      </p>
+                    ) : (
+                      completedTodos.map((todo) => (
                         <TodoItem
                           key={todo._id}
                           todo={todo}
@@ -186,10 +202,10 @@ function App() {
                           onDelete={handleSmartDelete}
                           onEdit={handleEditClick}
                         />
-                      ))}
-                    </div>
-                  </>
-                )}
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </>
