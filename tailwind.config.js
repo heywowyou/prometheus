@@ -11,9 +11,8 @@ export default {
           700: "#242527", // Borders: Visible but not distracting
         },
         // Brand Action Color (Electric Blue)
-        electric: {
-          500: "#0099FF", // Primary Brand
-        },
+        electric: "#0099FF", // Primary Brand
+
         cloud: {
           500: "#A0A1A4", // Darker buttons etc
           400: "#E4E6EA", // Primary light text and icons

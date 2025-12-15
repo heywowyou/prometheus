@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Flame, Repeat2, Pencil, Shredder, CircleEllipsis } from "lucide-react";
+import { Flame, Repeat2, Pencil, Shredder, Ellipsis } from "lucide-react";
 
 // Helper to map recurrence type to the appropriate display number
 const getRecurrenceNumber = (type) => {
@@ -116,10 +116,10 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
         {/* Checkbox (Non-Hold Tasks) */}
         {!isHoldTask && (
           <div
-            className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-colors ${
+            className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-all duration-200 ease-in-out ${
               todo.completed
                 ? "border-cyan-300 bg-cyan-300/20"
-                : "border-cloud-400 group-hover:border-cyan-300"
+                : "border-cloud-400 group-hover:border-electric"
             }`}
           >
             {todo.completed && (
@@ -134,12 +134,12 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
             todo.completed ? "text-gray-500" : "text-gray-100"
           }`}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col text-sm">
             <span className={todo.completed ? "line-through" : ""}>
               {todo.text}
             </span>
             {isHoldTask && todo.durationGoal > 0 && (
-              <span className="text-xs text-electric-500 mt-0.5">
+              <span className="text-xs text-electric mt-0.5">
                 {todo.durationGoal} mins
               </span>
             )}
@@ -149,7 +149,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
           <div className="flex items-center gap-2">
             {isRecurring && (
               <div
-                className={`flex items-center transition-colors text-electric-500`}
+                className={`flex items-center transition-colors text-electric`}
                 title={`Resets every ${getRecurrenceNumber(
                   todo.recurrenceType
                 )} days`}
@@ -158,7 +158,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
               </div>
             )}
             {showTally && (
-              <div className="flex items-center text-xs font-medium text-orange-400">
+              <div className="flex items-center text-xs font-normal text-orange-400">
                 <Flame className="w-4 h-4 mr-1" strokeWidth={2.5} />
                 {todo.completionCount}
               </div>
@@ -175,19 +175,19 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
               e.stopPropagation();
               setIsMenuOpen(!isMenuOpen);
             }}
-            className={`text-cloud-500 hover:text-cloud-400 transition-all p-2 px-3 ${
+            className={`text-cloud-500 hover:text-cloud-400 transition duration-200 ease-in-out p-2 pl-3 ${
               isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             }`}
             title="More options"
           >
-            <CircleEllipsis className="w-6 h-6" />
+            <Ellipsis className="w-6 h-6" strokeWidth={1.5} />
           </button>
 
           {isMenuOpen && (
             <div
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className="absolute right-0 top-full mt-1 w-32 bg-ashe border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
+              className="absolute right-0 top-full mt-1 w-32 bg-powder-900 border border-powder-700 rounded-lg shadow-xl z-50 overflow-hidden"
             >
               <button
                 onClick={(e) => {
@@ -195,7 +195,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
                   onEdit(todo);
                   setIsMenuOpen(false);
                 }}
-                className="flex items-center w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 transition-colors cursor-pointer"
+                className="flex items-center w-full px-3 py-3 text-sm text-gray-300 hover:bg-gray-700 transition-colors cursor-pointer"
               >
                 <Pencil className="w-4 h-4 mr-2" />
                 Edit
@@ -207,7 +207,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
                   onDelete(todo);
                   setIsMenuOpen(false);
                 }}
-                className="flex items-center w-full px-3 py-2 text-sm text-red-400 hover:bg-red-900/40 transition-colors cursor-pointer"
+                className="flex items-center w-full px-3 py-3 text-sm text-red-400 hover:bg-red-900/40 transition-colors cursor-pointer"
               >
                 <Shredder className="w-4 h-4 mr-2" />
                 Delete
