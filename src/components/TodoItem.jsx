@@ -118,12 +118,12 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
           <div
             className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-all duration-200 ease-in-out ${
               todo.completed
-                ? "border-cyan-300 bg-cyan-300/20"
+                ? "border-electric bg-electric/10"
                 : "border-cloud-400 group-hover:border-electric"
             }`}
           >
             {todo.completed && (
-              <div className="w-2.5 h-2.5 rounded-full bg-cyan-300" />
+              <div className="w-2.5 h-2.5 rounded-full bg-electric" />
             )}
           </div>
         )}
@@ -131,7 +131,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
         {/* Text Content */}
         <span
           className={`flex-1 transition-colors flex items-center justify-between gap-3 ${
-            todo.completed ? "text-gray-500" : "text-gray-100"
+            todo.completed ? "text-cloud-500" : "text-cloud-400"
           }`}
         >
           <div className="flex flex-col text-sm">
