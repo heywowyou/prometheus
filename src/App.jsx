@@ -87,7 +87,7 @@ function App() {
       {/* 2. Main Content Container */}
       <main className="max-w-7xl mx-auto px-6 py-12">
         {!isSignedIn ? (
-          // --- GUEST VIEW ---
+          // Guest View
           <div className="flex flex-col items-center justify-center mt-20 text-center space-y-6">
             <div className="bg-gray-900 p-8 rounded-2xl shadow-xl border border-gray-800 max-w-md w-full">
               <h2 className="text-2xl font-bold text-gray-100 mb-3">
@@ -113,7 +113,7 @@ function App() {
               </h2>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 bg-electric/80 hover:bg-electric text-powder-900 font-medium px-5 py-2.5 rounded-lg transition-colors shadow-lg shadow-cyan-500/10"
+                className="btn-primary"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -148,9 +148,8 @@ function App() {
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-              {/* Left column: Active Tasks (Takes 2/3 width) */}
+              {/* Left column: Active Tasks */}
               <div className="xl:col-span-2 space-y-10">
-                {/* 2x2 Grid for the Task Categories */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-10">
                   {Object.keys(groupedActive).map((key) => {
                     const list = groupedActive[key];
@@ -162,38 +161,32 @@ function App() {
                     };
 
                     return (
-                      <div key={key} className="flex flex-col">
-                        {/* HEADER - OUTSIDE THE CARDS */}
-                        <div className="flex items-center justify-between mb-3 px-1">
+                      <div key={key} className="task-column">
+                        <div className="column-header">
                           <h3 className="text-lg font-medium text-cloud-400 capitalize tracking-wider">
                             {titleMap[key]}
                           </h3>
-                          <span className="text-cloud-500 text-sm font-medium bg-powder-800 border border-powder-700 px-2 py-0.5 rounded-full">
-                            {list.length}
-                          </span>
+                          <span className="badge-count">{list.length}</span>
                         </div>
 
-                        {/* CARD - CONTAINS ONLY TASKS */}
-                        <div className="bg-powder-900 min-h-[200px] flex flex-col">
-                          <div className="space-y-3 flex-1">
-                            {list.length === 0 ? (
-                              <div className="h-full flex items-center justify-center">
-                                <p className="text-cloud-400 text-sm italic">
-                                  No active tasks
-                                </p>
-                              </div>
-                            ) : (
-                              list.map((todo) => (
-                                <TodoItem
-                                  key={todo._id}
-                                  todo={todo}
-                                  onToggle={toggleTodo}
-                                  onDelete={handleSmartDelete}
-                                  onEdit={handleEditClick}
-                                />
-                              ))
-                            )}
-                          </div>
+                        <div className="task-list-container flex-1">
+                          {list.length === 0 ? (
+                            <div className="h-full flex items-center justify-center">
+                              <p className="text-cloud-400 text-sm italic">
+                                No active tasks
+                              </p>
+                            </div>
+                          ) : (
+                            list.map((todo) => (
+                              <TodoItem
+                                key={todo._id}
+                                todo={todo}
+                                onToggle={toggleTodo}
+                                onDelete={handleSmartDelete}
+                                onEdit={handleEditClick}
+                              />
+                            ))
+                          )}
                         </div>
                       </div>
                     );
@@ -201,37 +194,32 @@ function App() {
                 </div>
               </div>
 
-              {/* Right column: Completed (Takes 1/3 width) */}
+              {/* Right column: Completed */}
               <div className="xl:col-span-1">
                 <div className="sticky top-24">
-                  {/* Header Outside for Consistency */}
-                  <div className="flex items-center justify-between mb-3 px-1">
+                  <div className="column-header">
                     <h3 className="text-lg font-medium text-cloud-400 tracking-wide">
                       History
                     </h3>
-                    <span className="text-cloud-500 text-sm font-medium bg-powder-800 border border-powder-700 px-2 py-0.5 rounded-full">
-                      {completedTodos.length}
-                    </span>
+                    <span className="badge-count">{completedTodos.length}</span>
                   </div>
 
-                  <div className="bg-powder-900 min-h-[500px]">
-                    <div className="space-y-3 opacity-60 hover:opacity-100 transition-opacity duration-300">
-                      {completedTodos.length === 0 ? (
-                        <p className="text-gray-600 text-sm italic">
-                          No completed tasks yet.
-                        </p>
-                      ) : (
-                        completedTodos.map((todo) => (
-                          <TodoItem
-                            key={todo._id}
-                            todo={todo}
-                            onToggle={toggleTodo}
-                            onDelete={handleSmartDelete}
-                            onEdit={handleEditClick}
-                          />
-                        ))
-                      )}
-                    </div>
+                  <div className="task-list-container min-h-[500px] opacity-60 hover:opacity-100 transition-opacity duration-300">
+                    {completedTodos.length === 0 ? (
+                      <p className="text-gray-600 text-sm italic">
+                        No completed tasks yet.
+                      </p>
+                    ) : (
+                      completedTodos.map((todo) => (
+                        <TodoItem
+                          key={todo._id}
+                          todo={todo}
+                          onToggle={toggleTodo}
+                          onDelete={handleSmartDelete}
+                          onEdit={handleEditClick}
+                        />
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

@@ -4,16 +4,38 @@
 
 @layer base {
   .bg-dotted-pattern {
-    /* Base background color */
     background-color: theme("colors.powder.900");
-
-    /* The dot: 1px size */
     background-image: radial-gradient(
       theme("colors.powder.700") 1px,
       transparent 1px
     );
-
-    /* Spacing between dots */
     background-size: 24px 24px;
+  }
+}
+
+@layer components {
+  /* Abstraction of the task columns */
+  .task-column {
+    @apply flex flex-col;
+  }
+
+  /* Header layout above the task lists */
+  .column-header {
+    @apply flex items-center justify-between mb-3 px-1;
+  }
+
+  /* Container for the todo items */
+  .task-list-container {
+    @apply bg-powder-900 min-h-[200px] flex flex-col space-y-3 p-4 rounded-xl;
+  }
+
+  /* Consistent styling for the task counters */
+  .badge-count {
+    @apply text-cloud-500 text-sm font-medium bg-powder-800 border border-powder-700 px-2 py-0.5 rounded-full;
+  }
+
+  /* Reusable primary button */
+  .btn-primary {
+    @apply flex items-center gap-2 bg-electric/80 hover:bg-electric text-powder-900 font-medium px-5 py-2.5 rounded-lg transition-all shadow-lg shadow-cyan-500/10 active:scale-95;
   }
 }
