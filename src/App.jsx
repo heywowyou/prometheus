@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import TodoItem from "./components/TodoItem";
 import { useTodos } from "./hooks/useTodos";
 import { useUser, SignInButton } from "@clerk/clerk-react";
@@ -12,13 +12,47 @@ function App() {
   const { isLoaded, isSignedIn } = useUser();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Edit state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
-
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+
+  const activeTodos = useMemo(() => {
+    return todos
+      .filter((todo) => !todo.completed)
+      .sort((a, b) => {
+        const typeA = a.interactionType || "checkbox";
+        const typeB = b.interactionType || "checkbox";
+
+        if (typeA !== typeB) {
+          return typeA.localeCompare(typeB);
+        }
+        return a.text.localeCompare(b.text);
+      });
+  }, [todos]);
+
+  const completedTodos = useMemo(() => {
+    return todos
+      .filter((todo) => todo.completed)
+      .sort((a, b) => {
+        const typeA = a.interactionType || "checkbox";
+        const typeB = b.interactionType || "checkbox";
+        if (typeA !== typeB) return typeA.localeCompare(typeB);
+
+        const dateA = new Date(a.lastCompletedAt || 0);
+        const dateB = new Date(b.lastCompletedAt || 0);
+        return dateB - dateA;
+      });
+  }, [todos]);
+
+  const groupedActive = useMemo(() => {
+    return {
+      oneTime: activeTodos.filter((t) => t.recurrenceType === "none"),
+      daily: activeTodos.filter((t) => t.recurrenceType === "daily"),
+      weekly: activeTodos.filter((t) => t.recurrenceType === "weekly"),
+      monthly: activeTodos.filter((t) => t.recurrenceType === "monthly"),
+    };
+  }, [activeTodos]);
 
   const handleSmartDelete = (todo) => {
     setTaskToDelete(todo);
@@ -43,41 +77,6 @@ function App() {
       </div>
     );
   }
-
-  // Filtering & Sorting Logic
-  const activeTodos = todos
-    .filter((todo) => !todo.completed)
-    .sort((a, b) => {
-      // 1. Primary Sort: Interaction Type
-      const typeA = a.interactionType || "checkbox";
-      const typeB = b.interactionType || "checkbox";
-
-      if (typeA !== typeB) {
-        return typeA.localeCompare(typeB);
-      }
-      // 2. Secondary Sort: Alphabetical by content
-      return a.text.localeCompare(b.text);
-    });
-
-  const completedTodos = todos
-    .filter((todo) => todo.completed)
-    .sort((a, b) => {
-      const typeA = a.interactionType || "checkbox";
-      const typeB = b.interactionType || "checkbox";
-      if (typeA !== typeB) return typeA.localeCompare(typeB);
-
-      const dateA = new Date(a.lastCompletedAt || 0);
-      const dateB = new Date(b.lastCompletedAt || 0);
-      return dateB - dateA;
-    });
-
-  // Group active todos
-  const groupedActive = {
-    oneTime: activeTodos.filter((t) => t.recurrenceType === "none"),
-    daily: activeTodos.filter((t) => t.recurrenceType === "daily"),
-    weekly: activeTodos.filter((t) => t.recurrenceType === "weekly"),
-    monthly: activeTodos.filter((t) => t.recurrenceType === "monthly"),
-  };
 
   return (
     <div className="min-h-screen bg-dotted-pattern text-gray-100 font-sans">
