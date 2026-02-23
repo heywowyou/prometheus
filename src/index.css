@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  .bg-dotted-pattern {
+    /* Base background color */
+    background-color: theme("colors.powder.900");
+
+    /* The dot: 1px size */
+    background-image: radial-gradient(
+      theme("colors.powder.700") 1px,
+      transparent 1px
+    );
+
+    /* Spacing between dots */
+    background-size: 24px 24px;
+  }
+}
