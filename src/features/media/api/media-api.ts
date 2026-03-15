@@ -9,6 +9,13 @@ export interface CreateMediaLogPayload {
   url?: string;
   cover?: string;
   rating: number;
+  review?: string;
+  date: string;
+  status?: "finished" | "in_progress";
+  director?: string;
+  author?: string;
+  pages?: number;
+  artist?: string;
 }
 
 export type UpdateMediaLogPayload = Partial<CreateMediaLogPayload>;

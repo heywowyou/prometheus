@@ -12,6 +12,13 @@ export interface MediaLog {
   url?: string | null;
   cover?: string | null;
   rating: number; // 1–10
+   review?: string | null;
+   date: string;
+   status: "finished" | "in_progress";
+   director?: string | null;
+   author?: string | null;
+   pages?: number | null;
+   artist?: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;

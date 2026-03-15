@@ -11,6 +11,29 @@ function MediaLogCard({ log, onDelete }: MediaLogCardProps) {
   const typeLabel = MEDIA_TYPE_LABELS[log.type];
   const coverUrl = log.cover || null;
   const linkUrl = log.url || null;
+  const dateLabel = (() => {
+    if (!log.date) return null;
+    const d = new Date(log.date);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleDateString();
+  })();
+
+  const secondaryLine = (() => {
+    if (log.type === "movie" && log.director) {
+      return `Directed by ${log.director}`;
+    }
+    if (log.type === "book") {
+      if (log.author && log.pages) {
+        return `${log.author} · ${log.pages} pages`;
+      }
+      if (log.author) return log.author;
+      if (log.pages) return `${log.pages} pages`;
+    }
+    if (log.type === "music_album" && log.artist) {
+      return log.artist;
+    }
+    return null;
+  })();
 
   return (
     <article className="bg-gray-800/80 rounded-xl border border-gray-700 overflow-hidden hover:border-gray-600 transition-colors">
@@ -47,9 +70,16 @@ function MediaLogCard({ log, onDelete }: MediaLogCardProps) {
                   {displayTitle}
                 </span>
               )}
-              <span className="text-xs text-gray-500 uppercase tracking-wider">
-                {typeLabel}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500 uppercase tracking-wider">
+                  {typeLabel}
+                </span>
+                {secondaryLine && (
+                  <span className="text-xs text-gray-400 truncate">
+                    {secondaryLine}
+                  </span>
+                )}
+              </div>
             </div>
             {onDelete && (
               <button
@@ -75,12 +105,38 @@ function MediaLogCard({ log, onDelete }: MediaLogCardProps) {
               </button>
             )}
           </div>
-          <div className="mt-auto pt-2 flex items-center gap-1">
-            <span className="text-cyan-400 font-semibold tabular-nums">
-              {log.rating}/10
-            </span>
-            <span className="text-gray-500 text-sm">★</span>
+          <div className="mt-auto pt-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1">
+              <span className="text-cyan-400 font-semibold tabular-nums">
+                {log.rating}/10
+              </span>
+              <span className="text-gray-500 text-sm">★</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {log.status && (
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                    log.status === "finished"
+                      ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700/60"
+                      : "bg-amber-600/20 text-amber-300 border border-amber-700/60"
+                  }`}
+                >
+                  {log.status === "finished" ? "Finished" : "In progress"}
+                </span>
+              )}
+              {dateLabel && (
+                <span className="text-xs text-gray-500 tabular-nums">
+                  {dateLabel}
+                </span>
+              )}
+            </div>
           </div>
+
+          {log.review && (
+            <p className="mt-2 text-xs text-gray-400 line-clamp-2">
+              {log.review}
+            </p>
+          )}
         </div>
       </div>
     </article>
