@@ -12,9 +12,11 @@ dist
 dist-ssr
 *.local
 
-# GitHub
-.github
-workspace-instructions.md
+# Copilot
+.copilot/
+*.agent.md
+*.prompt.md
+*.instructions.md
 
 # Editor directories and files
 .vscode/*
