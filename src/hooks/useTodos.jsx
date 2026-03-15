@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import { useAuth } from "@clerk/clerk-react";
-
-// API Endpoint Definition
-const API_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/todos/";
+import { useTodosApi } from "../features/todos/api/todos-api";
 
 // Helper: Determine the recurrence reset time
 const getNextResetTime = (lastCompletedAt, type) => {
@@ -46,30 +41,18 @@ export const useTodos = () => {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Get the function required to fetch the user's authentication token
-  const { getToken } = useAuth();
-
-  // Helper: Create Axios configuration with Auth Headers
-  // This attaches the JWT token to every request for backend validation.
-  const createConfig = async () => {
-    const token = await getToken();
-    return {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  };
+  const { fetchTodos: apiFetchTodos, createTodo: apiCreateTodo, updateTodo: apiUpdateTodo, deleteTodo: apiDeleteTodo } =
+    useTodosApi();
 
   // Read: Fetch all user-scoped Todos
   const fetchTodos = async () => {
     try {
-      const config = await createConfig();
-      const response = await axios.get(API_URL, config);
+      const data = await apiFetchTodos();
 
       const now = new Date();
       const todosToDisplay = [];
 
-      response.data.forEach((todo) => {
+      data.forEach((todo) => {
         // Case 1: Task is NOT completed. Always show it.
         if (!todo.completed) {
           todosToDisplay.push(todo);
@@ -124,15 +107,14 @@ export const useTodos = () => {
     durationGoal
   ) => {
     try {
-      const config = await createConfig();
-      const response = await axios.post(
-        API_URL,
-        { text, recurrenceType, interactionType, durationGoal },
-        config
-      );
+      const created = await apiCreateTodo({
+        text,
+        recurrenceType,
+        interactionType,
+        durationGoal,
+      });
 
-      // Update local state by appending the new todo returned from the API
-      setTodos((prevTodos) => [...prevTodos, response.data]);
+      setTodos((prevTodos) => [...prevTodos, created]);
     } catch (error) {
       console.error("Failed to create todo:", error);
     }
@@ -144,10 +126,7 @@ export const useTodos = () => {
     let apiId = id.toString().replace("-active", "");
 
     try {
-      const config = await createConfig();
-      // The backend records the completion date and returns the updated task.
-      const response = await axios.put(API_URL + apiId, {}, config);
-      const updatedTodo = response.data;
+      const updatedTodo = await apiUpdateTodo(apiId, {});
 
       setTodos((prevTodos) => {
         // 1. Remove the task corresponding to the input ID (removes the original or the stale active one)
@@ -165,9 +144,7 @@ export const useTodos = () => {
   const updateTask = async (id, updates) => {
     let apiId = id.toString().replace("-active", "");
     try {
-      const config = await createConfig();
-      const response = await axios.put(API_URL + apiId, updates, config);
-      const updatedTodo = response.data;
+      const updatedTodo = await apiUpdateTodo(apiId, updates);
 
       setTodos((prevTodos) => {
         return prevTodos.map((t) => (t._id === id ? updatedTodo : t));
@@ -180,11 +157,8 @@ export const useTodos = () => {
   // Delete: Remove a Todo
   const deleteTodo = async (id) => {
     try {
-      const config = await createConfig();
-      // Send the request to delete the item from the database
-      await axios.delete(API_URL + id, config);
+      await apiDeleteTodo(id);
 
-      // Update local state by filtering out the deleted item
       setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
     } catch (error) {
       console.error("Failed to delete todo:", error);
