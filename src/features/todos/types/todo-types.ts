@@ -1,0 +1,14 @@
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly";
+
+export interface Todo {
+  _id: string;
+  text: string;
+  completed: boolean;
+  recurrenceType: RecurrenceType;
+  lastCompletedAt?: string | null;
+  completionCount: number;
+  interactionType: "checkbox" | "hold";
+  durationGoal: number;
+  userId: string;
+}
+

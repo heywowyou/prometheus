@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { useTodosApi } from "../features/todos/api/todos-api";
+// type-only import for editor/TS support
+// eslint-disable-next-line no-unused-vars
+import type { Todo } from "../features/todos/types/todo-types";
 
 // Helper: Determine the recurrence reset time
 const getNextResetTime = (lastCompletedAt, type) => {
@@ -38,7 +41,11 @@ const getNextResetTime = (lastCompletedAt, type) => {
 };
 
 export const useTodos = () => {
-  const [todos, setTodos] = useState([]);
+  /** @type {[Todo[], (value: Todo[] | ((prev: Todo[]) => Todo[])) => void]} */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [todos, setTodos] = useState(
+    /** @type {Todo[]} */ ([])
+  );
   const [loading, setLoading] = useState(true);
 
   const { fetchTodos: apiFetchTodos, createTodo: apiCreateTodo, updateTodo: apiUpdateTodo, deleteTodo: apiDeleteTodo } =
