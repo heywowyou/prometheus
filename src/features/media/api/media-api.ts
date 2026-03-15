@@ -23,9 +23,10 @@ export type UpdateMediaLogPayload = Partial<CreateMediaLogPayload>;
 export const useMediaApi = () => {
   const { withAuth } = useApiClient();
 
-  const fetchLogs = async (): Promise<MediaLog[]> => {
+  const fetchLogs = async (type?: MediaLogType): Promise<MediaLog[]> => {
     const client = await withAuth();
-    const response = await client.get<MediaLog[]>(MEDIA_PATH);
+    const params = type ? { params: { type } } : undefined;
+    const response = await client.get<MediaLog[]>(MEDIA_PATH, params);
     return response.data;
   };
 

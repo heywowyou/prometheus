@@ -4,6 +4,7 @@ import { MEDIA_TYPE_LABELS, type MediaLogType } from "../types/media-types";
 interface AddLogModalProps {
   isOpen: boolean;
   onClose: () => void;
+  presetType?: MediaLogType;
   onCreate: (payload: {
     type: MediaLogType;
     title: string;
@@ -28,8 +29,8 @@ const MEDIA_TYPES: MediaLogType[] = [
   "game",
 ];
 
-function AddLogModal({ isOpen, onClose, onCreate }: AddLogModalProps) {
-  const [type, setType] = useState<MediaLogType>("movie");
+function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps) {
+  const [type, setType] = useState<MediaLogType>(presetType ?? "movie");
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [cover, setCover] = useState("");
@@ -84,7 +85,7 @@ function AddLogModal({ isOpen, onClose, onCreate }: AddLogModalProps) {
       setAuthor("");
       setPages("");
       setArtist("");
-      setType("movie");
+      setType(presetType ?? "movie");
       onClose();
     } finally {
       setSubmitting(false);
@@ -107,17 +108,23 @@ function AddLogModal({ isOpen, onClose, onCreate }: AddLogModalProps) {
             <label className="block text-sm font-medium text-gray-400 mb-1">
               Type
             </label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as MediaLogType)}
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-400 focus:outline-none focus:border-cyan-500 cursor-pointer"
-            >
-              {MEDIA_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {MEDIA_TYPE_LABELS[t]}
-                </option>
-              ))}
-            </select>
+            {presetType ? (
+              <div className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-300">
+                {MEDIA_TYPE_LABELS[presetType]}
+              </div>
+            ) : (
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as MediaLogType)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-400 focus:outline-none focus:border-cyan-500 cursor-pointer"
+              >
+                {MEDIA_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {MEDIA_TYPE_LABELS[t]}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>

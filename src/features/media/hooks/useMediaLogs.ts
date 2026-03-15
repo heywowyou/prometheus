@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useMediaApi } from "../api/media-api";
+import type { MediaLog, MediaLogType } from "../types/media-types";
 import type {
-  MediaLog,
-  MediaLogType,
-} from "../types/media-types";
-import type { CreateMediaLogPayload, UpdateMediaLogPayload } from "../api/media-api";
+  CreateMediaLogPayload,
+  UpdateMediaLogPayload,
+} from "../api/media-api";
 
-export const useMediaLogs = () => {
+export const useMediaLogs = (type?: MediaLogType) => {
   const [logs, setLogs] = useState<MediaLog[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +19,7 @@ export const useMediaLogs = () => {
 
   const fetchLogs = async () => {
     try {
-      const data = await apiFetchLogs();
+      const data = await apiFetchLogs(type);
       setLogs(data);
     } catch (error) {
       console.error("Failed to fetch media logs:", error);
