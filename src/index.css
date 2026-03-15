@@ -2,34 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  .bg-grain-pattern {
-    position: relative;
-    background-color: theme("colors.powder.900");
-    z-index: 0;
-    overflow-x: hidden;
-  }
-
-  .bg-grain-pattern::before {
-    content: "";
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    right: -50%;
-    bottom: -50%;
-
-    filter: url(#grainy-noise) contrast(2.5) brightness(0.6);
-
-    opacity: 0.35;
-
-    mix-blend-mode: overlay;
-
-    z-index: -1;
-    pointer-events: none;
-    background: #808080;
-  }
-}
-
 @layer components {
   /* Abstraction of the task columns */
   .task-column {

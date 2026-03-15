@@ -79,7 +79,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-grain-pattern text-gray-100 font-sans">
+    <div className="min-h-screen bg-powder-900 text-gray-100 font-sans">
       {/* 1. Permanent Header */}
       <Header />
 
