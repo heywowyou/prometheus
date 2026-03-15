@@ -4,18 +4,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        // The "Prometheus" Dark Theme
+        // Semantic tokens – Musicboard-inspired dark theme (single source of truth)
+        background: "#0e0f11",
+        surface: "#181a1c",
+        "surface-hover": "#1e2023",
+        border: "#242527",
+        "border-muted": "#2d2f32",
+        text: "#E4E6EA",
+        "text-muted": "#A0A1A4",
+        accent: "#3b82f6", // Softer blue for CTAs and active states
+        "accent-hover": "#60a5fa",
+        // Legacy aliases (components can migrate to semantic names)
         powder: {
-          900: "#0e0f11", // Background
-          800: "#181a1c", // Card background: Subtle lift from BG
-          700: "#242527", // Borders: Visible but not distracting
+          900: "#0e0f11",
+          800: "#181a1c",
+          700: "#242527",
         },
-        // Brand Action Color (Electric Blue)
-        electric: "#0099FF", // Primary Brand
-
+        electric: "#3b82f6",
         cloud: {
-          500: "#A0A1A4", // Darker buttons etc
-          400: "#E4E6EA", // Primary light text and icons
+          500: "#A0A1A4",
+          400: "#E4E6EA",
         },
       },
       fontFamily: {

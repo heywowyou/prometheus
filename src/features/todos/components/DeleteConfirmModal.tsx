@@ -34,9 +34,9 @@ function DeleteConfirmModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-lg z-50 flex items-center justify-center">
-      <div className="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-lg border border-slate-700">
-        <h2 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+    <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
+      <div className="bg-surface p-8 rounded-xl shadow-2xl w-full max-w-lg border border-border">
+        <h2 className="font-serif text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
           {isHighValue ? <Flame className="w-5 h-5" /> : null}
           {isReadyToConfirm ? "Confirm Permanently" : "Confirm Deletion"}
         </h2>
@@ -44,9 +44,9 @@ function DeleteConfirmModal({
         {!isReadyToConfirm && (
           <>
             {isHighValue ? (
-              <p className="text-slate-300 mb-4">
+              <p className="text-text mb-4">
                 You are about to delete your recurring task{" "}
-                <strong className="text-white">&quot;{task.text}&quot;</strong>. This will
+                <strong className="text-text">&quot;{task.text}&quot;</strong>. This will
                 delete your{" "}
                 <strong className="text-red-400">
                   {task.completionCount}
@@ -59,9 +59,9 @@ function DeleteConfirmModal({
                 </span>
               </p>
             ) : (
-              <p className="text-slate-300 mb-4">
+              <p className="text-text mb-4">
                 Are you sure you want to delete your task{" "}
-                <strong className="text-white">&quot;{task.text}&quot;</strong>?
+                <strong className="text-text">&quot;{task.text}&quot;</strong>?
                 <br />
                 <br />
                 Click &apos;Proceed&apos; to continue.
@@ -71,7 +71,7 @@ function DeleteConfirmModal({
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
+                className="px-4 py-2 text-text-muted hover:text-text transition-colors"
               >
                 Cancel
               </button>
@@ -87,7 +87,7 @@ function DeleteConfirmModal({
 
         {isReadyToConfirm && (
           <>
-            <p className="text-slate-300 mb-4">
+            <p className="text-text mb-4">
               <strong className="text-red-400">WARNING:</strong> This action
               cannot be undone. Your task and all history will be permanently
               erased.
@@ -96,7 +96,7 @@ function DeleteConfirmModal({
             <div className="flex justify-between gap-3 pt-2">
               <button
                 onClick={() => setIsReadyToConfirm(false)}
-                className="px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors border border-slate-700 rounded-lg"
+                className="px-4 py-2 text-text-muted hover:text-text transition-colors border border-border rounded-lg"
               >
                 Go Back
               </button>

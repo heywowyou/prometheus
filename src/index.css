@@ -18,13 +18,22 @@
     @apply min-h-[200px] flex flex-col space-y-3 p-0 rounded-xl;
   }
 
-  /* Consistent styling for the task counters */
+  /* Consistent styling for the task counters – semantic tokens */
   .badge-count {
-    @apply text-cloud-500 text-sm font-medium bg-powder-800 border border-powder-700 px-2 py-0.5 rounded-full;
+    @apply text-text-muted text-sm font-medium bg-surface border border-border px-2 py-0.5 rounded-full;
   }
 
-  /* Reusable primary button */
+  /* Reusable primary button – semantic accent */
   .btn-primary {
-    @apply flex items-center gap-2 bg-electric/80 hover:bg-electric text-powder-900 font-medium px-5 py-2.5 rounded-lg transition-all shadow-lg shadow-cyan-500/10 active:scale-95;
+    @apply flex items-center gap-2 bg-accent/90 hover:bg-accent-hover text-background font-medium px-5 py-2.5 rounded-lg transition-all shadow-lg shadow-accent/10 active:scale-95;
+  }
+
+  /* Editorial page/section titles (Musicboard-style) */
+  .page-title {
+    @apply font-serif text-3xl font-bold text-text tracking-tight;
+  }
+
+  .section-title {
+    @apply font-serif text-xl font-semibold text-text;
   }
 }

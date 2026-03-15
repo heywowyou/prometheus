@@ -73,31 +73,31 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
     if (e.key === "Enter") void handleSaveAndClose();
   };
 
+  const inputClass =
+    "w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-accent transition-colors text-text";
+  const labelClass = "block text-sm font-medium text-text-muted mb-1";
+
   return (
-    <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-lg z-50 flex items-center justify-center">
-      <div className="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-700 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+    <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
+      <div className="bg-surface p-6 rounded-xl shadow-2xl w-full max-w-md border border-border max-h-[90vh] overflow-y-auto">
+        <h2 className="font-serif text-2xl font-bold text-text mb-4">
           Edit log
         </h2>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Type
-            </label>
-            <div className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-300">
+            <label className={labelClass}>Type</label>
+            <div className="w-full bg-background border border-border rounded-lg px-4 py-3 text-text">
               {MEDIA_TYPE_LABELS[type]}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Title *
-            </label>
+            <label className={labelClass}>Title *</label>
             <input
               type="text"
               placeholder="Title"
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+              className={inputClass}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -106,27 +106,23 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Date
-            </label>
+            <label className={labelClass}>Date</label>
             <input
               type="date"
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+              className={inputClass}
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Status
-            </label>
+            <label className={labelClass}>Status</label>
             <select
               value={status}
               onChange={(e) =>
                 setStatus(e.target.value as "finished" | "in_progress")
               }
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-400 focus:outline-none focus:border-cyan-500 cursor-pointer"
+              className={`${inputClass} cursor-pointer`}
             >
               <option value="finished">Finished</option>
               <option value="in_progress">In progress</option>
@@ -135,12 +131,10 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
 
           {type === "movie" && (
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Director
-              </label>
+              <label className={labelClass}>Director</label>
               <input
                 type="text"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+                className={inputClass}
                 value={director}
                 onChange={(e) => setDirector(e.target.value)}
               />
@@ -150,24 +144,20 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
           {type === "book" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Author
-                </label>
+                <label className={labelClass}>Author</label>
                 <input
                   type="text"
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+                  className={inputClass}
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">
-                  Pages
-                </label>
+                <label className={labelClass}>Pages</label>
                 <input
                   type="number"
                   min={1}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+                  className={inputClass}
                   value={pages}
                   onChange={(e) => setPages(e.target.value)}
                 />
@@ -177,12 +167,10 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
 
           {type === "music_album" && (
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
-                Artist
-              </label>
+              <label className={labelClass}>Artist</label>
               <input
                 type="text"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+                className={inputClass}
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
               />
@@ -190,11 +178,9 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Review
-            </label>
+            <label className={labelClass}>Review</label>
             <textarea
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100 min-h-[80px]"
+              className={`${inputClass} min-h-[80px]`}
               placeholder="What did you think?"
               value={review}
               onChange={(e) => setReview(e.target.value)}
@@ -202,35 +188,29 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              URL
-            </label>
+            <label className={labelClass}>URL</label>
             <input
               type="url"
               placeholder="https://..."
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+              className={inputClass}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Cover image URL
-            </label>
+            <label className={labelClass}>Cover image URL</label>
             <input
               type="url"
               placeholder="https://..."
-              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors text-gray-100"
+              className={inputClass}
               value={cover}
               onChange={(e) => setCover(e.target.value)}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">
-              Rating (1–10)
-            </label>
+            <label className={labelClass}>Rating (1–10)</label>
             <div className="flex items-center gap-2">
               <input
                 type="range"
@@ -238,9 +218,9 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
                 max={10}
                 value={rating}
                 onChange={(e) => setRating(Number(e.target.value))}
-                className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                className="flex-1 h-2 bg-border rounded-lg appearance-none cursor-pointer accent-accent"
               />
-              <span className="text-cyan-400 font-semibold w-8 tabular-nums">
+              <span className="text-accent font-semibold w-8 tabular-nums">
                 {rating}/10
               </span>
             </div>
@@ -251,7 +231,7 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-2.5 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors"
+            className="flex-1 py-2.5 px-4 rounded-lg border border-border text-text-muted hover:bg-surface-hover transition-colors"
           >
             Cancel
           </button>

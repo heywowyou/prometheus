@@ -5,7 +5,7 @@ function Header() {
   const { isSignedIn } = useUser();
 
   return (
-    <header className="w-full bg-powder-800 sticky top-0 z-40">
+    <header className="w-full bg-surface sticky top-0 z-40 border-b border-border">
       <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
         <img
           src={logo}
@@ -15,13 +15,13 @@ function Header() {
         <div>
           {isSignedIn ? (
             <SignOutButton>
-              <button className="text-sm font-medium text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-md hover:bg-gray-800">
+              <button className="text-sm font-medium text-text-muted hover:text-text transition-colors px-3 py-1.5 rounded-md hover:bg-surface-hover">
                 Sign Out
               </button>
             </SignOutButton>
           ) : (
             <SignInButton mode="modal">
-              <button className="text-sm font-medium bg-cyan-500 hover:bg-cyan-400 text-gray-900 px-4 py-2 rounded-md transition-colors shadow-lg shadow-cyan-500/20">
+              <button className="btn-primary text-sm px-4 py-2 rounded-md">
                 Sign In
               </button>
             </SignInButton>
