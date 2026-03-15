@@ -1,5 +1,5 @@
 import { useState, KeyboardEvent } from "react";
-import type { RecurrenceType, Todo } from "../features/todos/types/todo-types";
+import type { RecurrenceType, Todo } from "../types/todo-types";
 
 type InteractionType = Todo["interactionType"];
 
@@ -138,4 +138,3 @@ function NewTaskModal({ isOpen, onClose, onCreate }: NewTaskModalProps) {
 }
 
 export default NewTaskModal;
-

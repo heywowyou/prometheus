@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Todo, RecurrenceType } from "../features/todos/types/todo-types";
+import type { Todo, RecurrenceType } from "../types/todo-types";
 
 interface EditTaskModalProps {
   isOpen: boolean;
@@ -146,4 +146,3 @@ function EditTaskModal({
 }
 
 export default EditTaskModal;
-

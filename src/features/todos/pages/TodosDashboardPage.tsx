@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { useUser, SignInButton } from "@clerk/clerk-react";
-import { useTodos } from "../../../hooks/useTodos";
+import { useTodos } from "../hooks/useTodos";
 import TodoItem from "../components/TodoItem";
-import NewTaskModal from "../../../components/NewTaskModal";
-import EditTaskModal from "../../../components/EditTaskModal";
-import DeleteConfirmModal from "../../../components/DeleteConfirmModal";
+import NewTaskModal from "../components/NewTaskModal";
+import EditTaskModal from "../components/EditTaskModal";
+import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import type { Todo } from "../types/todo-types";
 
 type ActiveModal = "new" | "edit" | "delete" | null;

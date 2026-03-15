@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Flame } from "lucide-react";
-import type { Todo } from "../features/todos/types/todo-types";
+import type { Todo } from "../types/todo-types";
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -46,7 +46,7 @@ function DeleteConfirmModal({
             {isHighValue ? (
               <p className="text-slate-300 mb-4">
                 You are about to delete your recurring task{" "}
-                <strong className="text-white">"{task.text}"</strong>. This will
+                <strong className="text-white">&quot;{task.text}&quot;</strong>. This will
                 delete your{" "}
                 <strong className="text-red-400">
                   {task.completionCount}
@@ -61,7 +61,7 @@ function DeleteConfirmModal({
             ) : (
               <p className="text-slate-300 mb-4">
                 Are you sure you want to delete your task{" "}
-                <strong className="text-white">"{task.text}"</strong>?
+                <strong className="text-white">&quot;{task.text}&quot;</strong>?
                 <br />
                 <br />
                 Click &apos;Proceed&apos; to continue.
@@ -115,4 +115,3 @@ function DeleteConfirmModal({
 }
 
 export default DeleteConfirmModal;
-

@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
-import { useTodosApi } from "../features/todos/api/todos-api";
-import { getNextResetTime } from "../lib/date/recurrence";
-import type { Todo, RecurrenceType } from "../features/todos/types/todo-types";
+import { useTodosApi } from "../api/todos-api";
+import { getNextResetTime } from "../../../lib/date/recurrence";
+import type {
+  Todo,
+  RecurrenceType,
+} from "../types/todo-types";
 
 export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -135,4 +138,3 @@ export const useTodos = () => {
     deleteTodo,
   };
 };
-
