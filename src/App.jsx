@@ -11,11 +11,22 @@ function App() {
   const { todos, createTodo, toggleTodo, deleteTodo, updateTask } = useTodos();
   const { isLoaded, isSignedIn } = useUser();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [taskToEdit, setTaskToEdit] = useState(null);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState(null);
+  // Consolidate modal management into a single state object.
+  // Type property determines which modal is active, and data holds any required context.
+  const [modalState, setModalState] = useState({
+    type: null,
+    data: null,
+  });
+
+  // Helper method to open a specific modal and inject necessary data.
+  const openModal = (type, data = null) => {
+    setModalState({ type, data });
+  };
+
+  // Helper method to clear the modal state, returning the interface to its default rest.
+  const closeModal = () => {
+    setModalState({ type: null, data: null });
+  };
 
   const activeTodos = useMemo(() => {
     return todos
@@ -54,20 +65,20 @@ function App() {
     };
   }, [activeTodos]);
 
+  // Stage a task for deletion by opening the confirmation modal.
   const handleSmartDelete = (todo) => {
-    setTaskToDelete(todo);
-    setIsDeleteConfirmOpen(true);
+    openModal("delete", todo);
   };
 
+  // Execute the final deletion and return the interface to its resting state.
   const handleFinalDelete = (id) => {
     deleteTodo(id);
-    setIsDeleteConfirmOpen(false);
-    setTaskToDelete(null);
+    closeModal();
   };
 
+  // Prepare a task for modification by opening the edit modal.
   const handleEditClick = (todo) => {
-    setTaskToEdit(todo);
-    setIsEditModalOpen(true);
+    openModal("edit", todo);
   };
 
   if (!isLoaded) {
@@ -110,10 +121,7 @@ function App() {
               <h2 className="text-3xl font-bold text-cloud-400 tracking-tight">
                 Dashboard
               </h2>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="btn-primary"
-              >
+              <button onClick={() => openModal("new")} className="btn-primary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -137,7 +145,7 @@ function App() {
               <div className="text-center py-20 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
                 <p className="text-cloud-400 mb-4">Your workspace is empty.</p>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => openModal("new")}
                   className="text-electric hover:underline"
                 >
                   Create your first habit
@@ -228,20 +236,20 @@ function App() {
 
         {/* Modals */}
         <NewTaskModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={modalState.type === "new"}
+          onClose={closeModal}
           onCreate={createTodo}
         />
         <EditTaskModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          task={taskToEdit}
+          isOpen={modalState.type === "edit"}
+          onClose={closeModal}
+          task={modalState.data}
           onUpdate={updateTask}
         />
         <DeleteConfirmModal
-          isOpen={isDeleteConfirmOpen}
-          onClose={() => setIsDeleteConfirmOpen(false)}
-          task={taskToDelete}
+          isOpen={modalState.type === "delete"}
+          onClose={closeModal}
+          task={modalState.data}
           onConfirm={handleFinalDelete}
         />
       </main>
