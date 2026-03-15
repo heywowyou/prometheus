@@ -1,11 +1,25 @@
-import React, { useState } from "react";
+import { useState, KeyboardEvent } from "react";
+import type { RecurrenceType, Todo } from "../features/todos/types/todo-types";
 
-function NewTaskModal({ isOpen, onClose, onCreate }) {
-  // Input and recurrence state
+type InteractionType = Todo["interactionType"];
+
+interface NewTaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (
+    text: string,
+    recurrenceType: RecurrenceType,
+    interactionType: InteractionType,
+    durationGoal: number
+  ) => void;
+}
+
+function NewTaskModal({ isOpen, onClose, onCreate }: NewTaskModalProps) {
   const [text, setText] = useState("");
-  const [recurrence, setRecurrence] = useState("none");
-  const [interactionType, setInteractionType] = useState("checkbox");
-  const [durationGoal, setDurationGoal] = useState(0);
+  const [recurrence, setRecurrence] = useState<RecurrenceType>("none");
+  const [interactionType, setInteractionType] =
+    useState<InteractionType>("checkbox");
+  const [durationGoal, setDurationGoal] = useState<number>(0);
 
   if (!isOpen) {
     return null;
@@ -14,33 +28,28 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
   const handleCreateAndClose = () => {
     if (!text.trim()) return;
 
-    // Call the handler function passed from App.jsx
     onCreate(text, recurrence, interactionType, Number(durationGoal));
 
-    // Reset local state
     setText("");
     setRecurrence("none");
     setInteractionType("checkbox");
     setDurationGoal(0);
 
-    // Close the modal
     onClose();
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleCreateAndClose();
   };
 
   return (
     <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-lg z-50 flex items-center justify-center">
-      {/* Modal Content */}
       <div className="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700">
         <h2 className="text-2xl font-bold text-cyan-400 mb-4">
           Create New Task
         </h2>
 
         <div className="space-y-4">
-          {/* Text Input */}
           <input
             type="text"
             placeholder="What needs to be done?"
@@ -51,14 +60,15 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
             autoFocus
           />
 
-          {/* Recurrence Selector */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">
               Recurrence:
             </label>
             <select
               value={recurrence}
-              onChange={(e) => setRecurrence(e.target.value)}
+              onChange={(e) =>
+                setRecurrence(e.target.value as RecurrenceType)
+              }
               className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-gray-400 focus:outline-none focus:border-cyan-500 cursor-pointer"
             >
               <option value="none">One-Time Task</option>
@@ -68,7 +78,6 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
             </select>
           </div>
 
-          {/* Interaction type and duration */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">
@@ -76,7 +85,9 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
               </label>
               <select
                 value={interactionType}
-                onChange={(e) => setInteractionType(e.target.value)}
+                onChange={(e) =>
+                  setInteractionType(e.target.value as InteractionType)
+                }
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-3 text-gray-400 focus:outline-none focus:border-cyan-500 cursor-pointer"
               >
                 <option value="checkbox">Checkbox</option>
@@ -96,16 +107,15 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
               </label>
               <input
                 type="number"
-                min="1"
+                min={1}
                 className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-3 text-gray-300 focus:outline-none focus:border-cyan-500"
                 value={durationGoal}
-                onChange={(e) => setDurationGoal(e.target.value)}
+                onChange={(e) => setDurationGoal(Number(e.target.value))}
                 disabled={interactionType !== "hold"}
               />
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-2">
             <button
               onClick={onClose}
@@ -128,3 +138,4 @@ function NewTaskModal({ isOpen, onClose, onCreate }) {
 }
 
 export default NewTaskModal;
+

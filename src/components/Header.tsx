@@ -1,4 +1,3 @@
-import React from "react";
 import { useUser, SignOutButton, SignInButton } from "@clerk/clerk-react";
 import logo from "../assets/logo.png";
 
@@ -8,14 +7,11 @@ function Header() {
   return (
     <header className="w-full bg-powder-800 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
-        {/* Logo Section */}
         <img
           src={logo}
           alt="App Logo"
-          className="w-48 object-contain" // object-contain keeps the aspect ratio
+          className="w-48 object-contain"
         />
-
-        {/* User / Navigation Section */}
         <div>
           {isSignedIn ? (
             <SignOutButton>
@@ -37,3 +33,4 @@ function Header() {
 }
 
 export default Header;
+
