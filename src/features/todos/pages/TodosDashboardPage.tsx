@@ -5,17 +5,25 @@ import TodoItem from "../components/TodoItem";
 import NewTaskModal from "../../../components/NewTaskModal";
 import EditTaskModal from "../../../components/EditTaskModal";
 import DeleteConfirmModal from "../../../components/DeleteConfirmModal";
+import type { Todo } from "../types/todo-types";
+
+type ActiveModal = "new" | "edit" | "delete" | null;
+
+interface ModalState {
+  type: ActiveModal;
+  data: Todo | null;
+}
 
 function TodosDashboardPage() {
   const { todos, createTodo, toggleTodo, deleteTodo, updateTask } = useTodos();
   const { isLoaded, isSignedIn } = useUser();
 
-  const [modalState, setModalState] = useState({
+  const [modalState, setModalState] = useState<ModalState>({
     type: null,
     data: null,
   });
 
-  const openModal = (type, data = null) => {
+  const openModal = (type: ActiveModal, data: Todo | null = null) => {
     setModalState({ type, data });
   };
 
@@ -47,7 +55,7 @@ function TodosDashboardPage() {
 
         const dateA = new Date(a.lastCompletedAt || 0);
         const dateB = new Date(b.lastCompletedAt || 0);
-        return dateB - dateA;
+        return dateB.getTime() - dateA.getTime();
       });
   }, [todos]);
 
@@ -60,16 +68,16 @@ function TodosDashboardPage() {
     };
   }, [activeTodos]);
 
-  const handleSmartDelete = (todo) => {
+  const handleSmartDelete = (todo: Todo) => {
     openModal("delete", todo);
   };
 
-  const handleFinalDelete = (id) => {
-    deleteTodo(id);
+  const handleFinalDelete = (id: string) => {
+    void deleteTodo(id);
     closeModal();
   };
 
-  const handleEditClick = (todo) => {
+  const handleEditClick = (todo: Todo) => {
     openModal("edit", todo);
   };
 
@@ -142,8 +150,9 @@ function TodosDashboardPage() {
         <div className="xl:col-span-2 space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-10">
             {Object.keys(groupedActive).map((key) => {
-              const list = groupedActive[key];
-              const titleMap = {
+              const list =
+                groupedActive[key as keyof typeof groupedActive] ?? [];
+              const titleMap: Record<string, string> = {
                 oneTime: "Temporary",
                 daily: "Daily",
                 weekly: "Weekly",

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Flame, Repeat2, Pencil, Shredder, Ellipsis } from "lucide-react";
+import type { Todo, RecurrenceType } from "../features/todos/types/todo-types";
 
-// Helper to map recurrence type to the appropriate display number
-const getRecurrenceNumber = (type) => {
+const getRecurrenceNumber = (type: RecurrenceType): number | null => {
   switch (type) {
     case "daily":
       return 1;
@@ -15,23 +15,26 @@ const getRecurrenceNumber = (type) => {
   }
 };
 
-function TodoItem({ todo, onToggle, onDelete, onEdit }) {
+interface TodoItemProps {
+  todo: Todo;
+  onToggle: (id: string) => void;
+  onDelete: (todo: Todo) => void;
+  onEdit: (todo: Todo) => void;
+}
+
+function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
   const showTally = todo.recurrenceType !== "none" && todo.completionCount > 0;
   const isRecurring = todo.recurrenceType !== "none";
   const isHoldTask = todo.interactionType === "hold";
 
-  // State
   const [isHolding, setIsHolding] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Refs
-  const holdTimeoutRef = useRef(null);
-  const menuRef = useRef(null);
+  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Constants
-  const HOLD_DURATION = 1000; //1 sec
+  const HOLD_DURATION = 1000;
 
-  // --- HANDLERS ---
   const handleHoldStart = () => {
     if (!todo.completed) setIsHolding(true);
   };
@@ -55,22 +58,31 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
     }
   };
 
-  // --- EFFECTS ---
   useEffect(() => {
     if (isHolding) {
       holdTimeoutRef.current = setTimeout(() => {
         onToggle(todo._id);
         setIsHolding(false);
       }, HOLD_DURATION);
-    } else {
-      if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+    } else if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
     }
-    return () => clearTimeout(holdTimeoutRef.current);
+
+    return () => {
+      if (holdTimeoutRef.current) {
+        clearTimeout(holdTimeoutRef.current);
+      }
+    };
   }, [isHolding, onToggle, todo._id]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (
+        menuRef.current &&
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
         setIsMenuOpen(false);
       }
     };
@@ -85,7 +97,6 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
     };
   }, [isMenuOpen]);
 
-  // --- RENDER ---
   return (
     <div
       className={`group relative flex items-center bg-powder-800 border border-powder-700 p-5 rounded-2xl transition-all select-none cursor-pointer ${
@@ -98,7 +109,6 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
       onTouchEnd={isHoldTask ? handleHoldEnd : undefined}
       onClick={handleCardClick}
     >
-      {/* Progress fill bar */}
       {isHoldTask && !todo.completed && (
         <div
           className="absolute inset-0 bg-powder-900 z-0 rounded-2xl"
@@ -111,9 +121,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
         />
       )}
 
-      {/* Content wrapper */}
       <div className="relative z-10 flex items-center flex-1">
-        {/* Checkbox (Non-Hold Tasks) */}
         {!isHoldTask && (
           <div
             className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-all duration-200 ease-in-out ${
@@ -128,7 +136,6 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
           </div>
         )}
 
-        {/* Text Content */}
         <span
           className={`flex-1 transition-colors flex items-center justify-between gap-3 ${
             todo.completed ? "text-cloud-500" : "text-cloud-400"
@@ -145,11 +152,10 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
             )}
           </div>
 
-          {/* Metadata Icons */}
           <div className="flex items-center gap-2">
             {isRecurring && (
               <div
-                className={`flex items-center transition-colors text-electric`}
+                className="flex items-center transition-colors text-electric"
                 title={`Resets every ${getRecurrenceNumber(
                   todo.recurrenceType
                 )} days`}
@@ -166,7 +172,6 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
           </div>
         </span>
 
-        {/* --- MENU SECTION --- */}
         <div className="relative" ref={menuRef}>
           <button
             onMouseDown={(e) => e.stopPropagation()}
@@ -221,3 +226,4 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
 }
 
 export default TodoItem;
+
