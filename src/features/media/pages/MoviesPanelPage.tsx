@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useMediaLogs } from "../hooks/useMediaLogs";
 import AddLogModal from "../components/AddLogModal";
+import EditLogModal from "../components/EditLogModal";
 import MediaLogCard from "../components/MediaLogCard";
+import type { MediaLog } from "../types/media-types";
 
 function MoviesPanelPage() {
-  const { logs, loading, createLog, deleteLog } = useMediaLogs("movie");
+  const { logs, loading, createLog, updateLog, deleteLog } = useMediaLogs("movie");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editLog, setEditLog] = useState<MediaLog | null>(null);
 
   const movies = logs;
 
@@ -38,7 +41,12 @@ function MoviesPanelPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {movies.map((log) => (
-            <MediaLogCard key={log._id} log={log} onDelete={deleteLog} />
+            <MediaLogCard
+              key={log._id}
+              log={log}
+              onEdit={setEditLog}
+              onDelete={deleteLog}
+            />
           ))}
         </div>
       )}
@@ -48,6 +56,15 @@ function MoviesPanelPage() {
         onClose={() => setModalOpen(false)}
         presetType="movie"
         onCreate={createLog}
+      />
+      <EditLogModal
+        isOpen={editLog !== null}
+        onClose={() => setEditLog(null)}
+        log={editLog}
+        onUpdate={async (id, payload) => {
+          await updateLog(id, payload);
+          setEditLog(null);
+        }}
       />
     </>
   );
