@@ -22,7 +22,7 @@ function MediaDashboardPage() {
               className={({ isActive }) =>
                 `px-4 py-2 rounded-xl transition-colors font-medium ${
                   isActive
-                    ? "bg-[#7eb8d4] text-[#141414]"
+                    ? "bg-[#5bb8e8] text-[#141414]"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`
               }

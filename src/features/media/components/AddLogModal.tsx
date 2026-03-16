@@ -1,4 +1,5 @@
 import { useState, KeyboardEvent } from "react";
+import { Star } from "lucide-react";
 import { MEDIA_TYPE_LABELS, type MediaLogType } from "../types/media-types";
 import {
   Dialog,
@@ -11,7 +12,6 @@ import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Textarea } from "../../../components/ui/textarea";
-import { Slider } from "../../../components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -161,20 +161,23 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Rating</Label>
-              <span
-                className="text-sm font-semibold tabular-nums"
-                style={{ color: "var(--rating)" }}
-              >
+              <span className="text-sm font-semibold tabular-nums" style={{ color: "#5bb8e8" }}>
                 {rating}/10
               </span>
             </div>
-            <Slider
-              min={1}
-              max={10}
-              step={1}
-              value={[rating]}
-              onValueChange={([val]) => setRating(val)}
-            />
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 10 }, (_, i) => (
+                <Star
+                  key={i}
+                  className="w-5 h-5 cursor-pointer rounded-sm"
+                  style={{
+                    fill: i < rating ? "#5bb8e8" : "#2e2e2e",
+                    color: i < rating ? "#5bb8e8" : "#2e2e2e",
+                  }}
+                  onClick={() => setRating(i + 1)}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="space-y-1.5">
