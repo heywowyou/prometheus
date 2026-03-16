@@ -8,7 +8,7 @@ interface AppShellProps {
 
 function AppShell({ children }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-background text-text font-sans">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       <Header />
       <div className="max-w-7xl mx-auto px-6 py-6">
         <nav className="mb-8 flex gap-1 border-b border-border pb-3 text-sm">
@@ -23,10 +23,10 @@ function AppShell({ children }: AppShellProps) {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `px-4 py-2 rounded-md transition-colors ${
+                `px-4 py-2 rounded-sm transition-colors text-sm font-medium ${
                   isActive
-                    ? "bg-accent text-background font-semibold"
-                    : "text-text-muted hover:text-text hover:bg-surface"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`
               }
             >
@@ -41,4 +41,3 @@ function AppShell({ children }: AppShellProps) {
 }
 
 export default AppShell;
-

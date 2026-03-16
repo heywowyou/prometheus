@@ -1,5 +1,22 @@
 import { useState, useEffect } from "react";
 import type { Todo, RecurrenceType } from "../types/todo-types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../../../components/ui/dialog";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 
 interface EditTaskModalProps {
   isOpen: boolean;
@@ -37,10 +54,8 @@ function EditTaskModal({
     }
   }, [task, isOpen]);
 
-  if (!isOpen || !task) return null;
-
   const handleSave = () => {
-    if (!text.trim()) return;
+    if (!task || !text.trim()) return;
 
     onUpdate(task._id, {
       text,
@@ -51,93 +66,89 @@ function EditTaskModal({
     onClose();
   };
 
-  const inputClass =
-    "w-full bg-background border border-border rounded-lg px-4 py-2.5 focus:outline-none focus:border-accent transition-colors text-text";
-  const labelClass =
-    "block text-xs font-medium text-text-muted mb-1 uppercase tracking-wide";
-
   return (
-    <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
-      <div className="bg-surface p-6 rounded-xl shadow-2xl w-full max-w-sm border border-border">
-        <h2 className="font-sans text-2xl font-bold text-text mb-4">
-          Edit Task
-        </h2>
+    <Dialog open={isOpen && task !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Edit Task</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <label className={labelClass}>Description</label>
-            <input
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label>Description</Label>
+            <Input
               type="text"
-              className={inputClass}
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Recurrence</label>
-            <select
+          <div className="space-y-1.5">
+            <Label>Recurrence</Label>
+            <Select
               value={recurrence}
-              onChange={(e) =>
-                setRecurrence(e.target.value as RecurrenceType)
-              }
-              className={`${inputClass} cursor-pointer`}
+              onValueChange={(value) => setRecurrence(value as RecurrenceType)}
             >
-              <option value="none">One-Time</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">One-Time</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Mode</label>
-              <select
+            <div className="space-y-1.5">
+              <Label>Mode</Label>
+              <Select
                 value={interactionType}
-                onChange={(e) =>
-                  setInteractionType(e.target.value as Todo["interactionType"])
+                onValueChange={(value) =>
+                  setInteractionType(value as Todo["interactionType"])
                 }
-                className={`${inputClass} px-3 cursor-pointer`}
               >
-                <option value="checkbox">Checkbox</option>
-                <option value="hold">Hold to Fill</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="checkbox">Checkbox</SelectItem>
+                  <SelectItem value="hold">Hold to Fill</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div
               className={
                 interactionType === "hold"
-                  ? "opacity-100"
-                  : "opacity-30 pointer-events-none"
+                  ? "space-y-1.5 opacity-100"
+                  : "space-y-1.5 opacity-30 pointer-events-none"
               }
             >
-              <label className={labelClass}>Target (Mins)</label>
-              <input
+              <Label>Target (Mins)</Label>
+              <Input
                 type="number"
                 min={1}
-                className={`${inputClass} px-3`}
                 value={durationGoal}
                 onChange={(e) => setDurationGoal(Number(e.target.value))}
                 disabled={interactionType !== "hold"}
               />
             </div>
           </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-text-muted hover:text-text transition-colors"
-            >
-              Cancel
-            </button>
-            <button onClick={handleSave} className="btn-primary px-6 py-2">
-              Save Changes
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={!text.trim()}>
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

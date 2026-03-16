@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Flame } from "lucide-react";
 import type { Todo } from "../types/todo-types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../../../components/ui/dialog";
+import { Button } from "../../../components/ui/button";
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -17,14 +25,14 @@ function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   const [isReadyToConfirm, setIsReadyToConfirm] = useState(false);
 
-  if (!isOpen) {
-    if (isReadyToConfirm) setIsReadyToConfirm(false);
-    return null;
-  }
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setIsReadyToConfirm(false);
+      onClose();
+    }
+  };
 
-  if (!task) {
-    return null;
-  }
+  if (!task) return null;
 
   const isHighValue =
     task.recurrenceType !== "none" && task.completionCount > 0;
@@ -34,83 +42,81 @@ function DeleteConfirmModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
-      <div className="bg-surface p-8 rounded-xl shadow-2xl w-full max-w-lg border border-border">
-        <h2 className="font-sans text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-          {isHighValue ? <Flame className="w-5 h-5" /> : null}
-          {isReadyToConfirm ? "Confirm Permanently" : "Confirm Deletion"}
-        </h2>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-red-400">
+            {isHighValue ? <Flame className="w-4 h-4" /> : null}
+            {isReadyToConfirm ? "Confirm Permanently" : "Confirm Deletion"}
+          </DialogTitle>
+        </DialogHeader>
 
         {!isReadyToConfirm && (
           <>
-            {isHighValue ? (
-              <p className="text-text mb-4">
-                You are about to delete your recurring task{" "}
-                <strong className="text-text">&quot;{task.text}&quot;</strong>. This will
-                delete your{" "}
-                <strong className="text-red-400">
-                  {task.completionCount}
-                </strong>{" "}
-                streak.
-                <br />
-                <br />
-                <span className="font-semibold">
-                  Click &apos;Proceed&apos; to confirm.
-                </span>
-              </p>
-            ) : (
-              <p className="text-text mb-4">
-                Are you sure you want to delete your task{" "}
-                <strong className="text-text">&quot;{task.text}&quot;</strong>?
-                <br />
-                <br />
-                Click &apos;Proceed&apos; to continue.
-              </p>
-            )}
+            <div className="py-2 text-sm text-foreground">
+              {isHighValue ? (
+                <p>
+                  You are about to delete your recurring task{" "}
+                  <strong>&quot;{task.text}&quot;</strong>. This will delete
+                  your{" "}
+                  <strong className="text-red-400">{task.completionCount}</strong>{" "}
+                  streak.
+                  <br />
+                  <br />
+                  <span className="font-semibold">
+                    Click &apos;Proceed&apos; to confirm.
+                  </span>
+                </p>
+              ) : (
+                <p>
+                  Are you sure you want to delete your task{" "}
+                  <strong>&quot;{task.text}&quot;</strong>?
+                  <br />
+                  <br />
+                  Click &apos;Proceed&apos; to continue.
+                </p>
+              )}
+            </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-text-muted hover:text-text transition-colors"
-              >
+            <DialogFooter>
+              <Button variant="ghost" onClick={onClose}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={() => setIsReadyToConfirm(true)}
-                className="bg-red-500 hover:bg-red-600 text-white font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer"
               >
                 Proceed
-              </button>
-            </div>
+              </Button>
+            </DialogFooter>
           </>
         )}
 
         {isReadyToConfirm && (
           <>
-            <p className="text-text mb-4">
-              <strong className="text-red-400">WARNING:</strong> This action
-              cannot be undone. Your task and all history will be permanently
-              erased.
-            </p>
+            <div className="py-2 text-sm text-foreground">
+              <p>
+                <strong className="text-red-400">WARNING:</strong> This action
+                cannot be undone. Your task and all history will be permanently
+                erased.
+              </p>
+            </div>
 
-            <div className="flex justify-between gap-3 pt-2">
-              <button
+            <DialogFooter className="sm:justify-between">
+              <Button
+                variant="outline"
                 onClick={() => setIsReadyToConfirm(false)}
-                className="px-4 py-2 text-text-muted hover:text-text transition-colors border border-border rounded-lg"
               >
                 Go Back
-              </button>
-              <button
-                onClick={handleFinalConfirm}
-                className="bg-red-700 hover:bg-red-800 text-white font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer"
-              >
+              </Button>
+              <Button variant="destructive" onClick={handleFinalConfirm}>
                 Yes, Delete Forever
-              </button>
-            </div>
+              </Button>
+            </DialogFooter>
           </>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

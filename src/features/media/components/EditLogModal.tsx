@@ -1,6 +1,25 @@
 import { useState, useEffect, KeyboardEvent } from "react";
 import { MEDIA_TYPE_LABELS, type MediaLog, type MediaLogType } from "../types/media-types";
 import type { UpdateMediaLogPayload } from "../api/media-api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "../../../components/ui/dialog";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Textarea } from "../../../components/ui/textarea";
+import { Slider } from "../../../components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
 
 interface EditLogModalProps {
   isOpen: boolean;
@@ -39,9 +58,7 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
     }
   }, [log]);
 
-  if (!isOpen || !log) {
-    return null;
-  }
+  if (!log) return null;
 
   const type: MediaLogType = log.type;
 
@@ -73,31 +90,26 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
     if (e.key === "Enter") void handleSaveAndClose();
   };
 
-  const inputClass =
-    "w-full bg-background border border-border rounded-lg px-4 py-3 focus:outline-none focus:border-accent transition-colors text-text";
-  const labelClass = "block text-sm font-medium text-text-muted mb-1";
-
   return (
-    <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
-      <div className="bg-surface p-6 rounded-xl shadow-2xl w-full max-w-md border border-border max-h-[90vh] overflow-y-auto">
-        <h2 className="font-sans text-2xl font-bold text-text mb-4">
-          Edit log
-        </h2>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit log</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <label className={labelClass}>Type</label>
-            <div className="w-full bg-background border border-border rounded-lg px-4 py-3 text-text">
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label>Type</Label>
+            <div className="flex h-9 w-full items-center rounded-sm border border-border bg-secondary px-3 text-sm text-muted-foreground">
               {MEDIA_TYPE_LABELS[type]}
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>Title *</label>
-            <input
+          <div className="space-y-1.5">
+            <Label>Title *</Label>
+            <Input
               type="text"
               placeholder="Title"
-              className={inputClass}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -105,36 +117,38 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Date</label>
-            <input
+          <div className="space-y-1.5">
+            <Label>Date</Label>
+            <Input
               type="date"
-              className={inputClass}
               value={date}
               onChange={(e) => setDate(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Status</label>
-            <select
+          <div className="space-y-1.5">
+            <Label>Status</Label>
+            <Select
               value={status}
-              onChange={(e) =>
-                setStatus(e.target.value as "finished" | "in_progress")
+              onValueChange={(value) =>
+                setStatus(value as "finished" | "in_progress")
               }
-              className={`${inputClass} cursor-pointer`}
             >
-              <option value="finished">Finished</option>
-              <option value="in_progress">In progress</option>
-            </select>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="finished">Finished</SelectItem>
+                <SelectItem value="in_progress">In progress</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {type === "movie" && (
-            <div>
-              <label className={labelClass}>Director</label>
-              <input
+            <div className="space-y-1.5">
+              <Label>Director</Label>
+              <Input
                 type="text"
-                className={inputClass}
                 value={director}
                 onChange={(e) => setDirector(e.target.value)}
               />
@@ -143,21 +157,19 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
 
           {type === "book" && (
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass}>Author</label>
-                <input
+              <div className="space-y-1.5">
+                <Label>Author</Label>
+                <Input
                   type="text"
-                  className={inputClass}
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                 />
               </div>
-              <div>
-                <label className={labelClass}>Pages</label>
-                <input
+              <div className="space-y-1.5">
+                <Label>Pages</Label>
+                <Input
                   type="number"
                   min={1}
-                  className={inputClass}
                   value={pages}
                   onChange={(e) => setPages(e.target.value)}
                 />
@@ -166,86 +178,78 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
           )}
 
           {type === "music_album" && (
-            <div>
-              <label className={labelClass}>Artist</label>
-              <input
+            <div className="space-y-1.5">
+              <Label>Artist</Label>
+              <Input
                 type="text"
-                className={inputClass}
                 value={artist}
                 onChange={(e) => setArtist(e.target.value)}
               />
             </div>
           )}
 
-          <div>
-            <label className={labelClass}>Review</label>
-            <textarea
-              className={`${inputClass} min-h-[80px]`}
+          <div className="space-y-1.5">
+            <Label>Review</Label>
+            <Textarea
               placeholder="What did you think?"
               value={review}
               onChange={(e) => setReview(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className={labelClass}>URL</label>
-            <input
+          <div className="space-y-1.5">
+            <Label>URL</Label>
+            <Input
               type="url"
               placeholder="https://..."
-              className={inputClass}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Cover image URL</label>
-            <input
+          <div className="space-y-1.5">
+            <Label>Cover image URL</Label>
+            <Input
               type="url"
               placeholder="https://..."
-              className={inputClass}
               value={cover}
               onChange={(e) => setCover(e.target.value)}
             />
           </div>
 
-          <div>
-            <label className={labelClass}>Rating (1–10)</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min={1}
-                max={10}
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="flex-1 h-2 bg-border rounded-lg appearance-none cursor-pointer accent-accent"
-              />
-              <span className="text-accent font-semibold w-8 tabular-nums">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Rating</Label>
+              <span
+                className="text-sm font-semibold tabular-nums"
+                style={{ color: "var(--rating)" }}
+              >
                 {rating}/10
               </span>
             </div>
+            <Slider
+              min={1}
+              max={10}
+              step={1}
+              value={[rating]}
+              onValueChange={([val]) => setRating(val)}
+            />
           </div>
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-2.5 px-4 rounded-lg border border-border text-text-muted hover:bg-surface-hover transition-colors"
-          >
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={() => void handleSaveAndClose()}
             disabled={!title.trim() || submitting}
-            className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Saving…" : "Save changes"}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -1,23 +1,57 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Semantic tokens – Musicboard-inspired dark theme (single source of truth)
-        background: "#0e0f11",
-        surface: "#181a1c",
-        "surface-hover": "#1e2023",
-        border: "#242527",
-        "border-muted": "#2d2f32",
-        text: "#E4E6EA",
-        "text-muted": "#A0A1A4",
-        accent: "#3b82f6", // Softer blue for CTAs and active states
-        "accent-hover": "#60a5fa",
+        // Mapped to CSS variables defined in index.css
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
+        },
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+        },
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        // Semantic aliases for legacy code still using these names
+        surface: "var(--secondary)",
+        "surface-hover": "var(--accent)",
+        text: "var(--foreground)",
+        "text-muted": "var(--muted-foreground)",
       },
       fontFamily: {
         sans: ["Roboto", "sans-serif"],
         serif: ["EB Garamond", "serif"],
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 2px)",
       },
     },
   },

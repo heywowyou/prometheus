@@ -1,3 +1,4 @@
+import { Pencil, Trash2 } from "lucide-react";
 import type { MediaLog } from "../types/media-types";
 import { MEDIA_TYPE_LABELS } from "../types/media-types";
 
@@ -37,9 +38,9 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
   })();
 
   return (
-    <article className="bg-surface rounded-xl border border-border overflow-hidden hover:border-border-muted transition-colors flex flex-col">
-      {/* Cover-first: poster on top (Musicboard-style) */}
-      <div className="aspect-[2/3] w-full flex-shrink-0 bg-background flex items-center justify-center overflow-hidden">
+    <article className="bg-card rounded-sm border border-border overflow-hidden hover:border-muted transition-colors flex flex-col group">
+      {/* Cover-first: poster on top */}
+      <div className="aspect-[2/3] w-full flex-shrink-0 bg-secondary flex items-center justify-center overflow-hidden relative">
         {coverUrl ? (
           <img
             src={coverUrl}
@@ -51,112 +52,92 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
             }}
           />
         ) : (
-          <span className="text-border-muted text-4xl">◆</span>
+          <span className="text-muted-foreground text-4xl opacity-30">◆</span>
         )}
-      </div>
-      <div className="p-3 flex flex-col flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            {linkUrl ? (
-              <a
-                href={linkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-text hover:text-accent truncate block"
-              >
-                {displayTitle}
-              </a>
-            ) : (
-              <span className="font-semibold text-text truncate block">
-                {displayTitle}
-              </span>
-            )}
-            <span className="text-xs text-text-muted uppercase tracking-wider block">
-              {typeLabel}
-            </span>
-            {secondaryLine && (
-              <span className="text-xs text-text-muted truncate block">
-                {secondaryLine}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
+        {/* Hover actions overlay */}
+        {(onEdit || onDelete) && (
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             {onEdit && (
               <button
                 type="button"
                 onClick={() => onEdit(log)}
-                className="text-text-muted hover:text-accent p-1 rounded transition-colors"
+                className="p-2 rounded-sm bg-card/80 text-foreground hover:bg-card transition-colors"
                 aria-label="Edit"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
+                <Pencil className="h-3.5 w-3.5" />
               </button>
             )}
             {onDelete && (
               <button
                 type="button"
                 onClick={() => onDelete(log._id)}
-                className="text-text-muted hover:text-red-400 p-1 rounded transition-colors"
+                className="p-2 rounded-sm bg-card/80 text-red-400 hover:bg-card transition-colors"
                 aria-label="Delete"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
+        )}
+      </div>
+
+      <div className="p-3 flex flex-col flex-1 min-w-0">
+        <div className="min-w-0">
+          {linkUrl ? (
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-sm text-foreground hover:text-muted-foreground truncate block leading-tight"
+            >
+              {displayTitle}
+            </a>
+          ) : (
+            <span className="font-semibold text-sm text-foreground truncate block leading-tight">
+              {displayTitle}
+            </span>
+          )}
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mt-0.5">
+            {typeLabel}
+          </span>
+          {secondaryLine && (
+            <span className="text-xs text-muted-foreground truncate block mt-0.5">
+              {secondaryLine}
+            </span>
+          )}
         </div>
+
         <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1">
-            <span className="text-accent font-semibold tabular-nums text-sm">
+            <span
+              className="font-semibold tabular-nums text-sm"
+              style={{ color: "var(--rating)" }}
+            >
               {log.rating}/10
             </span>
-            <span className="text-text-muted text-xs">★</span>
           </div>
           <div className="flex items-center gap-2">
             {log.status && (
               <span
-                className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                className={`text-[10px] px-1.5 py-0.5 rounded-sm uppercase tracking-wide ${
                   log.status === "finished"
                     ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700/60"
                     : "bg-amber-600/20 text-amber-300 border border-amber-700/60"
                 }`}
               >
-                {log.status === "finished" ? "Finished" : "In progress"}
+                {log.status === "finished" ? "Done" : "In progress"}
               </span>
             )}
             {dateLabel && (
-              <span className="text-xs text-text-muted tabular-nums">
+              <span className="text-[10px] text-muted-foreground tabular-nums">
                 {dateLabel}
               </span>
             )}
           </div>
         </div>
+
         {log.review && (
-          <p className="mt-2 text-xs text-text-muted line-clamp-2">
+          <p className="mt-2 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
             {log.review}
           </p>
         )}

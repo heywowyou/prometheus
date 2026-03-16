@@ -3,43 +3,133 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --radius: 0.1875rem;
+
+    /* Core palette */
+    --background: #141414;
+    --foreground: #e8e8e8;
+
+    /* Card / surface */
+    --card: #222222;
+    --card-foreground: #e8e8e8;
+
+    /* Popover (dropdowns, tooltips) */
+    --popover: #1e1e1e;
+    --popover-foreground: #e8e8e8;
+
+    /* Primary action (solid foreground-colored buttons) */
+    --primary: #e8e8e8;
+    --primary-foreground: #141414;
+
+    /* Secondary (ghost/outline default) */
+    --secondary: #2a2a2a;
+    --secondary-foreground: #e8e8e8;
+
+    /* Muted / disabled */
+    --muted: #2a2a2a;
+    --muted-foreground: #888888;
+
+    /* Accent (hover/highlight, NOT for ratings) */
+    --accent: #2a2a2a;
+    --accent-foreground: #e8e8e8;
+
+    /* Destructive */
+    --destructive: #c0392b;
+
+    /* Borders & inputs */
+    --border: #2e2e2e;
+    --input: #2e2e2e;
+    --ring: #555555;
+
+    /* Custom: used ONLY for ratings/scores */
+    --rating: #7eb8d4;
+
+    /* Navbar surface */
+    --navbar: #1a1a1a;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
   body {
-    @apply font-sans;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Radix/shadcn animation keyframes */
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
   }
 }
 
 @layer components {
-  /* Abstraction of the task columns */
-  .task-column {
-    @apply flex flex-col;
-  }
-
-  /* Header layout above the task lists */
-  .column-header {
-    @apply flex items-center justify-between mb-3 px-1;
-  }
-
-  /* Container for the todo items */
-  .task-list-container {
-    @apply min-h-[200px] flex flex-col space-y-3 p-0 rounded-xl;
-  }
-
-  /* Consistent styling for the task counters – semantic tokens */
-  .badge-count {
-    @apply text-text-muted text-sm font-medium bg-surface border border-border px-2 py-0.5 rounded-full;
-  }
-
-  /* Reusable primary button – semantic accent */
-  .btn-primary {
-    @apply flex items-center gap-2 bg-accent/90 hover:bg-accent-hover text-background font-medium px-5 py-2.5 rounded-lg transition-all shadow-lg shadow-accent/10 active:scale-95;
-  }
-
-  /* Editorial page/section titles (Musicboard-style) */
+  /* Editorial page/section titles */
   .page-title {
-    @apply font-sans text-3xl font-bold text-text tracking-tight;
+    @apply font-sans text-3xl font-bold tracking-tight;
+    color: var(--foreground);
   }
 
   .section-title {
-    @apply font-sans text-xl font-semibold text-text;
+    @apply font-sans text-xl font-semibold;
+    color: var(--foreground);
+  }
+}
+
+@layer utilities {
+  /* shadcn animate-in / animate-out helpers */
+  .animate-in {
+    animation-name: enter;
+    animation-duration: 150ms;
+    --tw-enter-opacity: initial;
+    --tw-enter-scale: initial;
+    --tw-enter-rotate: initial;
+    --tw-enter-translate-x: initial;
+    --tw-enter-translate-y: initial;
+  }
+  .animate-out {
+    animation-name: exit;
+    animation-duration: 150ms;
+    --tw-exit-opacity: initial;
+    --tw-exit-scale: initial;
+    --tw-exit-rotate: initial;
+    --tw-exit-translate-x: initial;
+    --tw-exit-translate-y: initial;
+  }
+  .fade-in-0 { --tw-enter-opacity: 0; }
+  .fade-out-0 { --tw-exit-opacity: 0; }
+  .zoom-in-95 { --tw-enter-scale: 0.95; }
+  .zoom-out-95 { --tw-exit-scale: 0.95; }
+  .slide-in-from-top-2 { --tw-enter-translate-y: -0.5rem; }
+  .slide-out-to-top-2 { --tw-exit-translate-y: -0.5rem; }
+  .slide-in-from-left-1\/2 { --tw-enter-translate-x: -50%; }
+  .slide-out-to-left-1\/2 { --tw-exit-translate-x: -50%; }
+  .slide-in-from-top-\[48\%\] { --tw-enter-translate-y: -48%; }
+  .slide-out-to-top-\[48\%\] { --tw-exit-translate-y: -48%; }
+
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate(var(--tw-enter-translate-x, 0), var(--tw-enter-translate-y, 0))
+        scale(var(--tw-enter-scale, 1)) rotate(var(--tw-enter-rotate, 0));
+    }
+  }
+  @keyframes exit {
+    to {
+      opacity: var(--tw-exit-opacity, 1);
+      transform: translate(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0))
+        scale(var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
+    }
   }
 }

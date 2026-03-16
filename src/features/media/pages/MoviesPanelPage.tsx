@@ -1,46 +1,40 @@
 import { useState } from "react";
+import { Film, Plus } from "lucide-react";
 import { useMediaLogs } from "../hooks/useMediaLogs";
 import AddLogModal from "../components/AddLogModal";
 import EditLogModal from "../components/EditLogModal";
 import MediaLogCard from "../components/MediaLogCard";
 import type { MediaLog } from "../types/media-types";
+import { Button } from "../../../components/ui/button";
 
 function MoviesPanelPage() {
   const { logs, loading, createLog, updateLog, deleteLog } = useMediaLogs("movie");
   const [modalOpen, setModalOpen] = useState(false);
   const [editLog, setEditLog] = useState<MediaLog | null>(null);
 
-  const movies = logs;
-
   return (
     <>
       <div className="flex items-center justify-between mb-4">
         <h3 className="section-title">Movies</h3>
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="btn-primary"
-        >
-          <span className="text-sm font-semibold">Add movie</span>
-        </button>
+        <Button size="sm" onClick={() => setModalOpen(true)}>
+          <Plus className="w-4 h-4" />
+          Add movie
+        </Button>
       </div>
 
       {loading ? (
-        <div className="text-text-muted">Loading your movies…</div>
-      ) : movies.length === 0 ? (
-        <div className="text-center py-12 bg-surface rounded-2xl border border-border border-dashed">
-          <p className="text-text-muted mb-3">No movies logged yet.</p>
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="text-accent hover:underline"
-          >
+        <div className="text-muted-foreground text-sm">Loading your movies…</div>
+      ) : logs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-sm text-center gap-4">
+          <Film className="w-10 h-10 text-muted-foreground opacity-40" />
+          <p className="text-muted-foreground text-sm">No movies logged yet.</p>
+          <Button variant="outline" size="sm" onClick={() => setModalOpen(true)}>
             Log your first movie
-          </button>
+          </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
-          {movies.map((log) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {logs.map((log) => (
             <MediaLogCard
               key={log._id}
               log={log}
@@ -71,4 +65,3 @@ function MoviesPanelPage() {
 }
 
 export default MoviesPanelPage;
-

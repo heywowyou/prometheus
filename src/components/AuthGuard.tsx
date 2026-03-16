@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { useUser, SignInButton } from "@clerk/clerk-react";
+import { Button } from "./ui/button";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -11,26 +12,22 @@ function AuthGuard({ children, description }: AuthGuardProps) {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-[400px] bg-surface flex justify-center items-center rounded-2xl border border-border">
-        <span className="text-text-muted">Loading...</span>
+      <div className="min-h-[400px] flex justify-center items-center rounded-sm border border-border bg-card">
+        <span className="text-muted-foreground text-sm">Loading...</span>
       </div>
     );
   }
 
   if (!isSignedIn) {
     return (
-      <div className="flex flex-col items-center justify-center mt-20 text-center space-y-6">
-        <div className="bg-surface p-8 rounded-2xl shadow-xl border border-border max-w-md w-full">
-          <h2 className="font-sans text-2xl font-bold text-text mb-3">
-            Welcome Back
-          </h2>
-          <p className="text-text-muted mb-8">
+      <div className="flex flex-col items-center justify-center mt-20 text-center">
+        <div className="bg-card border border-border rounded-sm p-8 max-w-sm w-full space-y-5">
+          <h2 className="font-sans text-xl font-semibold text-foreground">Welcome Back</h2>
+          <p className="text-muted-foreground text-sm">
             {description ?? "Sign in to continue."}
           </p>
           <SignInButton mode="modal">
-            <button className="btn-primary w-full py-3 px-4">
-              Sign In to Continue
-            </button>
+            <Button className="w-full">Sign In to Continue</Button>
           </SignInButton>
         </div>
       </div>
