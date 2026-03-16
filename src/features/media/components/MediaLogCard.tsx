@@ -38,7 +38,7 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
   })();
 
   return (
-    <article className="bg-card rounded-sm border border-border overflow-hidden hover:border-muted transition-colors flex flex-col group">
+    <article className="bg-card rounded-xl border border-border overflow-hidden hover:border-muted transition-colors flex flex-col group">
       {/* Cover-first: poster on top */}
       <div className="aspect-[2/3] w-full flex-shrink-0 bg-secondary flex items-center justify-center overflow-hidden relative">
         {coverUrl ? (
@@ -61,7 +61,7 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
               <button
                 type="button"
                 onClick={() => onEdit(log)}
-                className="p-2 rounded-sm bg-card/80 text-foreground hover:bg-card transition-colors"
+                className="p-2 rounded-xl bg-card/80 text-foreground hover:bg-card transition-colors"
                 aria-label="Edit"
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -71,7 +71,7 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
               <button
                 type="button"
                 onClick={() => onDelete(log._id)}
-                className="p-2 rounded-sm bg-card/80 text-red-400 hover:bg-card transition-colors"
+                className="p-2 rounded-xl bg-card/80 text-red-400 hover:bg-card transition-colors"
                 aria-label="Delete"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -119,7 +119,7 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
           <div className="flex items-center gap-2">
             {log.status && (
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-sm uppercase tracking-wide ${
+                className={`text-[10px] px-1.5 py-0.5 rounded-xl uppercase tracking-wide ${
                   log.status === "finished"
                     ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700/60"
                     : "bg-amber-600/20 text-amber-300 border border-amber-700/60"

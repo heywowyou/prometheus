@@ -99,7 +99,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
 
   return (
     <div
-      className={`group relative flex items-center bg-card border border-border p-4 rounded-sm transition-all select-none cursor-pointer hover:border-border/80 ${
+      className={`group relative flex items-center bg-card border border-border p-4 rounded-xl transition-all select-none cursor-pointer hover:border-border/80 ${
         isMenuOpen ? "z-20" : "z-auto"
       }`}
       onMouseDown={isHoldTask ? handleHoldStart : undefined}
@@ -111,7 +111,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
     >
       {isHoldTask && !todo.completed && (
         <div
-          className="absolute inset-0 bg-secondary z-0 rounded-sm"
+          className="absolute inset-0 bg-secondary z-0 rounded-xl"
           style={{
             width: isHolding ? "100%" : "0%",
             transition: isHolding
@@ -124,7 +124,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
       <div className="relative z-10 flex items-center flex-1">
         {!isHoldTask && (
           <div
-            className={`w-4 h-4 rounded-sm border mr-3 flex items-center justify-center transition-all duration-200 ease-in-out flex-shrink-0 ${
+            className={`w-4 h-4 rounded-xl border mr-3 flex items-center justify-center transition-all duration-200 ease-in-out flex-shrink-0 ${
               todo.completed
                 ? "border-primary bg-primary"
                 : "border-border group-hover:border-muted-foreground"
@@ -178,7 +178,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
               e.stopPropagation();
               setIsMenuOpen(!isMenuOpen);
             }}
-            className={`text-muted-foreground hover:text-foreground transition duration-200 ease-in-out p-1.5 rounded-sm hover:bg-secondary ${
+            className={`text-muted-foreground hover:text-foreground transition duration-200 ease-in-out p-1.5 rounded-xl hover:bg-secondary ${
               isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
             }`}
             title="More options"
@@ -190,7 +190,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
             <div
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className="absolute right-0 top-full mt-1 w-32 bg-popover border border-border rounded-sm shadow-xl z-50 overflow-hidden"
+              className="absolute right-0 top-full mt-1 w-32 bg-popover border border-border rounded-xl shadow-xl z-50 overflow-hidden"
             >
               <button
                 onClick={(e) => {

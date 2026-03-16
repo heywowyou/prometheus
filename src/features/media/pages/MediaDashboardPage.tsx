@@ -20,9 +20,9 @@ function MediaDashboardPage() {
               key={tab.to}
               to={tab.to}
               className={({ isActive }) =>
-                `px-4 py-2 rounded-sm transition-colors font-medium ${
+                `px-4 py-2 rounded-xl transition-colors font-medium ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-[#7eb8d4] text-[#141414]"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`
               }

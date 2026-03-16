@@ -100,7 +100,7 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
             <Label>Type</Label>
-            <div className="flex h-9 w-full items-center rounded-sm border border-border bg-secondary px-3 text-sm text-muted-foreground">
+            <div className="flex h-9 w-full items-center rounded-xl border border-border bg-secondary px-3 text-sm text-muted-foreground">
               {MEDIA_TYPE_LABELS[type]}
             </div>
           </div>

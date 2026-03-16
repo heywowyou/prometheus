@@ -25,7 +25,7 @@ function MusicPanelPage() {
       {loading ? (
         <div className="text-muted-foreground text-sm">Loading your albums…</div>
       ) : logs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-sm text-center gap-4">
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-xl text-center gap-4">
           <Music className="w-10 h-10 text-muted-foreground opacity-40" />
           <p className="text-muted-foreground text-sm">No albums logged yet.</p>
           <Button variant="outline" size="sm" onClick={() => setModalOpen(true)}>

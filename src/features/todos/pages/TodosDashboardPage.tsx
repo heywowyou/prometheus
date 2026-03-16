@@ -95,7 +95,7 @@ function TodosDashboardPage() {
         </div>
 
         {todos.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 border border-dashed border-border rounded-sm text-center gap-4">
+          <div className="flex flex-col items-center justify-center py-24 border border-dashed border-border rounded-xl text-center gap-4">
             <CheckSquare className="w-10 h-10 text-muted-foreground opacity-40" />
             <p className="text-muted-foreground text-sm">Your workspace is empty.</p>
             <Button variant="outline" size="sm" onClick={() => openModal("new")}>

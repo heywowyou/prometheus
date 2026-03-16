@@ -23,9 +23,9 @@ function AppShell({ children }: AppShellProps) {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `px-4 py-2 rounded-sm transition-colors text-sm font-medium ${
+                `px-4 py-2 rounded-xl transition-colors text-sm font-medium ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-[#7eb8d4] text-[#141414]"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`
               }
