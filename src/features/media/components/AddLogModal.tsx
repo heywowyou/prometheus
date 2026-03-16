@@ -65,6 +65,7 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
   const [pages, setPages] = useState<string>("");
   const [artist, setArtist] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleCreateAndClose = async () => {
     if (!title.trim()) return;
@@ -119,6 +120,7 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* — Default fields — */}
           <div className="space-y-1.5">
             <Label>Type</Label>
             {presetType ? (
@@ -156,106 +158,6 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Date</Label>
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Status</Label>
-            <Select
-              value={status}
-              onValueChange={(value) =>
-                setStatus(value as "finished" | "in_progress")
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="finished">Finished</SelectItem>
-                <SelectItem value="in_progress">In progress</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {type === "movie" && (
-            <div className="space-y-1.5">
-              <Label>Director</Label>
-              <Input
-                type="text"
-                value={director}
-                onChange={(e) => setDirector(e.target.value)}
-              />
-            </div>
-          )}
-
-          {type === "book" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Author</Label>
-                <Input
-                  type="text"
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Pages</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={pages}
-                  onChange={(e) => setPages(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
-          {type === "music_album" && (
-            <div className="space-y-1.5">
-              <Label>Artist</Label>
-              <Input
-                type="text"
-                value={artist}
-                onChange={(e) => setArtist(e.target.value)}
-              />
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <Label>Review</Label>
-            <Textarea
-              placeholder="What did you think?"
-              value={review}
-              onChange={(e) => setReview(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>URL</Label>
-            <Input
-              type="url"
-              placeholder="https://..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Cover image URL</Label>
-            <Input
-              type="url"
-              placeholder="https://..."
-              value={cover}
-              onChange={(e) => setCover(e.target.value)}
-            />
-          </div>
-
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Rating</Label>
@@ -273,6 +175,124 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
               value={[rating]}
               onValueChange={([val]) => setRating(val)}
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Date</Label>
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
+
+          {/* — Advanced toggle — */}
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            {showAdvanced ? "Hide advanced options ▴" : "Show advanced options ▾"}
+          </button>
+
+          {/* — Advanced fields — */}
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              showAdvanced ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Status</Label>
+                <Select
+                  value={status}
+                  onValueChange={(value) =>
+                    setStatus(value as "finished" | "in_progress")
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="finished">Finished</SelectItem>
+                    <SelectItem value="in_progress">In progress</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {type === "movie" && (
+                <div className="space-y-1.5">
+                  <Label>Director</Label>
+                  <Input
+                    type="text"
+                    value={director}
+                    onChange={(e) => setDirector(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {type === "book" && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Author</Label>
+                    <Input
+                      type="text"
+                      value={author}
+                      onChange={(e) => setAuthor(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Pages</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={pages}
+                      onChange={(e) => setPages(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {type === "music_album" && (
+                <div className="space-y-1.5">
+                  <Label>Artist</Label>
+                  <Input
+                    type="text"
+                    value={artist}
+                    onChange={(e) => setArtist(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <Label>Review</Label>
+                <Textarea
+                  placeholder="What did you think?"
+                  value={review}
+                  onChange={(e) => setReview(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>URL</Label>
+                <Input
+                  type="url"
+                  placeholder="https://..."
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Cover image URL</Label>
+                <Input
+                  type="url"
+                  placeholder="https://..."
+                  value={cover}
+                  onChange={(e) => setCover(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
         </div>
 
