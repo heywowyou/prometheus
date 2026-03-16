@@ -31,7 +31,11 @@ export const useMediaLogs = (type?: MediaLogType) => {
   const createLog = async (payload: CreateMediaLogPayload) => {
     try {
       const created = await apiCreateLog(payload);
-      setLogs((prev) => [created, ...prev]);
+      setLogs((prev) =>
+        [...prev, created].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+      );
       return created;
     } catch (error) {
       console.error("Failed to create media log:", error);
@@ -43,7 +47,9 @@ export const useMediaLogs = (type?: MediaLogType) => {
     try {
       const updated = await apiUpdateLog(id, payload);
       setLogs((prev) =>
-        prev.map((log) => (log._id === id ? updated : log))
+        prev
+          .map((log) => (log._id === id ? updated : log))
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       );
       return updated;
     } catch (error) {
