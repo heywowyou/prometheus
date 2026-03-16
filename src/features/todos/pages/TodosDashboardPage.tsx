@@ -93,7 +93,7 @@ function TodosDashboardPage() {
     return (
       <div className="flex flex-col items-center justify-center mt-20 text-center space-y-6">
         <div className="bg-surface p-8 rounded-2xl shadow-xl border border-border max-w-md w-full">
-          <h2 className="font-serif text-2xl font-bold text-text mb-3">
+          <h2 className="font-sans text-2xl font-bold text-text mb-3">
             Welcome Back
           </h2>
           <p className="text-text-muted mb-8">

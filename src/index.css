@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply font-sans;
+  }
+}
+
 @layer components {
   /* Abstraction of the task columns */
   .task-column {
@@ -30,10 +36,10 @@
 
   /* Editorial page/section titles (Musicboard-style) */
   .page-title {
-    @apply font-serif text-3xl font-bold text-text tracking-tight;
+    @apply font-sans text-3xl font-bold text-text tracking-tight;
   }
 
   .section-title {
-    @apply font-serif text-xl font-semibold text-text;
+    @apply font-sans text-xl font-semibold text-text;
   }
 }

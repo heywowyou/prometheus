@@ -36,7 +36,7 @@ function DeleteConfirmModal({
   return (
     <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
       <div className="bg-surface p-8 rounded-xl shadow-2xl w-full max-w-lg border border-border">
-        <h2 className="font-serif text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
+        <h2 className="font-sans text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
           {isHighValue ? <Flame className="w-5 h-5" /> : null}
           {isReadyToConfirm ? "Confirm Permanently" : "Confirm Deletion"}
         </h2>

@@ -59,7 +59,7 @@ function EditTaskModal({
   return (
     <div className="fixed inset-0 bg-background/60 backdrop-blur-lg z-50 flex items-center justify-center">
       <div className="bg-surface p-6 rounded-xl shadow-2xl w-full max-w-sm border border-border">
-        <h2 className="font-serif text-2xl font-bold text-text mb-4">
+        <h2 className="font-sans text-2xl font-bold text-text mb-4">
           Edit Task
         </h2>
 
