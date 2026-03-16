@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useApiClient } from "../../../lib/api/api-client";
 import type { MediaLog, MediaLogType } from "../types/media-types";
 
@@ -21,41 +22,42 @@ export interface CreateMediaLogPayload {
 export type UpdateMediaLogPayload = Partial<CreateMediaLogPayload>;
 
 export const useMediaApi = () => {
-  const { withAuth } = useApiClient();
+  const client = useApiClient();
 
-  const fetchLogs = async (type?: MediaLogType): Promise<MediaLog[]> => {
-    const client = await withAuth();
-    const params = type ? { params: { type } } : undefined;
-    const response = await client.get<MediaLog[]>(MEDIA_PATH, params);
-    return response.data;
-  };
+  const fetchLogs = useCallback(
+    async (type?: MediaLogType): Promise<MediaLog[]> => {
+      const params = type ? { params: { type } } : undefined;
+      const response = await client.get<MediaLog[]>(MEDIA_PATH, params);
+      return response.data;
+    },
+    [client]
+  );
 
-  const createLog = async (
-    payload: CreateMediaLogPayload
-  ): Promise<MediaLog> => {
-    const client = await withAuth();
-    const response = await client.post<MediaLog>(MEDIA_PATH, payload);
-    return response.data;
-  };
+  const createLog = useCallback(
+    async (payload: CreateMediaLogPayload): Promise<MediaLog> => {
+      const response = await client.post<MediaLog>(MEDIA_PATH, payload);
+      return response.data;
+    },
+    [client]
+  );
 
-  const updateLog = async (
-    id: string,
-    payload: UpdateMediaLogPayload
-  ): Promise<MediaLog> => {
-    const client = await withAuth();
-    const response = await client.put<MediaLog>(`${MEDIA_PATH}/${id}`, payload);
-    return response.data;
-  };
+  const updateLog = useCallback(
+    async (id: string, payload: UpdateMediaLogPayload): Promise<MediaLog> => {
+      const response = await client.put<MediaLog>(
+        `${MEDIA_PATH}/${id}`,
+        payload
+      );
+      return response.data;
+    },
+    [client]
+  );
 
-  const deleteLog = async (id: string): Promise<void> => {
-    const client = await withAuth();
-    await client.delete(`${MEDIA_PATH}/${id}`);
-  };
+  const deleteLog = useCallback(
+    async (id: string): Promise<void> => {
+      await client.delete(`${MEDIA_PATH}/${id}`);
+    },
+    [client]
+  );
 
-  return {
-    fetchLogs,
-    createLog,
-    updateLog,
-    deleteLog,
-  };
+  return { fetchLogs, createLog, updateLog, deleteLog };
 };

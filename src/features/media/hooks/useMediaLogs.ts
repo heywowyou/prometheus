@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMediaApi } from "../api/media-api";
 import type { MediaLog, MediaLogType } from "../types/media-types";
 import type {
@@ -17,7 +17,7 @@ export const useMediaLogs = (type?: MediaLogType) => {
     deleteLog: apiDeleteLog,
   } = useMediaApi();
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
       const data = await apiFetchLogs(type);
       setLogs(data);
@@ -26,7 +26,7 @@ export const useMediaLogs = (type?: MediaLogType) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiFetchLogs, type]);
 
   const createLog = async (payload: CreateMediaLogPayload) => {
     try {
@@ -63,7 +63,7 @@ export const useMediaLogs = (type?: MediaLogType) => {
 
   useEffect(() => {
     void fetchLogs();
-  }, []);
+  }, [fetchLogs]);
 
   return {
     logs,

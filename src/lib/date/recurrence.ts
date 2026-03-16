@@ -1,4 +1,4 @@
-import type { RecurrenceType } from "../../features/todos/types/todo-types";
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly";
 
 export const getNextResetTime = (
   lastCompletedAt: string | Date | null | undefined,

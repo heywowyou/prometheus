@@ -10,7 +10,7 @@ import GamesPanelPage from "./features/media/pages/GamesPanelPage";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter unstable_useTransitions>
       <AppShell>
         <Routes>
           <Route path="/" element={<Navigate to="/todos" replace />} />

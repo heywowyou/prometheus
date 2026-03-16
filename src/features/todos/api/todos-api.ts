@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useApiClient } from "../../../lib/api/api-client";
 import type { Todo } from "../types/todo-types";
 
@@ -15,39 +16,35 @@ export type UpdateTodoPayload = Partial<CreateTodoPayload> & {
 };
 
 export const useTodosApi = () => {
-  const { withAuth } = useApiClient();
+  const client = useApiClient();
 
-  const fetchTodos = async (): Promise<Todo[]> => {
-    const client = await withAuth();
+  const fetchTodos = useCallback(async (): Promise<Todo[]> => {
     const response = await client.get<Todo[]>(TODOS_PATH);
     return response.data;
-  };
+  }, [client]);
 
-  const createTodo = async (payload: CreateTodoPayload): Promise<Todo> => {
-    const client = await withAuth();
-    const response = await client.post<Todo>(TODOS_PATH, payload);
-    return response.data;
-  };
+  const createTodo = useCallback(
+    async (payload: CreateTodoPayload): Promise<Todo> => {
+      const response = await client.post<Todo>(TODOS_PATH, payload);
+      return response.data;
+    },
+    [client]
+  );
 
-  const updateTodo = async (
-    id: string,
-    payload: UpdateTodoPayload
-  ): Promise<Todo> => {
-    const client = await withAuth();
-    const response = await client.put<Todo>(`${TODOS_PATH}/${id}`, payload);
-    return response.data;
-  };
+  const updateTodo = useCallback(
+    async (id: string, payload: UpdateTodoPayload): Promise<Todo> => {
+      const response = await client.put<Todo>(`${TODOS_PATH}/${id}`, payload);
+      return response.data;
+    },
+    [client]
+  );
 
-  const deleteTodo = async (id: string): Promise<void> => {
-    const client = await withAuth();
-    await client.delete(`${TODOS_PATH}/${id}`);
-  };
+  const deleteTodo = useCallback(
+    async (id: string): Promise<void> => {
+      await client.delete(`${TODOS_PATH}/${id}`);
+    },
+    [client]
+  );
 
-  return {
-    fetchTodos,
-    createTodo,
-    updateTodo,
-    deleteTodo,
-  };
+  return { fetchTodos, createTodo, updateTodo, deleteTodo };
 };
-

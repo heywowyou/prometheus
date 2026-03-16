@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTodosApi } from "../api/todos-api";
 import { getNextResetTime } from "../../../lib/date/recurrence";
 import type {
@@ -17,7 +17,7 @@ export const useTodos = () => {
     deleteTodo: apiDeleteTodo,
   } = useTodosApi();
 
-  const fetchTodos = async () => {
+  const fetchTodos = useCallback(async () => {
     try {
       const data = await apiFetchTodos();
 
@@ -60,7 +60,7 @@ export const useTodos = () => {
       console.error("Failed to fetch todos:", error);
       setLoading(false);
     }
-  };
+  }, [apiFetchTodos]);
 
   const createTodo = async (
     text: string,
@@ -127,7 +127,7 @@ export const useTodos = () => {
 
   useEffect(() => {
     void fetchTodos();
-  }, []);
+  }, [fetchTodos]);
 
   return {
     todos,

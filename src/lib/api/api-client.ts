@@ -1,27 +1,24 @@
 import axios, { type AxiosInstance } from "axios";
 import { useAuth } from "@clerk/clerk-react";
+import { useMemo } from "react";
 
 const BASE_URL: string =
   import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api";
 
-interface ApiClientHook {
-  withAuth: () => Promise<AxiosInstance>;
-}
-
-export const useApiClient = (): ApiClientHook => {
+export const useApiClient = (): AxiosInstance => {
   const { getToken } = useAuth();
 
-  const withAuth = async (): Promise<AxiosInstance> => {
-    const token = await getToken();
+  return useMemo(() => {
+    const client = axios.create({ baseURL: BASE_URL });
 
-    return axios.create({
-      baseURL: BASE_URL,
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-      },
+    client.interceptors.request.use(async (config) => {
+      const token = await getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
     });
-  };
 
-  return { withAuth };
+    return client;
+  }, [getToken]);
 };
-

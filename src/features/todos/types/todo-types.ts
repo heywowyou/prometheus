@@ -1,4 +1,5 @@
-export type RecurrenceType = "none" | "daily" | "weekly" | "monthly";
+import type { RecurrenceType } from "../../../lib/date/recurrence";
+export type { RecurrenceType };
 
 export interface Todo {
   _id: string;

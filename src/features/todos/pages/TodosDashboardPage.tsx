@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { useUser, SignInButton } from "@clerk/clerk-react";
 import { useTodos } from "../hooks/useTodos";
+import AuthGuard from "../../../components/AuthGuard";
 import TodoItem from "../components/TodoItem";
 import NewTaskModal from "../components/NewTaskModal";
 import EditTaskModal from "../components/EditTaskModal";
@@ -16,7 +16,6 @@ interface ModalState {
 
 function TodosDashboardPage() {
   const { todos, createTodo, toggleTodo, deleteTodo, updateTask } = useTodos();
-  const { isLoaded, isSignedIn } = useUser();
 
   const [modalState, setModalState] = useState<ModalState>({
     type: null,
@@ -81,35 +80,8 @@ function TodosDashboardPage() {
     openModal("edit", todo);
   };
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-[400px] bg-surface flex justify-center items-center rounded-2xl border border-border">
-        <span className="text-text-muted">Loading...</span>
-      </div>
-    );
-  }
-
-  if (!isSignedIn) {
-    return (
-      <div className="flex flex-col items-center justify-center mt-20 text-center space-y-6">
-        <div className="bg-surface p-8 rounded-2xl shadow-xl border border-border max-w-md w-full">
-          <h2 className="font-sans text-2xl font-bold text-text mb-3">
-            Welcome Back
-          </h2>
-          <p className="text-text-muted mb-8">
-            Sign in to access your synchronized task list.
-          </p>
-          <SignInButton mode="modal">
-            <button className="btn-primary w-full py-3 px-4">
-              Sign In to Continue
-            </button>
-          </SignInButton>
-        </div>
-      </div>
-    );
-  }
-
   return (
+    <AuthGuard description="Sign in to access your synchronized task list.">
     <>
       <div className="flex items-center justify-between mb-8">
         <h2 className="page-title">Dashboard</h2>
@@ -239,6 +211,7 @@ function TodosDashboardPage() {
         onConfirm={handleFinalDelete}
       />
     </>
+    </AuthGuard>
   );
 }
 
