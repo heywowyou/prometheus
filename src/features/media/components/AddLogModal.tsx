@@ -55,10 +55,9 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
   const [cover, setCover] = useState("");
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
-  const [date, setDate] = useState<string>(() => {
-    const today = new Date();
-    return today.toISOString().slice(0, 10);
-  });
+  const [dateDay, setDateDay] = useState<string>(() => String(new Date().getDate()).padStart(2, "0"));
+  const [dateMonth, setDateMonth] = useState<string>(() => String(new Date().getMonth() + 1).padStart(2, "0"));
+  const [dateYear, setDateYear] = useState<string>(() => String(new Date().getFullYear()));
   const [status, setStatus] = useState<"finished" | "in_progress">("finished");
   const [director, setDirector] = useState("");
   const [author, setAuthor] = useState("");
@@ -79,7 +78,7 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
         cover: cover.trim() || undefined,
         rating,
         review: review.trim() || undefined,
-        date,
+        date: `${dateYear}-${dateMonth}-${dateDay}`,
         status,
         director: type === "movie" ? director.trim() || undefined : undefined,
         author: type === "book" ? author.trim() || undefined : undefined,
@@ -95,7 +94,9 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
       setCover("");
       setRating(5);
       setReview("");
-      setDate(new Date().toISOString().slice(0, 10));
+      setDateDay(String(new Date().getDate()).padStart(2, "0"));
+      setDateMonth(String(new Date().getMonth() + 1).padStart(2, "0"));
+      setDateYear(String(new Date().getFullYear()));
       setStatus("finished");
       setDirector("");
       setAuthor("");
@@ -182,11 +183,37 @@ function AddLogModal({ isOpen, onClose, presetType, onCreate }: AddLogModalProps
 
           <div className="space-y-1.5">
             <Label>Date</Label>
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <div className="flex items-center gap-1.5">
+              <Input
+                type="text"
+                inputMode="numeric"
+                maxLength={2}
+                placeholder="DD"
+                className="w-12 text-center"
+                value={dateDay}
+                onChange={(e) => setDateDay(e.target.value)}
+              />
+              <span className="text-muted-foreground text-sm">/</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                maxLength={2}
+                placeholder="MM"
+                className="w-12 text-center"
+                value={dateMonth}
+                onChange={(e) => setDateMonth(e.target.value)}
+              />
+              <span className="text-muted-foreground text-sm">/</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="YYYY"
+                className="w-16 text-center"
+                value={dateYear}
+                onChange={(e) => setDateYear(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* — Advanced toggle — */}
