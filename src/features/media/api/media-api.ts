@@ -19,7 +19,9 @@ export interface CreateMediaLogPayload {
   artist?: string;
 }
 
-export type UpdateMediaLogPayload = Partial<CreateMediaLogPayload>;
+export type UpdateMediaLogPayload = Partial<Omit<CreateMediaLogPayload, "cover">> & {
+  cover?: CoverImage | null;
+};
 
 export const useMediaApi = () => {
   const client = useApiClient();

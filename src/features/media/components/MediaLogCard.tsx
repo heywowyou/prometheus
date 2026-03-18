@@ -1,4 +1,4 @@
-import { Pencil, Trash2, Star } from "lucide-react";
+import { Pencil, Trash2, Star, ImageIcon } from "lucide-react";
 import type { MediaLog, MediaLogType } from "../types/media-types";
 import { resolveCoverUrl } from "../types/media-types";
 
@@ -61,7 +61,7 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
             }}
           />
         ) : (
-          <span className="text-muted-foreground text-4xl opacity-30">◆</span>
+          <ImageIcon className="w-8 h-8 text-muted-foreground opacity-20" />
         )}
         {/* Hover actions overlay */}
         {(onEdit || onDelete) && (

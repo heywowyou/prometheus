@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Link, Upload } from "lucide-react";
+import { Link, Upload, X } from "lucide-react";
 import type { CoverImage } from "../types/media-types";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -19,8 +19,6 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadCover } = useUploadApi();
 
-  const previewUrl = value?.url || null;
-
   const handleUrlChange = (raw: string) => {
     onChange(raw.trim() ? { url: raw.trim(), source: "external" } : null);
   };
@@ -37,6 +35,8 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
       setUploadError("Upload failed. Please try again.");
     } finally {
       setUploading(false);
+      // Reset so the same file can be re-selected after an error
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -49,32 +49,60 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
 
   return (
     <div className="space-y-2">
+      {/* Header row */}
       <div className="flex items-center justify-between">
         <Label>Cover image</Label>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => setMode("url")}
-            className={modeButtonClass(mode === "url")}
-          >
-            <Link className="w-3 h-3" />
-            URL
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("upload")}
-            className={modeButtonClass(mode === "upload")}
-          >
-            <Upload className="w-3 h-3" />
-            Upload
-          </button>
+        <div className="flex items-center gap-2">
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors"
+            >
+              <X className="w-3 h-3" />
+              Remove
+            </button>
+          )}
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setMode("url")}
+              className={modeButtonClass(mode === "url")}
+            >
+              <Link className="w-3 h-3" />
+              URL
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("upload")}
+              className={modeButtonClass(mode === "upload")}
+            >
+              <Upload className="w-3 h-3" />
+              Upload
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Current cover preview */}
+      {value?.url && (
+        <div className="w-14 aspect-square overflow-hidden rounded-lg border border-border">
+          <img
+            src={value.url}
+            alt="Cover preview"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        </div>
+      )}
+
+      {/* Input controls — always visible for entering or replacing */}
       {mode === "url" ? (
         <Input
           type="url"
-          placeholder="https://..."
+          placeholder={value ? "Paste a new URL to replace…" : "https://…"}
           value={value?.source === "external" ? value.url : ""}
           onChange={(e) => handleUrlChange(e.target.value)}
         />
@@ -94,24 +122,11 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
             className="w-full h-9 flex items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-muted transition-colors disabled:opacity-50"
           >
             <Upload className="w-3.5 h-3.5" />
-            {uploading ? "Uploading…" : "Choose file"}
+            {uploading ? "Uploading…" : value ? "Choose a replacement file" : "Choose file"}
           </button>
           {uploadError && (
             <p className="text-xs text-red-400 mt-1">{uploadError}</p>
           )}
-        </div>
-      )}
-
-      {previewUrl && (
-        <div className="w-14 aspect-square overflow-hidden rounded-lg border border-border">
-          <img
-            src={previewUrl}
-            alt="Cover preview"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
         </div>
       )}
     </div>

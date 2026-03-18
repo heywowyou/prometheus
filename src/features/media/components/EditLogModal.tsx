@@ -1,8 +1,9 @@
-import { useState, useEffect, KeyboardEvent } from "react";
+import { useState, useEffect, useRef, KeyboardEvent } from "react";
 import { Star } from "lucide-react";
 import { MEDIA_TYPE_LABELS, type MediaLog, type MediaLogType, type CoverImage } from "../types/media-types";
 import type { UpdateMediaLogPayload } from "../api/media-api";
 import CoverImageInput from "./CoverImageInput";
+import { useUploadApi } from "../api/upload-api";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,10 @@ interface EditLogModalProps {
 }
 
 function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
+  const { deleteCover } = useUploadApi();
+  // Track the original Cloudinary publicId so we can clean it up if the cover changes.
+  const originalCloudinaryId = useRef<string | null>(null);
+
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [cover, setCover] = useState<CoverImage | null>(null);
@@ -50,13 +55,15 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
     if (log) {
       setTitle(log.title);
       setUrl(log.url ?? "");
-      setCover(
+      const resolved: CoverImage | null =
         log.cover
           ? typeof log.cover === "string"
             ? { url: log.cover, source: "external" }
             : log.cover
-          : null
-      );
+          : null;
+      setCover(resolved);
+      originalCloudinaryId.current =
+        resolved?.source === "upload" ? (resolved.publicId ?? null) : null;
       setRating(log.rating);
       setReview(log.review ?? "");
       const d = log.date ? log.date.slice(0, 10) : new Date().toISOString().slice(0, 10);
@@ -80,10 +87,24 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
 
     setSubmitting(true);
     try {
+      // If the original cover was a Cloudinary upload and it's being replaced or removed,
+      // delete the old image from Cloudinary. Failure here is non-blocking.
+      const newPublicId = cover?.source === "upload" ? cover.publicId : null;
+      if (
+        originalCloudinaryId.current &&
+        originalCloudinaryId.current !== newPublicId
+      ) {
+        try {
+          await deleteCover(originalCloudinaryId.current);
+        } catch {
+          // Best-effort — don't block the save if Cloudinary cleanup fails.
+        }
+      }
+
       await onUpdate(log._id, {
         title: title.trim(),
         url: url.trim() || undefined,
-        cover: cover ?? undefined,
+        cover: cover ?? null,
         rating,
         review: review.trim() || undefined,
         date: (dateYear && dateMonth && dateDay) ? `${dateYear}-${dateMonth}-${dateDay}` : undefined,
