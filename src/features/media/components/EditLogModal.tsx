@@ -1,7 +1,8 @@
 import { useState, useEffect, KeyboardEvent } from "react";
 import { Star } from "lucide-react";
-import { MEDIA_TYPE_LABELS, type MediaLog, type MediaLogType } from "../types/media-types";
+import { MEDIA_TYPE_LABELS, type MediaLog, type MediaLogType, type CoverImage } from "../types/media-types";
 import type { UpdateMediaLogPayload } from "../api/media-api";
+import CoverImageInput from "./CoverImageInput";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,7 @@ interface EditLogModalProps {
 function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
-  const [cover, setCover] = useState("");
+  const [cover, setCover] = useState<CoverImage | null>(null);
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [dateDay, setDateDay] = useState("");
@@ -49,7 +50,13 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
     if (log) {
       setTitle(log.title);
       setUrl(log.url ?? "");
-      setCover(log.cover ?? "");
+      setCover(
+        log.cover
+          ? typeof log.cover === "string"
+            ? { url: log.cover, source: "external" }
+            : log.cover
+          : null
+      );
       setRating(log.rating);
       setReview(log.review ?? "");
       const d = log.date ? log.date.slice(0, 10) : new Date().toISOString().slice(0, 10);
@@ -76,7 +83,7 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
       await onUpdate(log._id, {
         title: title.trim(),
         url: url.trim() || undefined,
-        cover: cover.trim() || undefined,
+        cover: cover ?? undefined,
         rating,
         review: review.trim() || undefined,
         date: (dateYear && dateMonth && dateDay) ? `${dateYear}-${dateMonth}-${dateDay}` : undefined,
@@ -278,15 +285,7 @@ function EditLogModal({ isOpen, onClose, log, onUpdate }: EditLogModalProps) {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label>Cover image URL</Label>
-                <Input
-                  type="url"
-                  placeholder="https://..."
-                  value={cover}
-                  onChange={(e) => setCover(e.target.value)}
-                />
-              </div>
+              <CoverImageInput value={cover} onChange={setCover} />
             </div>
           </div>
         </div>

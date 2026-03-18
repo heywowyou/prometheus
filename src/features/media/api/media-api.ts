@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useApiClient } from "../../../lib/api/api-client";
-import type { MediaLog, MediaLogType } from "../types/media-types";
+import type { MediaLog, MediaLogType, CoverImage } from "../types/media-types";
 
 const MEDIA_PATH = "/media";
 
@@ -8,7 +8,7 @@ export interface CreateMediaLogPayload {
   type: MediaLogType;
   title: string;
   url?: string;
-  cover?: string;
+  cover?: CoverImage;
   rating: number;
   review?: string;
   date: string;

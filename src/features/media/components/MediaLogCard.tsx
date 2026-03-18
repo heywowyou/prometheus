@@ -1,5 +1,6 @@
 import { Pencil, Trash2, Star } from "lucide-react";
 import type { MediaLog, MediaLogType } from "../types/media-types";
+import { resolveCoverUrl } from "../types/media-types";
 
 const COVER_ASPECT: Record<MediaLogType, string> = {
   movie: "aspect-[2/3]",
@@ -17,7 +18,7 @@ interface MediaLogCardProps {
 
 function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
   const displayTitle = log.title;
-  const coverUrl = log.cover || null;
+  const coverUrl = resolveCoverUrl(log.cover);
   const linkUrl = log.url || null;
   const dateLabel = (() => {
     if (!log.date) return null;
