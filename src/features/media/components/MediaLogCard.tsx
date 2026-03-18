@@ -1,5 +1,13 @@
 import { Pencil, Trash2, Star } from "lucide-react";
-import type { MediaLog } from "../types/media-types";
+import type { MediaLog, MediaLogType } from "../types/media-types";
+
+const COVER_ASPECT: Record<MediaLogType, string> = {
+  movie: "aspect-[2/3]",
+  tvshow: "aspect-[2/3]",
+  book: "aspect-[2/3]",
+  game: "aspect-[2/3]",
+  music_album: "aspect-square",
+};
 
 interface MediaLogCardProps {
   log: MediaLog;
@@ -38,7 +46,9 @@ function MediaLogCard({ log, onEdit, onDelete }: MediaLogCardProps) {
   return (
     <article className="bg-card rounded-xl border border-border overflow-hidden hover:border-muted transition-colors flex flex-col group">
       {/* Cover poster */}
-      <div className="aspect-[2/3] w-full flex-shrink-0 bg-secondary flex items-center justify-center overflow-hidden relative">
+      <div
+        className={`${COVER_ASPECT[log.type]} w-full flex-shrink-0 bg-secondary flex items-center justify-center overflow-hidden relative`}
+      >
         {coverUrl ? (
           <img
             src={coverUrl}
