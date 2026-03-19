@@ -10,6 +10,8 @@ export interface Todo {
   completionCount: number;
   interactionType: "checkbox" | "hold";
   durationGoal: number;
+  paused?: boolean;
+  pausedAt?: string | null;
   userId: string;
 }
 

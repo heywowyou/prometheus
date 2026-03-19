@@ -18,10 +18,15 @@ export type UpdateTodoPayload = Partial<CreateTodoPayload> & {
 export const useTodosApi = () => {
   const client = useApiClient();
 
-  const fetchTodos = useCallback(async (): Promise<Todo[]> => {
-    const response = await client.get<Todo[]>(TODOS_PATH);
-    return response.data;
-  }, [client]);
+  const fetchTodos = useCallback(
+    async (params?: { paused?: boolean }): Promise<Todo[]> => {
+      const response = await client.get<Todo[]>(TODOS_PATH, {
+        params: params?.paused ? { paused: "true" } : undefined,
+      });
+      return response.data;
+    },
+    [client]
+  );
 
   const createTodo = useCallback(
     async (payload: CreateTodoPayload): Promise<Todo> => {
@@ -39,6 +44,22 @@ export const useTodosApi = () => {
     [client]
   );
 
+  const pauseTodo = useCallback(
+    async (id: string): Promise<Todo> => {
+      const response = await client.patch<Todo>(`${TODOS_PATH}/${id}/pause`);
+      return response.data;
+    },
+    [client]
+  );
+
+  const resumeTodo = useCallback(
+    async (id: string): Promise<Todo> => {
+      const response = await client.patch<Todo>(`${TODOS_PATH}/${id}/resume`);
+      return response.data;
+    },
+    [client]
+  );
+
   const deleteTodo = useCallback(
     async (id: string): Promise<void> => {
       await client.delete(`${TODOS_PATH}/${id}`);
@@ -46,5 +67,5 @@ export const useTodosApi = () => {
     [client]
   );
 
-  return { fetchTodos, createTodo, updateTodo, deleteTodo };
+  return { fetchTodos, createTodo, updateTodo, pauseTodo, resumeTodo, deleteTodo };
 };

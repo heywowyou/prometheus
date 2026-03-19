@@ -14,6 +14,7 @@ export const useTodos = () => {
     fetchTodos: apiFetchTodos,
     createTodo: apiCreateTodo,
     updateTodo: apiUpdateTodo,
+    pauseTodo: apiPauseTodo,
     deleteTodo: apiDeleteTodo,
   } = useTodosApi();
 
@@ -115,6 +116,16 @@ export const useTodos = () => {
     }
   };
 
+  const pauseTodo = async (id: string) => {
+    const apiId = id.replace("-active", "");
+    try {
+      await apiPauseTodo(apiId);
+      setTodos((prev) => prev.filter((t) => t._id !== id));
+    } catch (error) {
+      console.error("Failed to pause todo:", error);
+    }
+  };
+
   const deleteTodo = async (id: string) => {
     try {
       await apiDeleteTodo(id);
@@ -135,6 +146,46 @@ export const useTodos = () => {
     createTodo,
     toggleTodo,
     updateTask,
+    pauseTodo,
     deleteTodo,
+    refetch: fetchTodos,
+  };
+};
+
+export const usePausedTodos = () => {
+  const [pausedTodos, setPausedTodos] = useState<Todo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const { fetchTodos: apiFetchTodos, resumeTodo: apiResumeTodo } = useTodosApi();
+
+  const fetchPaused = useCallback(async () => {
+    try {
+      const data = await apiFetchTodos({ paused: true });
+      setPausedTodos(data);
+    } catch (error) {
+      console.error("Failed to fetch paused todos:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiFetchTodos]);
+
+  const resumeTodo = async (id: string) => {
+    try {
+      await apiResumeTodo(id);
+      setPausedTodos((prev) => prev.filter((t) => t._id !== id));
+    } catch (error) {
+      console.error("Failed to resume todo:", error);
+    }
+  };
+
+  useEffect(() => {
+    void fetchPaused();
+  }, [fetchPaused]);
+
+  return {
+    pausedTodos,
+    loading,
+    resumeTodo,
+    refetch: fetchPaused,
   };
 };

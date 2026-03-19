@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Flame, Repeat2, Pencil, Shredder, Ellipsis } from "lucide-react";
+import { Flame, Repeat2, Pencil, Shredder, Ellipsis, PauseCircle } from "lucide-react";
 import type { Todo, RecurrenceType } from "../types/todo-types";
 
 const getRecurrenceNumber = (type: RecurrenceType): number | null => {
@@ -20,9 +20,10 @@ interface TodoItemProps {
   onToggle: (id: string) => void;
   onDelete: (todo: Todo) => void;
   onEdit: (todo: Todo) => void;
+  onPause?: (id: string) => void;
 }
 
-function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
+function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) {
   const showTally = todo.recurrenceType !== "none" && todo.completionCount > 0;
   const isRecurring = todo.recurrenceType !== "none";
   const isHoldTask = todo.interactionType === "hold";
@@ -203,6 +204,20 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
                 <Pencil className="w-3.5 h-3.5 mr-2" />
                 Edit
               </button>
+
+              {isRecurring && onPause && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPause(todo._id);
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center w-full px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
+                >
+                  <PauseCircle className="w-3.5 h-3.5 mr-2" />
+                  Pause
+                </button>
+              )}
 
               <button
                 onClick={(e) => {

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Plus, CheckSquare } from "lucide-react";
-import { useTodos } from "../hooks/useTodos";
+import { Plus, CheckSquare, ChevronDown, PlayCircle } from "lucide-react";
+import { useTodos, usePausedTodos } from "../hooks/useTodos";
 import AuthGuard from "../../../components/AuthGuard";
 import TodoItem from "../components/TodoItem";
 import NewTaskModal from "../components/NewTaskModal";
@@ -9,6 +9,11 @@ import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import type { Todo } from "../types/todo-types";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../../../components/ui/collapsible";
 
 type ActiveModal = "new" | "edit" | "delete" | null;
 
@@ -18,7 +23,9 @@ interface ModalState {
 }
 
 function TodosDashboardPage() {
-  const { todos, createTodo, toggleTodo, deleteTodo, updateTask } = useTodos();
+  const { todos, createTodo, toggleTodo, deleteTodo, updateTask, pauseTodo, refetch: refetchActive } = useTodos();
+  const { pausedTodos, resumeTodo, refetch: refetchPaused } = usePausedTodos();
+  const [pausedOpen, setPausedOpen] = useState(false);
 
   const [modalState, setModalState] = useState<ModalState>({
     type: null,
@@ -69,6 +76,16 @@ function TodosDashboardPage() {
       monthly: activeTodos.filter((t) => t.recurrenceType === "monthly"),
     };
   }, [activeTodos]);
+
+  const handlePause = (id: string) => {
+    void pauseTodo(id);
+    void refetchPaused();
+  };
+
+  const handleResume = (id: string) => {
+    void resumeTodo(id);
+    void refetchActive();
+  };
 
   const handleSmartDelete = (todo: Todo) => {
     openModal("delete", todo);
@@ -143,6 +160,7 @@ function TodosDashboardPage() {
                             onToggle={toggleTodo}
                             onDelete={handleSmartDelete}
                             onEdit={handleEditClick}
+                            onPause={handlePause}
                           />
                         ))
                       )}
@@ -184,6 +202,62 @@ function TodosDashboardPage() {
             </div>
           </div>
         </div>
+
+        {pausedTodos.length > 0 && (
+          <Collapsible
+            open={pausedOpen}
+            onOpenChange={setPausedOpen}
+            className="mt-10"
+          >
+            <CollapsibleTrigger className="flex items-center gap-2 w-full px-1 group">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                Paused
+              </h3>
+              <Badge variant="outline" className="text-muted-foreground">
+                {pausedTodos.length}
+              </Badge>
+              <ChevronDown
+                className={`w-4 h-4 text-muted-foreground ml-auto transition-transform duration-200 ${
+                  pausedOpen ? "rotate-180" : ""
+                }`}
+              />
+            </CollapsibleTrigger>
+
+            <CollapsibleContent className="mt-3">
+              <div className="flex flex-col space-y-2">
+                {pausedTodos.map((todo) => (
+                  <div
+                    key={todo._id}
+                    className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3 opacity-60"
+                  >
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-sm text-foreground truncate">
+                        {todo.text}
+                      </span>
+                      <span className="text-xs text-muted-foreground capitalize">
+                        {todo.recurrenceType}
+                        {todo.pausedAt && (
+                          <>
+                            {" · paused "}
+                            {new Date(todo.pausedAt).toLocaleDateString()}
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleResume(todo._id)}
+                      className="flex items-center gap-1.5 ml-4 flex-shrink-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <PlayCircle className="w-3.5 h-3.5" />
+                      Resume
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        )}
 
         <NewTaskModal
           isOpen={modalState.type === "new"}
