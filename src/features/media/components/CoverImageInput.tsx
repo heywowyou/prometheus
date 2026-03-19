@@ -14,13 +14,40 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
   const [mode, setMode] = useState<"url" | "upload">(
     value?.source === "upload" ? "upload" : "url"
   );
+  const [urlInput, setUrlInput] = useState("");
+  const [urlUploading, setUrlUploading] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadCover } = useUploadApi();
+  const { uploadCover, uploadCoverFromUrl } = useUploadApi();
 
-  const handleUrlChange = (raw: string) => {
-    onChange(raw.trim() ? { url: raw.trim(), source: "external" } : null);
+  const handleUrlFetch = async () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    setUrlUploading(true);
+    setUrlError(null);
+    try {
+      const result = await uploadCoverFromUrl(trimmed);
+      onChange({ url: result.url, source: "upload", publicId: result.publicId });
+      setUrlInput("");
+    } catch (err: unknown) {
+      const msg =
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        err.response &&
+        typeof err.response === "object" &&
+        "data" in err.response &&
+        err.response.data &&
+        typeof err.response.data === "object" &&
+        "message" in err.response.data
+          ? String((err.response.data as { message: string }).message)
+          : "Failed to fetch image. Check the URL and try again.";
+      setUrlError(msg);
+    } finally {
+      setUrlUploading(false);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,12 +127,37 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
 
       {/* Input controls — always visible for entering or replacing */}
       {mode === "url" ? (
-        <Input
-          type="url"
-          placeholder={value ? "Paste a new URL to replace…" : "https://…"}
-          value={value?.source === "external" ? value.url : ""}
-          onChange={(e) => handleUrlChange(e.target.value)}
-        />
+        <div className="space-y-1.5">
+          <div className="flex gap-2">
+            <Input
+              type="url"
+              placeholder={value ? "Paste a new URL to replace…" : "https://…"}
+              value={urlInput}
+              onChange={(e) => {
+                setUrlInput(e.target.value);
+                setUrlError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void handleUrlFetch();
+                }
+              }}
+              disabled={urlUploading}
+            />
+            <button
+              type="button"
+              onClick={() => void handleUrlFetch()}
+              disabled={!urlInput.trim() || urlUploading}
+              className="flex-shrink-0 px-3 h-9 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-muted transition-colors disabled:opacity-40"
+            >
+              {urlUploading ? "Fetching…" : "Fetch"}
+            </button>
+          </div>
+          {urlError && (
+            <p className="text-xs text-red-400">{urlError}</p>
+          )}
+        </div>
       ) : (
         <div>
           <input

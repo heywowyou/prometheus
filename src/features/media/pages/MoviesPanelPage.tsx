@@ -4,6 +4,7 @@ import { useMediaLogs } from "../hooks/useMediaLogs";
 import AddLogModal from "../components/AddLogModal";
 import EditLogModal from "../components/EditLogModal";
 import MediaLogCard from "../components/MediaLogCard";
+import DeleteMediaLogModal from "../components/DeleteMediaLogModal";
 import type { MediaLog } from "../types/media-types";
 import { Button } from "../../../components/ui/button";
 
@@ -11,6 +12,7 @@ function MoviesPanelPage() {
   const { logs, loading, createLog, updateLog, deleteLog } = useMediaLogs("movie");
   const [modalOpen, setModalOpen] = useState(false);
   const [editLog, setEditLog] = useState<MediaLog | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<MediaLog | null>(null);
 
   return (
     <>
@@ -39,7 +41,7 @@ function MoviesPanelPage() {
               key={log._id}
               log={log}
               onEdit={setEditLog}
-              onDelete={deleteLog}
+              onDelete={(id) => setPendingDelete(logs.find((l) => l._id === id) ?? null)}
             />
           ))}
         </div>
@@ -59,6 +61,12 @@ function MoviesPanelPage() {
           await updateLog(id, payload);
           setEditLog(null);
         }}
+      />
+      <DeleteMediaLogModal
+        isOpen={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        log={pendingDelete}
+        onConfirm={(id) => { void deleteLog(id); setPendingDelete(null); }}
       />
     </>
   );

@@ -22,6 +22,17 @@ export const useUploadApi = () => {
     [client]
   );
 
+  const uploadCoverFromUrl = useCallback(
+    async (url: string): Promise<UploadCoverResult> => {
+      const response = await client.post<UploadCoverResult>(
+        "/images/upload-from-url",
+        { url }
+      );
+      return response.data;
+    },
+    [client]
+  );
+
   const deleteCover = useCallback(
     async (publicId: string): Promise<void> => {
       await client.delete("/images", { params: { publicId } });
@@ -29,5 +40,5 @@ export const useUploadApi = () => {
     [client]
   );
 
-  return { uploadCover, deleteCover };
+  return { uploadCover, uploadCoverFromUrl, deleteCover };
 };
