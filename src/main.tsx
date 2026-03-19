@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { ClerkProvider } from "@clerk/clerk-react";
+import { TooltipProvider } from "@components/ui/tooltip";
+import { Toaster } from "@components/ui/sonner";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -19,7 +21,10 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <App />
+      <TooltipProvider>
+        <App />
+        <Toaster position="bottom-right" />
+      </TooltipProvider>
     </ClerkProvider>
   </StrictMode>
 );

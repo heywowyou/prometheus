@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check } from "lucide-react";
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { FontFamily } from "@tiptap/extension-font-family";
-import { TextStyle, FontSize } from "@tiptap/extension-text-style";
+import type { Content } from "@tiptap/react";
 import { useNotesApi } from "../api/notes-api";
-import NoteToolbar from "../components/NoteToolbar";
+import { useApiClient } from "../../../lib/api/api-client";
 import { Button } from "../../../components/ui/button";
 import AuthGuard from "../../../components/AuthGuard";
+import { MinimalTiptapEditor } from "../../../components/ui/minimal-tiptap";
 import type { Note } from "../types/note-types";
 
 type SaveStatus = "idle" | "pending" | "saving" | "saved";
@@ -17,6 +15,7 @@ function NoteEditorPageInner() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { fetchNote, updateNote } = useNotesApi();
+  const client = useApiClient();
 
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState("");
@@ -25,20 +24,18 @@ function NoteEditorPageInner() {
   const latestTitleRef = useRef(title);
   const latestContentRef = useRef("");
 
-  const editor = useEditor({
-    extensions: [StarterKit, TextStyle, FontFamily, FontSize],
-    content: "",
-    editorProps: {
-      attributes: {
-        class: "outline-none min-h-full text-foreground font-sans text-sm leading-relaxed px-1",
-      },
+  const uploadImage = useCallback(
+    async (file: File): Promise<string> => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await client.post<{ url: string; publicId: string }>(
+        "/images/upload",
+        formData
+      );
+      return response.data.url;
     },
-    onUpdate: ({ editor: e }) => {
-      const html = e.getHTML();
-      latestContentRef.current = html;
-      triggerSave();
-    },
-  });
+    [client]
+  );
 
   const triggerSave = useCallback(() => {
     if (!id) return;
@@ -61,21 +58,15 @@ function NoteEditorPageInner() {
   // Load note
   useEffect(() => {
     if (!id) return;
-    fetchNote(id).then((data) => {
-      setNote(data);
-      setTitle(data.title);
-      latestTitleRef.current = data.title;
-      latestContentRef.current = data.content;
-    }).catch(() => navigate("/notes"));
+    fetchNote(id)
+      .then((data) => {
+        setNote(data);
+        setTitle(data.title);
+        latestTitleRef.current = data.title;
+        latestContentRef.current = data.content;
+      })
+      .catch(() => navigate("/notes"));
   }, [id, fetchNote, navigate]);
-
-  // Populate editor once note loads
-  useEffect(() => {
-    if (editor && note) {
-      editor.commands.setContent(note.content || "");
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, note?._id]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -90,6 +81,14 @@ function NoteEditorPageInner() {
     latestTitleRef.current = val;
     triggerSave();
   };
+
+  const handleEditorChange = useCallback(
+    (value: Content) => {
+      latestContentRef.current = value as string;
+      triggerSave();
+    },
+    [triggerSave]
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -122,19 +121,21 @@ function NoteEditorPageInner() {
         value={title}
         onChange={handleTitleChange}
         placeholder="Untitled"
-        className="w-full bg-transparent text-2xl font-semibold text-foreground placeholder:text-muted-foreground outline-none border-none mb-2"
+        className="w-full bg-transparent text-2xl font-semibold text-foreground placeholder:text-muted-foreground outline-none border-none mb-4"
       />
 
-      {/* Toolbar */}
-      <NoteToolbar editor={editor} />
-
       {/* Editor */}
-      <div className="flex-1 overflow-y-auto mt-3">
-        <EditorContent
-          editor={editor}
-          className="min-h-full [&_.ProseMirror]:min-h-[300px] [&_.ProseMirror]:outline-none"
+      {note && (
+        <MinimalTiptapEditor
+          value={note.content || ""}
+          onChange={handleEditorChange}
+          uploader={uploadImage}
+          output="html"
+          placeholder="Start writing…"
+          className="flex-1 min-h-0"
+          editorContentClassName="overflow-y-auto p-4"
         />
-      </div>
+      )}
     </div>
   );
 }
