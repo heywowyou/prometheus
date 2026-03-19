@@ -7,6 +7,8 @@ import TvPanelPage from "./features/media/pages/TvPanelPage";
 import BooksPanelPage from "./features/media/pages/BooksPanelPage";
 import MusicPanelPage from "./features/media/pages/MusicPanelPage";
 import GamesPanelPage from "./features/media/pages/GamesPanelPage";
+import NotesDashboardPage from "./features/notes/pages/NotesDashboardPage";
+import NoteEditorPage from "./features/notes/pages/NoteEditorPage";
 
 function App() {
   return (
@@ -24,7 +26,8 @@ function App() {
             <Route path="music" element={<MusicPanelPage />} />
             <Route path="games" element={<GamesPanelPage />} />
           </Route>
-          <Route path="/notes" element={<div>Notes – Coming soon</div>} />
+          <Route path="/notes" element={<NotesDashboardPage />} />
+          <Route path="/notes/:id" element={<NoteEditorPage />} />
           <Route path="/calendar" element={<div>Calendar – Coming soon</div>} />
           <Route path="/workouts" element={<div>Workouts – Coming soon</div>} />
         </Routes>
