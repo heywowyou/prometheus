@@ -87,6 +87,10 @@
   }
 }
 
+.ProseMirror:focus {
+  outline: none;
+}
+
 @layer utilities {
   /* shadcn animate-in / animate-out helpers */
   .animate-in {
