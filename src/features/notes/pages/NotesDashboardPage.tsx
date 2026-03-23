@@ -5,7 +5,6 @@ import { useNotes } from "../hooks/useNotes";
 import NoteCard from "../components/NoteCard";
 import DeleteNoteModal from "../components/DeleteNoteModal";
 import { Button } from "../../../components/ui/button";
-import AuthGuard from "../../../components/AuthGuard";
 import { useNotesApi } from "../api/notes-api";
 import type { Note } from "../types/note-types";
 
@@ -159,11 +158,7 @@ function NotesDashboardPageInner() {
 }
 
 function NotesDashboardPage() {
-  return (
-    <AuthGuard>
-      <NotesDashboardPageInner />
-    </AuthGuard>
-  );
+  return <NotesDashboardPageInner />;
 }
 
 export default NotesDashboardPage;

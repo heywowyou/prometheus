@@ -20,7 +20,13 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/todos"
+      afterSignUpUrl="/todos"
+    >
       <TooltipProvider>
         <App />
         <Toaster position="bottom-right" />

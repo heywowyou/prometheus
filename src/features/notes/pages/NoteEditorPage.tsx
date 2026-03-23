@@ -5,7 +5,6 @@ import type { Content } from "@tiptap/react";
 import { useNotesApi } from "../api/notes-api";
 import { useApiClient } from "../../../lib/api/api-client";
 import { Button } from "../../../components/ui/button";
-import AuthGuard from "../../../components/AuthGuard";
 import { MinimalTiptapEditor } from "../../../components/ui/minimal-tiptap";
 import type { Note } from "../types/note-types";
 
@@ -141,11 +140,7 @@ function NoteEditorPageInner() {
 }
 
 function NoteEditorPage() {
-  return (
-    <AuthGuard>
-      <NoteEditorPageInner />
-    </AuthGuard>
-  );
+  return <NoteEditorPageInner />;
 }
 
 export default NoteEditorPage;

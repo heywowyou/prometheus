@@ -1,4 +1,4 @@
-import { useUser, SignOutButton, SignInButton } from "@clerk/clerk-react";
+import { SignOutButton } from "@clerk/clerk-react";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { Button } from "./ui/button";
@@ -12,8 +12,6 @@ const navItems = [
 ];
 
 function Header() {
-  const { isSignedIn } = useUser();
-
   return (
     <header
       className="w-full sticky top-0 z-40 border-b border-border"
@@ -39,17 +37,11 @@ function Header() {
           ))}
         </nav>
         <div className="shrink-0">
-          {isSignedIn ? (
-            <SignOutButton>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                Sign Out
-              </Button>
-            </SignOutButton>
-          ) : (
-            <SignInButton mode="modal">
-              <Button size="sm">Sign In</Button>
-            </SignInButton>
-          )}
+          <SignOutButton>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              Sign Out
+            </Button>
+          </SignOutButton>
         </div>
       </div>
     </header>

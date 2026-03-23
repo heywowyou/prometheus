@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Plus, CheckSquare, ChevronDown, PlayCircle } from "lucide-react";
 import { useTodos, usePausedTodos } from "../hooks/useTodos";
-import AuthGuard from "../../../components/AuthGuard";
 import TodoItem from "../components/TodoItem";
 import NewTaskModal from "../components/NewTaskModal";
 import EditTaskModal from "../components/EditTaskModal";
@@ -101,8 +100,7 @@ function TodosDashboardPage() {
   };
 
   return (
-    <AuthGuard description="Sign in to access your synchronized task list.">
-      <>
+    <>
         <div className="flex items-center justify-between mb-8">
           <h2 className="page-title">Dashboard</h2>
           <Button onClick={() => openModal("new")}>
@@ -277,7 +275,6 @@ function TodosDashboardPage() {
           onConfirm={handleFinalDelete}
         />
       </>
-    </AuthGuard>
   );
 }
 
