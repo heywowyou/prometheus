@@ -187,3 +187,58 @@
 .minimal-tiptap-editor .ProseMirror .selection::selection {
   background: transparent;
 }
+
+/* Task list */
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-0;
+}
+
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] {
+  @apply flex items-start gap-2;
+}
+
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"]:not(:last-child) {
+  @apply mb-1;
+}
+
+/* Hide the native checkbox and render via label pseudo-elements so we can use CSS variables */
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > label {
+  @apply relative mt-1 flex flex-shrink-0 cursor-pointer select-none;
+}
+
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > label > input[type="checkbox"] {
+  @apply absolute opacity-0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Checkbox box */
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > label::before {
+  content: '';
+  @apply inline-block size-4 flex-shrink-0 rounded-sm border border-border bg-transparent;
+  transition: background-color 0.1s, border-color 0.1s;
+}
+
+/* Checked state: fill with accent */
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"][data-checked="true"] > label::before {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--accent));
+}
+
+/* Checkmark via rotated border — uses accent-foreground, no data URL needed */
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"][data-checked="true"] > label::after {
+  content: '';
+  @apply absolute;
+  left: 0.3rem;
+  top: 50%;
+  width: 0.28rem;
+  height: 0.52rem;
+  border-right: 2px solid hsl(var(--accent-foreground));
+  border-bottom: 2px solid hsl(var(--accent-foreground));
+  transform: translateY(-65%) rotate(45deg);
+}
+
+.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > div {
+  @apply flex-1;
+}

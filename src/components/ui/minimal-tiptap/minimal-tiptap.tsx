@@ -11,7 +11,9 @@ import { SectionTwo } from "./components/section/two"
 import { SectionThree } from "./components/section/three"
 import { SectionFour } from "./components/section/four"
 import { SectionFive } from "./components/section/five"
+import { SectionThreeHighlight } from "./components/section/three-highlight"
 import { LinkBubbleMenu } from "./components/bubble-menu/link-bubble-menu"
+import { SelectionBubbleMenu } from "./components/bubble-menu/selection-bubble-menu"
 import { useMinimalTiptapEditor } from "./hooks/use-minimal-tiptap"
 import { MeasuredContainer } from "./components/measured-container"
 import { useTiptapEditor } from "./hooks/use-tiptap-editor"
@@ -110,12 +112,13 @@ const Toolbar = ({
       <Separator orientation="vertical" className="mx-2" />
 
       <SectionThree editor={editor} />
+      <SectionThreeHighlight editor={editor} />
 
       <Separator orientation="vertical" className="mx-2" />
 
       <SectionFour
         editor={editor}
-        activeActions={["orderedList", "bulletList"]}
+        activeActions={["orderedList", "bulletList", "taskList"]}
         mainActionCount={0}
       />
 
@@ -198,6 +201,7 @@ export const MainMinimalTiptapEditor = ({
         className={cn("minimal-tiptap-editor", editorContentClassName)}
       />
       <LinkBubbleMenu editor={editor} />
+      <SelectionBubbleMenu editor={editor} />
     </MeasuredContainer>
   )
 }
