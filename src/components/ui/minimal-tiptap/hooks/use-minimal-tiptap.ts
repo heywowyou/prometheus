@@ -5,6 +5,7 @@ import { StarterKit } from "@tiptap/starter-kit"
 import { useEditor } from "@tiptap/react"
 import { Typography } from "@tiptap/extension-typography"
 import { TextStyle } from "@tiptap/extension-text-style"
+import { TextAlign } from "@tiptap/extension-text-align"
 import { Placeholder, Selection } from "@tiptap/extensions"
 import {
   Image,
@@ -174,6 +175,7 @@ const createExtensions = ({
   }),
   Color,
   TextStyle,
+  TextAlign.configure({ types: ["paragraph", "heading"] }),
   Selection,
   Typography,
   UnsetAllMarks,

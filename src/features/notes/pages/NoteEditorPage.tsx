@@ -9,6 +9,7 @@ import { MinimalTiptapEditor } from "../../../components/ui/minimal-tiptap";
 import type { Note } from "../types/note-types";
 
 type SaveStatus = "idle" | "pending" | "saving" | "saved";
+type FontFamily = "sans" | "serif";
 
 function NoteEditorPageInner() {
   const { id } = useParams<{ id: string }>();
@@ -18,10 +19,14 @@ function NoteEditorPageInner() {
 
   const [note, setNote] = useState<Note | null>(null);
   const [title, setTitle] = useState("");
+  const [fontFamily, setFontFamily] = useState<FontFamily>("sans");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fontTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestTitleRef = useRef(title);
   const latestContentRef = useRef("");
+  const latestFontFamilyRef = useRef<FontFamily>("sans");
 
   const uploadImage = useCallback(
     async (file: File): Promise<string> => {
@@ -54,6 +59,21 @@ function NoteEditorPageInner() {
     }, 800);
   }, [id, updateNote]);
 
+  const triggerFontSave = useCallback(() => {
+    if (!id) return;
+    setSaveStatus("pending");
+    if (fontTimerRef.current) clearTimeout(fontTimerRef.current);
+    fontTimerRef.current = setTimeout(async () => {
+      setSaveStatus("saving");
+      try {
+        await updateNote(id, { fontFamily: latestFontFamilyRef.current });
+        setSaveStatus("saved");
+      } catch {
+        setSaveStatus("idle");
+      }
+    }, 400);
+  }, [id, updateNote]);
+
   // Load note
   useEffect(() => {
     if (!id) return;
@@ -61,16 +81,19 @@ function NoteEditorPageInner() {
       .then((data) => {
         setNote(data);
         setTitle(data.title);
+        setFontFamily(data.fontFamily ?? "sans");
         latestTitleRef.current = data.title;
         latestContentRef.current = data.content;
+        latestFontFamilyRef.current = data.fontFamily ?? "sans";
       })
       .catch(() => navigate("/notes"));
   }, [id, fetchNote, navigate]);
 
-  // Cleanup timer on unmount
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (fontTimerRef.current) clearTimeout(fontTimerRef.current);
     };
   }, []);
 
@@ -88,6 +111,12 @@ function NoteEditorPageInner() {
     },
     [triggerSave]
   );
+
+  const handleFontFamilyChange = (value: FontFamily) => {
+    setFontFamily(value);
+    latestFontFamilyRef.current = value;
+    triggerFontSave();
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -132,7 +161,9 @@ function NoteEditorPageInner() {
           output="html"
           placeholder="Start writing…"
           className="flex-1 min-h-0"
-          editorContentClassName="overflow-y-auto p-4"
+          editorContentClassName={`overflow-y-auto p-4 ${fontFamily === "serif" ? "font-serif" : "font-sans"}`}
+          fontFamily={fontFamily}
+          onFontFamilyChange={handleFontFamilyChange}
         />
       )}
     </div>

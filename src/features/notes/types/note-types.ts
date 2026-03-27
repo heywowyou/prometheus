@@ -5,6 +5,7 @@ export interface Note {
   userId: string;
   pinned: boolean;
   archived: boolean;
+  fontFamily: "sans" | "serif";
   createdAt: string;
   updatedAt: string;
 }
@@ -19,4 +20,5 @@ export interface UpdateNotePayload {
   content?: string;
   pinned?: boolean;
   archived?: boolean;
+  fontFamily?: "sans" | "serif";
 }
