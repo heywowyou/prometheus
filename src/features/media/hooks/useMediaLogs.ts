@@ -15,6 +15,7 @@ export const useMediaLogs = (type?: MediaLogType) => {
     createLog: apiCreateLog,
     updateLog: apiUpdateLog,
     deleteLog: apiDeleteLog,
+    toggleFavorite: apiToggleFavorite,
   } = useMediaApi();
 
   const fetchLogs = useCallback(async () => {
@@ -67,6 +68,23 @@ export const useMediaLogs = (type?: MediaLogType) => {
     }
   };
 
+  const toggleFavorite = async (id: string) => {
+    // Optimistic update
+    setLogs((prev) =>
+      prev.map((log) => (log._id === id ? { ...log, favorite: !log.favorite } : log))
+    );
+    try {
+      const updated = await apiToggleFavorite(id);
+      setLogs((prev) => prev.map((log) => (log._id === id ? updated : log)));
+    } catch (error) {
+      // Revert on failure
+      setLogs((prev) =>
+        prev.map((log) => (log._id === id ? { ...log, favorite: !log.favorite } : log))
+      );
+      console.error("Failed to toggle favorite:", error);
+    }
+  };
+
   useEffect(() => {
     void fetchLogs();
   }, [fetchLogs]);
@@ -77,6 +95,7 @@ export const useMediaLogs = (type?: MediaLogType) => {
     createLog,
     updateLog,
     deleteLog,
+    toggleFavorite,
     refetch: fetchLogs,
   };
 };

@@ -33,6 +33,7 @@ export interface MediaLog {
    author?: string | null;
    pages?: number | null;
    artist?: string | null;
+  favorite: boolean;
   userId: string;
   createdAt: string;
   updatedAt: string;

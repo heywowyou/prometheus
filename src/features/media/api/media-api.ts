@@ -61,5 +61,13 @@ export const useMediaApi = () => {
     [client]
   );
 
-  return { fetchLogs, createLog, updateLog, deleteLog };
+  const toggleFavorite = useCallback(
+    async (id: string): Promise<MediaLog> => {
+      const response = await client.patch<MediaLog>(`${MEDIA_PATH}/${id}/favorite`);
+      return response.data;
+    },
+    [client]
+  );
+
+  return { fetchLogs, createLog, updateLog, deleteLog, toggleFavorite };
 };
