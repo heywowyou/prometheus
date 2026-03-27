@@ -17,7 +17,12 @@ interface MediaLogCardProps {
   onToggleFavorite?: (id: string) => void;
 }
 
-function MediaLogCard({ log, onEdit, onDelete, onToggleFavorite }: MediaLogCardProps) {
+function MediaLogCard({
+  log,
+  onEdit,
+  onDelete,
+  onToggleFavorite,
+}: MediaLogCardProps) {
   const displayTitle = log.title;
   const coverUrl = resolveCoverUrl(log.cover);
   const linkUrl = log.url || null;
@@ -93,12 +98,17 @@ function MediaLogCard({ log, onEdit, onDelete, onToggleFavorite }: MediaLogCardP
         {onToggleFavorite && (
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(log._id); }}
-            className="absolute top-1.5 right-1.5 z-10 p-1 rounded-lg bg-black/40 hover:bg-black/60 transition-colors"
-            aria-label={log.favorite ? "Remove from favorites" : "Add to favorites"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite(log._id);
+            }}
+            className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-2xl bg-black/40 hover:bg-black/60 transition-colors"
+            aria-label={
+              log.favorite ? "Remove from favorites" : "Add to favorites"
+            }
           >
             <Heart
-              className="h-3.5 w-3.5"
+              className="h-4 w-4"
               style={
                 log.favorite
                   ? { fill: "var(--rating)", color: "var(--rating)" }
