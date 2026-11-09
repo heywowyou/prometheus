@@ -1,25 +1,36 @@
-import { useCallback } from "react";
-import { useApiClient } from "../../../lib/api/api-client";
-import type { MediaLog, MediaLogType, CoverImage } from "../types/media-types";
+import { useCallback, useMemo } from "react";
+import { useApiClient } from "@lib/api/api-client";
+import type {
+  CoverImage,
+  MediaLog,
+  MediaLogStatus,
+  MediaLogType,
+} from "../types/media-types";
 
 const MEDIA_PATH = "/media";
 
-export interface CreateMediaLogPayload {
-  type: MediaLogType;
+export interface MediaLogFields {
   title: string;
-  url?: string;
-  cover?: CoverImage;
+  /** 1–10. */
   rating: number;
-  review?: string;
+  /** `YYYY-MM-DD`. */
   date: string;
-  status?: "finished" | "in_progress";
+  url?: string;
+  review?: string;
+  status: MediaLogStatus;
   director?: string;
   author?: string;
   pages?: number;
   artist?: string;
 }
 
-export type UpdateMediaLogPayload = Partial<Omit<CreateMediaLogPayload, "cover">> & {
+export interface CreateMediaLogPayload extends MediaLogFields {
+  type: MediaLogType;
+  cover?: CoverImage;
+}
+
+export type UpdateMediaLogPayload = Partial<MediaLogFields> & {
+  /** `null` clears the cover; omit the key to leave it unchanged. */
   cover?: CoverImage | null;
 };
 
@@ -28,46 +39,52 @@ export const useMediaApi = () => {
 
   const fetchLogs = useCallback(
     async (type?: MediaLogType): Promise<MediaLog[]> => {
-      const params = type ? { params: { type } } : undefined;
-      const response = await client.get<MediaLog[]>(MEDIA_PATH, params);
-      return response.data;
+      const { data } = await client.get<MediaLog[]>(MEDIA_PATH, {
+        params: type ? { type } : undefined,
+      });
+      return data;
     },
-    [client]
+    [client],
   );
 
   const createLog = useCallback(
     async (payload: CreateMediaLogPayload): Promise<MediaLog> => {
-      const response = await client.post<MediaLog>(MEDIA_PATH, payload);
-      return response.data;
+      const { data } = await client.post<MediaLog>(MEDIA_PATH, payload);
+      return data;
     },
-    [client]
+    [client],
   );
 
   const updateLog = useCallback(
     async (id: string, payload: UpdateMediaLogPayload): Promise<MediaLog> => {
-      const response = await client.put<MediaLog>(
+      const { data } = await client.patch<MediaLog>(
         `${MEDIA_PATH}/${id}`,
-        payload
+        payload,
       );
-      return response.data;
+      return data;
     },
-    [client]
+    [client],
   );
 
   const deleteLog = useCallback(
     async (id: string): Promise<void> => {
       await client.delete(`${MEDIA_PATH}/${id}`);
     },
-    [client]
+    [client],
   );
 
   const toggleFavorite = useCallback(
     async (id: string): Promise<MediaLog> => {
-      const response = await client.patch<MediaLog>(`${MEDIA_PATH}/${id}/favorite`);
-      return response.data;
+      const { data } = await client.patch<MediaLog>(
+        `${MEDIA_PATH}/${id}/favorite`,
+      );
+      return data;
     },
-    [client]
+    [client],
   );
 
-  return { fetchLogs, createLog, updateLog, deleteLog, toggleFavorite };
+  return useMemo(
+    () => ({ fetchLogs, createLog, updateLog, deleteLog, toggleFavorite }),
+    [fetchLogs, createLog, updateLog, deleteLog, toggleFavorite],
+  );
 };

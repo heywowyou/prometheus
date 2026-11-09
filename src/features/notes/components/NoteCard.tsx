@@ -6,9 +6,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../../components/ui/dropdown-menu";
-import { Button } from "../../../components/ui/button";
+} from "@components/ui/dropdown-menu";
+import { Button } from "@components/ui/button";
 import { cn } from "@lib/utils";
+import { relativeDate } from "@lib/date/relative";
 import type { Note } from "../types/note-types";
 
 interface NoteCardProps {
@@ -20,84 +21,81 @@ interface NoteCardProps {
   onDelete: (note: Note) => void;
 }
 
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
+/** Plain-text preview of a note's Tiptap HTML. */
+const stripHtml = (html: string): string =>
+  html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-function relativeDate(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? "" : "s"} ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  const opts: Intl.DateTimeFormatOptions =
-    now.getFullYear() === date.getFullYear()
-      ? { month: "short", day: "numeric" }
-      : { month: "short", day: "numeric", year: "numeric" };
-  return date.toLocaleDateString("en-US", opts);
-}
-
-function NoteCard({ note, view, onPin, onDuplicate, onArchive, onDelete }: NoteCardProps) {
+function NoteCard({
+  note,
+  view,
+  onPin,
+  onDuplicate,
+  onArchive,
+  onDelete,
+}: NoteCardProps) {
   const navigate = useNavigate();
-  const preview = stripHtml(note.content);
+  const isGrid = view === "grid";
 
   return (
     <div
-      className={cn(
-        "group relative bg-surface border border-border rounded-lg cursor-pointer hover:border-accent/50 transition-colors",
-        view === "list" ? "p-3 flex items-start gap-3" : "p-4 flex flex-col"
-      )}
+      role="link"
+      tabIndex={0}
       onClick={() => navigate(`/notes/${note._id}`)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          navigate(`/notes/${note._id}`);
+        }
+      }}
+      className={cn(
+        "group relative cursor-pointer rounded-lg border border-border bg-surface transition-colors hover:border-rating/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        isGrid ? "flex flex-col p-4" : "flex items-start gap-3 p-3",
+      )}
     >
-      {/* Pin indicator */}
       {note.pinned && (
         <Pin
-          className={cn(
-            "text-accent shrink-0",
-            view === "list" ? "w-3.5 h-3.5 mt-1" : "w-3.5 h-3.5 mb-2"
-          )}
+          className={cn("h-3.5 w-3.5 shrink-0 text-rating", isGrid ? "mb-2" : "mt-1")}
+          aria-label="Pinned"
         />
       )}
 
-      <div className={cn("min-w-0", view === "list" ? "flex-1" : "flex-1 flex flex-col")}>
-        {/* Title */}
-        <p className="text-sm font-medium text-foreground truncate">
+      <div className={cn("min-w-0 flex-1", isGrid && "flex flex-col")}>
+        <p className="truncate text-sm font-medium text-foreground">
           {note.title.trim() || "Untitled"}
         </p>
 
-        {/* Preview */}
-        {view === "grid" && (
-          <p className="mt-1 text-xs text-muted-foreground line-clamp-3 flex-1">
-            {preview || "No content"}
+        {isGrid && (
+          <p className="mt-1 line-clamp-3 flex-1 text-xs text-muted-foreground">
+            {stripHtml(note.content) || "No content"}
           </p>
         )}
 
-        {/* Date */}
-        <p className={cn("text-xs text-muted-foreground", view === "grid" ? "mt-2" : "mt-0.5")}>
+        <p
+          className={cn("text-xs text-muted-foreground", isGrid ? "mt-2" : "mt-0.5")}
+        >
           {relativeDate(note.updatedAt)}
         </p>
       </div>
 
-      {/* Action menu */}
       <div
+        onClick={(event) => event.stopPropagation()}
         className={cn(
-          "shrink-0",
-          view === "list"
-            ? "opacity-0 group-hover:opacity-100 transition-opacity"
-            : "absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+          "shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+          isGrid && "absolute right-3 top-3",
         )}
-        onClick={(e) => e.stopPropagation()}
       >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground">
-              <MoreHorizontal className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Actions for ${note.title.trim() || "Untitled"}`}
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+            >
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

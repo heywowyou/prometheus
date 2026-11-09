@@ -1,31 +1,26 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { cn } from "@lib/utils";
+import { MEDIA_TYPE_CONFIGS } from "../media-config";
 
 function MediaDashboardPage() {
-  const tabs = [
-    { to: "/media/movies", label: "Movies" },
-    { to: "/media/tv", label: "TV Shows" },
-    { to: "/media/books", label: "Books" },
-    { to: "/media/music", label: "Music" },
-    { to: "/media/games", label: "Games" },
-  ];
-
   return (
     <div>
       <h2 className="page-title mb-4">Media log</h2>
       <nav className="mb-6 flex flex-wrap gap-1 border-b border-border pb-3 text-sm">
-        {tabs.map((tab) => (
+        {MEDIA_TYPE_CONFIGS.map((config) => (
           <NavLink
-            key={tab.to}
-            to={tab.to}
+            key={config.slug}
+            to={`/media/${config.slug}`}
             className={({ isActive }) =>
-              `px-4 py-2 rounded-xl transition-colors font-medium ${
+              cn(
+                "rounded-xl px-4 py-2 font-medium transition-colors",
                 isActive
-                  ? "bg-[#5bb8e8] text-[#141414]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`
+                  ? "bg-rating text-rating-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+              )
             }
           >
-            {tab.label}
+            {config.plural}
           </NavLink>
         ))}
       </nav>

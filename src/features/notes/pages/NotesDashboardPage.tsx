@@ -1,36 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FileText, LayoutGrid, List, Pin } from "lucide-react";
+import { Button } from "@components/ui/button";
+import EmptyState from "@components/feedback/EmptyState";
+import ConfirmDialog from "@components/feedback/ConfirmDialog";
+import { useLocalStorage } from "@lib/hooks/useLocalStorage";
+import { cn } from "@lib/utils";
 import { useNotes } from "../hooks/useNotes";
 import NoteCard from "../components/NoteCard";
-import DeleteNoteModal from "../components/DeleteNoteModal";
-import { Button } from "../../../components/ui/button";
-import { useNotesApi } from "../api/notes-api";
 import type { Note } from "../types/note-types";
 
 type View = "list" | "grid";
 
-function getStoredView(): View {
-  try {
-    const v = localStorage.getItem("notes-view");
-    return v === "list" || v === "grid" ? v : "grid";
-  } catch {
-    return "grid";
-  }
-}
+const isView = (value: unknown): value is View =>
+  value === "list" || value === "grid";
 
-function NotesDashboardPageInner() {
+function NotesDashboardPage() {
   const navigate = useNavigate();
-  const { notes, loading, createNote, pinNote, archiveNote, deleteNote } = useNotes();
-  const { createNote: apiCreate } = useNotesApi();
+  const { notes, loading, createNote, pinNote, archiveNote, deleteNote } =
+    useNotes();
 
-  const [view, setView] = useState<View>(getStoredView);
+  const [view, setView] = useLocalStorage<View>("notes-view", "grid", isView);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
-
-  const handleViewChange = (v: View) => {
-    setView(v);
-    try { localStorage.setItem("notes-view", v); } catch { /* ignore */ }
-  };
 
   const handleNewNote = async () => {
     const note = await createNote();
@@ -38,127 +29,113 @@ function NotesDashboardPageInner() {
   };
 
   const handleDuplicate = async (note: Note) => {
-    const copy = await apiCreate({ title: note.title, content: note.content });
+    const copy = await createNote({ title: note.title, content: note.content });
     navigate(`/notes/${copy._id}`);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!noteToDelete) return;
-    await deleteNote(noteToDelete._id);
-    setNoteToDelete(null);
-  };
-
-  const pinned = notes.filter((n) => n.pinned);
-  const unpinned = notes.filter((n) => !n.pinned);
+  const pinned = notes.filter((note) => note.pinned);
+  const unpinned = notes.filter((note) => !note.pinned);
 
   const gridClass =
     view === "grid"
-      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+      ? "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
       : "flex flex-col gap-2";
+
+  const viewButton = (target: View, Icon: typeof List, label: string) => (
+    <button
+      type="button"
+      onClick={() => setView(target)}
+      aria-pressed={view === target}
+      title={label}
+      className={cn(
+        "p-1.5",
+        view === target
+          ? "bg-rating/10 text-rating"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+    </button>
+  );
+
+  const renderSection = (items: Note[]) => (
+    <div className={gridClass}>
+      {items.map((note) => (
+        <NoteCard
+          key={note._id}
+          note={note}
+          view={view}
+          onPin={pinNote}
+          onDuplicate={handleDuplicate}
+          onArchive={archiveNote}
+          onDelete={setNoteToDelete}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="page-title">Notes</h2>
         <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-accent" />
-          <h1 className="text-xl font-semibold text-foreground">Notes</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div className="flex items-center border border-border rounded-md overflow-hidden">
-            <button
-              className={`p-1.5 ${view === "list" ? "bg-accent/10 text-accent" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => handleViewChange("list")}
-              title="List view"
-            >
-              <List className="w-4 h-4" />
-            </button>
-            <button
-              className={`p-1.5 ${view === "grid" ? "bg-accent/10 text-accent" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => handleViewChange("grid")}
-              title="Grid view"
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </button>
+          <div className="flex items-center overflow-hidden rounded-md border border-border">
+            {viewButton("list", List, "List view")}
+            {viewButton("grid", LayoutGrid, "Grid view")}
           </div>
-          <Button size="sm" onClick={handleNewNote}>
-            + New Note
+          <Button size="sm" onClick={() => void handleNewNote()}>
+            New note
           </Button>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground text-sm">Loading…</p>
+        <p className="text-sm text-muted-foreground">Loading…</p>
       ) : notes.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No notes yet. Create your first note.</p>
-        </div>
+        <EmptyState
+          icon={FileText}
+          message="No notes yet."
+          action={{ label: "Create your first note", onClick: () => void handleNewNote() }}
+        />
       ) : (
         <div className="space-y-6">
-          {/* Pinned section */}
           {pinned.length > 0 && (
             <section>
-              <div className="flex items-center gap-1.5 mb-2">
-                <Pin className="w-3.5 h-3.5 text-accent" />
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <div className="mb-2 flex items-center gap-1.5">
+                <Pin className="h-3.5 w-3.5 text-rating" />
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Pinned
                 </span>
               </div>
-              <div className={gridClass}>
-                {pinned.map((note) => (
-                  <NoteCard
-                    key={note._id}
-                    note={note}
-                    view={view}
-                    onPin={pinNote}
-                    onDuplicate={handleDuplicate}
-                    onArchive={archiveNote}
-                    onDelete={setNoteToDelete}
-                  />
-                ))}
-              </div>
+              {renderSection(pinned)}
             </section>
           )}
 
-          {/* Unpinned section */}
           {unpinned.length > 0 && (
             <section>
               {pinned.length > 0 && (
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Notes
                 </span>
               )}
-              <div className={gridClass}>
-                {unpinned.map((note) => (
-                  <NoteCard
-                    key={note._id}
-                    note={note}
-                    view={view}
-                    onPin={pinNote}
-                    onDuplicate={handleDuplicate}
-                    onArchive={archiveNote}
-                    onDelete={setNoteToDelete}
-                  />
-                ))}
-              </div>
+              {renderSection(unpinned)}
             </section>
           )}
         </div>
       )}
 
-      <DeleteNoteModal
+      <ConfirmDialog
         open={noteToDelete !== null}
         onClose={() => setNoteToDelete(null)}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={() => {
+          if (noteToDelete) deleteNote(noteToDelete._id);
+          setNoteToDelete(null);
+        }}
+        title="Delete note?"
+        description="This action cannot be undone. The note will be permanently deleted."
       />
     </div>
   );
-}
-
-function NotesDashboardPage() {
-  return <NotesDashboardPageInner />;
 }
 
 export default NotesDashboardPage;

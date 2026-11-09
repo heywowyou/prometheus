@@ -1,26 +1,19 @@
-export type RecurrenceType = "none" | "daily" | "weekly" | "monthly";
+/**
+ * Recurrence vocabulary, mirroring `core/domain/recurrence.ts` in the backend.
+ *
+ * Only the type and labels live here. The reset *calculation* is deliberately
+ * backend-only now: the API reports whether a recurring todo is currently
+ * complete, so the client no longer recomputes rollover and the two
+ * implementations can't disagree. If this ever needs to move, promote it to a
+ * shared package rather than copying the logic back.
+ */
+export const RECURRENCE_TYPES = ["none", "daily", "weekly", "monthly"] as const;
 
-export const getNextResetTime = (
-  lastCompletedAt: string | Date | null | undefined,
-  type: RecurrenceType
-): Date => {
-  if (!lastCompletedAt) return new Date(0);
+export type RecurrenceType = (typeof RECURRENCE_TYPES)[number];
 
-  const date = new Date(lastCompletedAt);
-
-  if (type === "daily") {
-    date.setDate(date.getDate() + 1);
-  } else if (type === "weekly") {
-    const dayOfWeek = date.getDay();
-    let daysUntilNextMonday = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7;
-    if (daysUntilNextMonday === 0) daysUntilNextMonday = 7;
-    date.setDate(date.getDate() + daysUntilNextMonday);
-  } else if (type === "monthly") {
-    date.setMonth(date.getMonth() + 1);
-    date.setDate(1);
-  }
-
-  date.setHours(0, 0, 0, 0);
-  return date;
+export const RECURRENCE_LABELS: Record<RecurrenceType, string> = {
+  none: "One-time",
+  daily: "Daily",
+  weekly: "Weekly",
+  monthly: "Monthly",
 };
-

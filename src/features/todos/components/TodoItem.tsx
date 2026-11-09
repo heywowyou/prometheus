@@ -1,18 +1,29 @@
 import { useState, useEffect, useRef } from "react";
-import { Flame, Repeat2, Pencil, Shredder, Ellipsis, PauseCircle } from "lucide-react";
-import type { Todo, RecurrenceType } from "../types/todo-types";
+import {
+  Flame,
+  Repeat2,
+  Pencil,
+  Shredder,
+  Ellipsis,
+  PauseCircle,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@components/ui/dropdown-menu";
+import { cn } from "@lib/utils";
+import type { RecurrenceType, Todo } from "../types/todo-types";
 
-const getRecurrenceNumber = (type: RecurrenceType): number | null => {
-  switch (type) {
-    case "daily":
-      return 1;
-    case "weekly":
-      return 7;
-    case "monthly":
-      return 30;
-    default:
-      return null;
-  }
+/** How long a "hold to fill" task must be held before it completes. */
+const HOLD_DURATION_MS = 1000;
+
+const RESET_LABELS: Record<RecurrenceType, string | null> = {
+  none: null,
+  daily: "Resets daily",
+  weekly: "Resets every Monday",
+  monthly: "Resets on the 1st",
 };
 
 interface TodoItemProps {
@@ -24,215 +35,166 @@ interface TodoItemProps {
 }
 
 function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) {
-  const showTally = todo.recurrenceType !== "none" && todo.completionCount > 0;
   const isRecurring = todo.recurrenceType !== "none";
   const isHoldTask = todo.interactionType === "hold";
+  const showTally = isRecurring && todo.completionCount > 0;
 
   const [isHolding, setIsHolding] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const HOLD_DURATION = 1000;
-
-  const handleHoldStart = () => {
-    if (!todo.completed) setIsHolding(true);
-  };
-
-  const handleHoldEnd = () => {
-    setIsHolding(false);
-  };
-
-  const handleCardMouseLeave = () => {
-    if (isHoldTask) setIsHolding(false);
-    if (isMenuOpen) setIsMenuOpen(false);
-  };
-
-  const handleCardClick = () => {
-    if (isHoldTask) {
-      if (todo.completed) {
-        onToggle(todo._id);
-      }
-    } else {
-      onToggle(todo._id);
-    }
-  };
-
+  // A hold task completes when the press survives HOLD_DURATION_MS; releasing
+  // early cancels it.
   useEffect(() => {
-    if (isHolding) {
-      holdTimeoutRef.current = setTimeout(() => {
-        onToggle(todo._id);
-        setIsHolding(false);
-      }, HOLD_DURATION);
-    } else if (holdTimeoutRef.current) {
-      clearTimeout(holdTimeoutRef.current);
-      holdTimeoutRef.current = null;
-    }
+    if (!isHolding) return;
+
+    holdTimeoutRef.current = setTimeout(() => {
+      onToggle(todo._id);
+      setIsHolding(false);
+    }, HOLD_DURATION_MS);
 
     return () => {
-      if (holdTimeoutRef.current) {
-        clearTimeout(holdTimeoutRef.current);
-      }
+      if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
     };
   }, [isHolding, onToggle, todo._id]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (
-        menuRef.current &&
-        event.target instanceof Node &&
-        !menuRef.current.contains(event.target)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
+  const startHold = () => {
+    if (!todo.completed) setIsHolding(true);
+  };
 
-    if (isMenuOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [isMenuOpen]);
+  const activate = () => {
+    // A completed hold task is un-completed with a plain click; an incomplete
+    // one needs the hold gesture.
+    if (!isHoldTask || todo.completed) onToggle(todo._id);
+  };
+
+  const holdHandlers = isHoldTask
+    ? {
+        onMouseDown: startHold,
+        onMouseUp: () => setIsHolding(false),
+        onTouchStart: startHold,
+        onTouchEnd: () => setIsHolding(false),
+      }
+    : {};
 
   return (
     <div
-      className={`group relative flex items-center bg-card border border-border p-4 rounded-xl transition-all select-none cursor-pointer hover:border-border/80 ${
-        isMenuOpen ? "z-20" : "z-auto"
-      }`}
-      onMouseDown={isHoldTask ? handleHoldStart : undefined}
-      onMouseUp={isHoldTask ? handleHoldEnd : undefined}
-      onMouseLeave={handleCardMouseLeave}
-      onTouchStart={isHoldTask ? handleHoldStart : undefined}
-      onTouchEnd={isHoldTask ? handleHoldEnd : undefined}
-      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      aria-pressed={todo.completed}
+      className="group relative flex cursor-pointer select-none items-center rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      {...holdHandlers}
+      onMouseLeave={() => setIsHolding(false)}
+      onClick={activate}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          // Keyboard users complete in one action rather than holding.
+          onToggle(todo._id);
+        }
+      }}
     >
       {isHoldTask && !todo.completed && (
         <div
-          className="absolute inset-0 bg-secondary z-0 rounded-xl"
+          aria-hidden
+          className="absolute inset-0 z-0 rounded-xl bg-secondary"
           style={{
             width: isHolding ? "100%" : "0%",
             transition: isHolding
-              ? `width ${HOLD_DURATION}ms linear`
+              ? `width ${HOLD_DURATION_MS}ms linear`
               : "width 0.3s ease-out",
           }}
         />
       )}
 
-      <div className="relative z-10 flex items-center flex-1">
+      <div className="relative z-10 flex flex-1 items-center">
         {!isHoldTask && (
           <div
-            className={`w-4 h-4 rounded-xl border mr-3 flex items-center justify-center transition-all duration-200 ease-in-out flex-shrink-0 ${
+            aria-hidden
+            className={cn(
+              "mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-xl border transition-all duration-200 ease-in-out",
               todo.completed
                 ? "border-primary bg-primary"
-                : "border-border group-hover:border-muted-foreground"
-            }`}
+                : "border-border group-hover:border-muted-foreground",
+            )}
           >
             {todo.completed && (
-              <div className="w-2 h-2 rounded-[1px] bg-primary-foreground" />
+              <div className="h-2 w-2 rounded-[1px] bg-primary-foreground" />
             )}
           </div>
         )}
 
         <span
-          className={`flex-1 transition-colors flex items-center justify-between gap-3 ${
-            todo.completed ? "text-muted-foreground" : "text-foreground"
-          }`}
+          className={cn(
+            "flex flex-1 items-center justify-between gap-3 transition-colors",
+            todo.completed ? "text-muted-foreground" : "text-foreground",
+          )}
         >
-          <div className="flex flex-col text-sm">
-            <span className={todo.completed ? "line-through opacity-60" : ""}>
+          <span className="flex flex-col text-sm">
+            <span className={cn(todo.completed && "line-through opacity-60")}>
               {todo.text}
             </span>
             {isHoldTask && todo.durationGoal > 0 && (
-              <span className="text-xs text-muted-foreground mt-0.5">
+              <span className="mt-0.5 text-xs text-muted-foreground">
                 {todo.durationGoal} mins
               </span>
             )}
-          </div>
+          </span>
 
-          <div className="flex items-center gap-2">
+          <span className="flex items-center gap-2">
             {isRecurring && (
-              <div
+              <span
                 className="flex items-center text-muted-foreground"
-                title={`Resets every ${getRecurrenceNumber(todo.recurrenceType)} days`}
+                title={RESET_LABELS[todo.recurrenceType] ?? undefined}
               >
-                <Repeat2 className="w-4 h-4" strokeWidth={2} />
-              </div>
+                <Repeat2 className="h-4 w-4" strokeWidth={2} />
+              </span>
             )}
             {showTally && (
-              <div className="flex items-center text-xs font-normal text-orange-400">
-                <Flame className="w-3.5 h-3.5 mr-1" strokeWidth={2.5} />
+              <span className="flex items-center text-xs font-normal text-orange-400">
+                <Flame className="mr-1 h-3.5 w-3.5" strokeWidth={2.5} />
                 {todo.completionCount}
-              </div>
+              </span>
             )}
-          </div>
+          </span>
         </span>
 
-        <div className="relative" ref={menuRef}>
-          <button
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
-            }}
-            className={`text-muted-foreground hover:text-foreground transition duration-200 ease-in-out p-1.5 rounded-xl hover:bg-secondary ${
-              isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            }`}
-            title="More options"
-          >
-            <Ellipsis className="w-4 h-4" strokeWidth={1.5} />
-          </button>
-
-          {isMenuOpen && (
-            <div
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              className="absolute right-0 top-full mt-1 w-32 bg-popover border border-border rounded-xl shadow-xl z-50 overflow-hidden"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={`Actions for ${todo.text}`}
+              onClick={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              onTouchStart={(event) => event.stopPropagation()}
+              className="rounded-xl p-1.5 text-muted-foreground opacity-0 transition duration-200 ease-in-out hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100"
             >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(todo);
-                  setIsMenuOpen(false);
-                }}
-                className="flex items-center w-full px-3 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors cursor-pointer"
-              >
-                <Pencil className="w-3.5 h-3.5 mr-2" />
-                Edit
-              </button>
-
-              {isRecurring && onPause && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPause(todo._id);
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center w-full px-3 py-2.5 text-sm text-muted-foreground hover:bg-secondary transition-colors cursor-pointer"
-                >
-                  <PauseCircle className="w-3.5 h-3.5 mr-2" />
-                  Pause
-                </button>
-              )}
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(todo);
-                  setIsMenuOpen(false);
-                }}
-                className="flex items-center w-full px-3 py-2.5 text-sm text-red-400 hover:bg-destructive/20 transition-colors cursor-pointer"
-              >
-                <Shredder className="w-3.5 h-3.5 mr-2" />
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
+              <Ellipsis className="h-4 w-4" strokeWidth={1.5} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <DropdownMenuItem onClick={() => onEdit(todo)}>
+              <Pencil className="mr-2 h-3.5 w-3.5" />
+              Edit
+            </DropdownMenuItem>
+            {isRecurring && onPause && (
+              <DropdownMenuItem onClick={() => onPause(todo._id)}>
+                <PauseCircle className="mr-2 h-3.5 w-3.5" />
+                Pause
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() => onDelete(todo)}
+            >
+              <Shredder className="mr-2 h-3.5 w-3.5" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

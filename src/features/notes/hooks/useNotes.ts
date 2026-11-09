@@ -1,56 +1,112 @@
-import { useState, useEffect, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@lib/query/keys";
 import { useNotesApi } from "../api/notes-api";
-import type { Note } from "../types/note-types";
+import type {
+  CreateNotePayload,
+  Note,
+  UpdateNotePayload,
+} from "../types/note-types";
 
 export const useNotes = () => {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { fetchNotes, createNote: apiCreate, updateNote: apiUpdate, deleteNote: apiDelete } = useNotesApi();
+  const queryClient = useQueryClient();
+  const api = useNotesApi();
+  const listKey = queryKeys.notes.list();
 
-  const load = useCallback(async () => {
-    try {
-      const data = await fetchNotes();
-      setNotes(data);
-    } catch (error) {
-      console.error("Failed to fetch notes:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchNotes]);
+  const query = useQuery({
+    queryKey: listKey,
+    queryFn: api.fetchNotes,
+  });
 
-  const createNote = useCallback(async (title = "", content = ""): Promise<Note> => {
-    const note = await apiCreate({ title, content });
-    setNotes((prev) => [note, ...prev]);
-    return note;
-  }, [apiCreate]);
+  const prependToCache = (note: Note) => {
+    queryClient.setQueryData<Note[]>(listKey, (previous) =>
+      previous ? [note, ...previous] : [note],
+    );
+  };
 
-  const updateNote = useCallback(async (
-    id: string,
-    data: { title?: string; content?: string; pinned?: boolean; archived?: boolean }
-  ): Promise<Note> => {
-    const updated = await apiUpdate(id, data);
-    setNotes((prev) => prev.map((n) => (n._id === id ? updated : n)));
-    return updated;
-  }, [apiUpdate]);
+  const removeFromCache = (id: string) => {
+    queryClient.setQueryData<Note[]>(listKey, (previous) =>
+      previous?.filter((note) => note._id !== id),
+    );
+  };
 
-  const pinNote = useCallback(async (id: string, pinned: boolean) => {
-    const updated = await apiUpdate(id, { pinned });
-    setNotes((prev) => prev.map((n) => (n._id === id ? updated : n)));
-  }, [apiUpdate]);
+  const createNote = useMutation({
+    mutationFn: (payload: CreateNotePayload = {}) => api.createNote(payload),
+    onSuccess: prependToCache,
+  });
 
-  const archiveNote = useCallback(async (id: string) => {
-    await apiUpdate(id, { archived: true });
-    setNotes((prev) => prev.filter((n) => n._id !== id));
-  }, [apiUpdate]);
+  const updateNote = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateNotePayload }) =>
+      api.updateNote(id, payload),
+    onSuccess: (updated) => {
+      // Pinning reorders the list, so re-sort rather than patch in place.
+      queryClient.setQueryData<Note[]>(listKey, (previous) =>
+        previous
+          ?.map((note) => (note._id === updated._id ? updated : note))
+          .sort((a, b) => {
+            if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+            return (
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+            );
+          }),
+      );
+      queryClient.setQueryData(queryKeys.notes.detail(updated._id), updated);
+    },
+  });
 
-  const deleteNote = useCallback(async (id: string) => {
-    await apiDelete(id);
-    setNotes((prev) => prev.filter((n) => n._id !== id));
-  }, [apiDelete]);
+  const archiveNote = useMutation({
+    mutationFn: (id: string) => api.updateNote(id, { archived: true }),
+    onSuccess: (_archived, id) => removeFromCache(id),
+  });
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const deleteNote = useMutation({
+    mutationFn: (id: string) => api.deleteNote(id),
+    onSuccess: (_result, id) => {
+      removeFromCache(id);
+      queryClient.removeQueries({ queryKey: queryKeys.notes.detail(id) });
+    },
+  });
 
-  return { notes, loading, createNote, updateNote, pinNote, archiveNote, deleteNote, refetch: load };
+  return {
+    notes: query.data ?? [],
+    loading: query.isPending,
+    error: query.error,
+    createNote: (payload?: CreateNotePayload) => createNote.mutateAsync(payload ?? {}),
+    updateNote: (id: string, payload: UpdateNotePayload) =>
+      updateNote.mutateAsync({ id, payload }),
+    pinNote: (id: string, pinned: boolean) =>
+      updateNote.mutate({ id, payload: { pinned } }),
+    archiveNote: (id: string) => archiveNote.mutate(id),
+    deleteNote: (id: string) => deleteNote.mutate(id),
+    refetch: query.refetch,
+  };
+};
+
+/** A single note plus a debounced autosave, for the editor route. */
+export const useNote = (id: string | undefined) => {
+  const queryClient = useQueryClient();
+  const api = useNotesApi();
+
+  const query = useQuery({
+    queryKey: queryKeys.notes.detail(id ?? ""),
+    queryFn: () => api.fetchNote(id as string),
+    enabled: Boolean(id),
+  });
+
+  const save = useMutation({
+    mutationFn: (payload: UpdateNotePayload) =>
+      api.updateNote(id as string, payload),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.notes.detail(updated._id), updated);
+      // The dashboard's ordering depends on updatedAt, so let it refetch.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notes.list() });
+    },
+  });
+
+  return {
+    note: query.data ?? null,
+    loading: query.isPending,
+    error: query.error,
+    save: (payload: UpdateNotePayload) => save.mutateAsync(payload),
+    saving: save.isPending,
+  };
 };

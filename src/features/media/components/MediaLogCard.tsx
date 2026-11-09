@@ -1,83 +1,83 @@
-import { Pencil, Trash2, Star, ImageIcon, Heart } from "lucide-react";
-import type { MediaLog, MediaLogType } from "../types/media-types";
-import { resolveCoverUrl } from "../types/media-types";
-
-const COVER_ASPECT: Record<MediaLogType, string> = {
-  movie: "aspect-[2/3]",
-  tvshow: "aspect-[2/3]",
-  book: "aspect-[2/3]",
-  game: "aspect-[2/3]",
-  music_album: "aspect-square",
-};
+import { Pencil, Trash2, ImageIcon, Heart } from "lucide-react";
+import { StarRating } from "@components/ui/star-rating";
+import { cn } from "@lib/utils";
+import { resolveCoverUrl, type MediaLog } from "../types/media-types";
 
 interface MediaLogCardProps {
   log: MediaLog;
+  /** Tailwind aspect ratio for the cover, from the type's config. */
+  coverAspect: string;
   onEdit?: (log: MediaLog) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (log: MediaLog) => void;
   onToggleFavorite?: (id: string) => void;
 }
 
+const formatDate = (value: string | null | undefined): string | null => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString();
+};
+
+/** The type-specific credit line under the title, if the log has one. */
+const creditLine = (log: MediaLog): string | null => {
+  switch (log.type) {
+    case "movie":
+      return log.director ? `Directed by ${log.director}` : null;
+    case "book":
+      return (
+        [log.author, log.pages ? `${log.pages} pages` : null]
+          .filter(Boolean)
+          .join(" · ") || null
+      );
+    case "music_album":
+      return log.artist || null;
+    default:
+      return null;
+  }
+};
+
 function MediaLogCard({
   log,
+  coverAspect,
   onEdit,
   onDelete,
   onToggleFavorite,
 }: MediaLogCardProps) {
-  const displayTitle = log.title;
   const coverUrl = resolveCoverUrl(log.cover);
-  const linkUrl = log.url || null;
-  const dateLabel = (() => {
-    if (!log.date) return null;
-    const d = new Date(log.date);
-    if (Number.isNaN(d.getTime())) return null;
-    return d.toLocaleDateString();
-  })();
-
-  const secondaryLine = (() => {
-    if (log.type === "movie" && log.director) {
-      return `Directed by ${log.director}`;
-    }
-    if (log.type === "book") {
-      if (log.author && log.pages) {
-        return `${log.author} · ${log.pages} pages`;
-      }
-      if (log.author) return log.author;
-      if (log.pages) return `${log.pages} pages`;
-    }
-    if (log.type === "music_album" && log.artist) {
-      return log.artist;
-    }
-    return null;
-  })();
+  const dateLabel = formatDate(log.date);
+  const credit = creditLine(log);
+  const isFinished = log.status === "finished";
 
   return (
-    <article className="bg-card rounded-xl border border-border overflow-hidden hover:border-muted transition-colors flex flex-col group">
-      {/* Cover poster */}
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-muted">
       <div
-        className={`${COVER_ASPECT[log.type]} w-full flex-shrink-0 bg-secondary flex items-center justify-center overflow-hidden relative`}
+        className={cn(
+          coverAspect,
+          "relative flex w-full flex-shrink-0 items-center justify-center overflow-hidden bg-secondary",
+        )}
       >
         {coverUrl ? (
           <img
             src={coverUrl}
             alt=""
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
             loading="lazy"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
             }}
           />
         ) : (
-          <ImageIcon className="w-8 h-8 text-muted-foreground opacity-20" />
+          <ImageIcon className="h-8 w-8 text-muted-foreground opacity-20" />
         )}
-        {/* Hover actions overlay */}
+
         {(onEdit || onDelete) && (
-          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
             {onEdit && (
               <button
                 type="button"
                 onClick={() => onEdit(log)}
-                className="p-2 rounded-xl bg-card/80 text-foreground hover:bg-card transition-colors"
-                aria-label="Edit"
+                aria-label={`Edit ${log.title}`}
+                className="rounded-xl bg-card/80 p-2 text-foreground transition-colors hover:bg-card"
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -85,99 +85,83 @@ function MediaLogCard({
             {onDelete && (
               <button
                 type="button"
-                onClick={() => onDelete(log._id)}
-                className="p-2 rounded-xl bg-card/80 text-red-400 hover:bg-card transition-colors"
-                aria-label="Delete"
+                onClick={() => onDelete(log)}
+                aria-label={`Delete ${log.title}`}
+                className="rounded-xl bg-card/80 p-2 text-destructive transition-colors hover:bg-card"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         )}
-        {/* Favorite toggle — always visible, top-right corner */}
+
         {onToggleFavorite && (
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(event) => {
+              event.stopPropagation();
               onToggleFavorite(log._id);
             }}
-            className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-2xl bg-black/40 hover:bg-black/60 transition-colors"
-            aria-label={
-              log.favorite ? "Remove from favorites" : "Add to favorites"
-            }
+            aria-label={log.favorite ? "Remove from favorites" : "Add to favorites"}
+            aria-pressed={log.favorite}
+            className="absolute right-2.5 top-2.5 z-10 rounded-2xl bg-black/40 p-1.5 transition-colors hover:bg-black/60"
           >
             <Heart
-              className="h-4 w-4"
-              style={
+              className={cn(
+                "h-4 w-4",
                 log.favorite
-                  ? { fill: "var(--rating)", color: "var(--rating)" }
-                  : { fill: "transparent", color: "var(--muted-foreground)" }
-              }
+                  ? "fill-rating text-rating"
+                  : "fill-transparent text-muted-foreground",
+              )}
             />
           </button>
         )}
       </div>
 
-      <div className="p-3 flex flex-col flex-1 min-w-0 gap-1.5">
-        {/* Row 1: Title + Date */}
-        <div className="flex items-start justify-between gap-1 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
+        <div className="flex min-w-0 items-start justify-between gap-1">
           <div className="min-w-0 flex-1">
-            {linkUrl ? (
+            {log.url ? (
               <a
-                href={linkUrl}
+                href={log.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-sm text-foreground hover:text-muted-foreground truncate block leading-tight"
+                className="block truncate text-sm font-semibold leading-tight text-foreground hover:text-muted-foreground"
               >
-                {displayTitle}
+                {log.title}
               </a>
             ) : (
-              <span className="font-semibold text-sm text-foreground truncate block leading-tight">
-                {displayTitle}
+              <span className="block truncate text-sm font-semibold leading-tight text-foreground">
+                {log.title}
               </span>
             )}
-            {secondaryLine && (
-              <span className="text-xs text-muted-foreground truncate block mt-0.5">
-                {secondaryLine}
+            {credit && (
+              <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                {credit}
               </span>
             )}
           </div>
           {dateLabel && (
-            <span className="text-[10px] text-muted-foreground tabular-nums flex-shrink-0 mt-0.5">
+            <span className="mt-0.5 flex-shrink-0 text-[10px] tabular-nums text-muted-foreground">
               {dateLabel}
             </span>
           )}
         </div>
 
-        {/* Row 2: Status badge */}
-        {log.status && (
-          <div>
-            <span
-              className={`text-[10px] px-1.5 py-0.5 rounded-xl uppercase tracking-wide ${
-                log.status === "finished"
-                  ? "bg-emerald-600/20 text-emerald-300 border border-emerald-700/60"
-                  : "bg-amber-600/20 text-amber-300 border border-amber-700/60"
-              }`}
-            >
-              {log.status === "finished" ? "Done" : "In progress"}
-            </span>
-          </div>
-        )}
-
-        {/* Row 3: Star rating */}
-        <div className="flex items-center gap-0.5 mt-auto pt-1">
-          {Array.from({ length: 10 }, (_, i) => (
-            <Star
-              key={i}
-              className="w-3 h-3 rounded-sm"
-              style={{
-                fill: i < log.rating ? "#5bb8e8" : "#2a2a2a",
-                color: i < log.rating ? "#5bb8e8" : "#2a2a2a",
-              }}
-            />
-          ))}
+        <div>
+          <span
+            className={cn(
+              "rounded-xl border px-1.5 py-0.5 text-[10px] uppercase tracking-wide",
+              isFinished
+                ? "border-emerald-700/60 bg-emerald-600/20 text-emerald-300"
+                : "border-amber-700/60 bg-amber-600/20 text-amber-300",
+            )}
+          >
+            {isFinished ? "Done" : "In progress"}
+          </span>
         </div>
+
+        <StarRating value={log.rating} size="sm" className="mt-auto pt-1" />
       </div>
     </article>
   );

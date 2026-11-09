@@ -40,10 +40,12 @@
     /* Borders & inputs */
     --border: #2e2e2e;
     --input: #2e2e2e;
-    --ring: #555555;
+    --ring: #5bb8e8;
 
-    /* Custom: used ONLY for ratings/scores */
+    /* Accent used for ratings, active nav, and focus rings */
     --rating: #5bb8e8;
+    --rating-hover: #3a9fd0;
+    --rating-foreground: #141414;
 
     /* Navbar surface */
     --navbar: #1a1a1a;

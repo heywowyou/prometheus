@@ -1,35 +1,31 @@
 import { SignOutButton } from "@clerk/clerk-react";
 import { NavLink } from "react-router-dom";
+import { Button } from "@components/ui/button";
+import { NAV_ITEMS } from "@app/navigation";
+import { cn } from "@lib/utils";
 import logo from "../assets/logo.png";
-import { Button } from "./ui/button";
-
-const navItems = [
-  { to: "/todos", label: "Todos" },
-  { to: "/media", label: "Media" },
-  { to: "/notes", label: "Notes" },
-  { to: "/calendar", label: "Calendar" },
-  { to: "/workouts", label: "Workouts" },
-];
 
 function Header() {
   return (
-    <header
-      className="w-full sticky top-0 z-40 border-b border-border"
-      style={{ backgroundColor: "var(--navbar)" }}
-    >
-      <div className="max-w-7xl mx-auto px-6 h-14 flex items-center">
-        <img src={logo} alt="App Logo" className="w-40 object-contain shrink-0" />
-        <nav className="flex-1 flex justify-center gap-1">
-          {navItems.map((item) => (
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-[--navbar]">
+      <div className="mx-auto flex h-14 max-w-7xl items-center px-6">
+        <img
+          src={logo}
+          alt="Prometheus"
+          className="w-40 shrink-0 object-contain"
+        />
+        <nav className="flex flex-1 justify-center gap-1">
+          {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `px-4 py-2 rounded-xl transition-colors text-sm font-medium ${
+                cn(
+                  "rounded-xl px-4 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-[#5bb8e8] text-[#141414]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`
+                    ? "bg-rating text-rating-foreground"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )
               }
             >
               {item.label}
@@ -38,8 +34,12 @@ function Header() {
         </nav>
         <div className="shrink-0">
           <SignOutButton>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              Sign Out
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Sign out
             </Button>
           </SignOutButton>
         </div>
