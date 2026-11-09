@@ -1,13 +1,12 @@
-import { SignOutButton } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/clerk-react";
 import { NavLink } from "react-router-dom";
-import { Button } from "@components/ui/button";
 import { NAV_ITEMS } from "@app/navigation";
 import { cn } from "@lib/utils";
 import logo from "../assets/logo.png";
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-[--navbar]">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-[--navbar]/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center px-6">
         <img
           src={logo}
@@ -21,27 +20,20 @@ function Header() {
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  "rounded-xl px-4 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-rating text-rating-foreground"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                 )
               }
             >
+              <item.icon className="h-4 w-4" strokeWidth={2} />
               {item.label}
             </NavLink>
           ))}
         </nav>
         <div className="shrink-0">
-          <SignOutButton>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Sign out
-            </Button>
-          </SignOutButton>
+          <UserButton />
         </div>
       </div>
     </header>

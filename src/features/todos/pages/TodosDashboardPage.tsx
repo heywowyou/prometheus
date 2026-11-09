@@ -57,7 +57,14 @@ function TodosDashboardPage() {
   return (
     <>
       <div className="mb-8 flex items-center justify-between">
-        <h2 className="page-title">Dashboard</h2>
+        <div>
+          <h2 className="page-title">Dashboard</h2>
+          {!loading && todos.length > 0 && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {active.length} open · {completed.length} done
+            </p>
+          )}
+        </div>
         <Button onClick={() => setModal({ type: "new" })}>
           <Plus className="h-4 w-4" />
           New task
@@ -65,7 +72,26 @@ function TodosDashboardPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading your tasks…</p>
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+          <div className="space-y-10 xl:col-span-2">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 md:grid-cols-2">
+              {RECURRENCE_GROUPS.map((group) => (
+                <div key={group.key} className="flex flex-col gap-3">
+                  <div className="h-5 w-24 animate-pulse rounded-md bg-card" />
+                  <div className="h-14 animate-pulse rounded-xl bg-card" />
+                  <div className="h-14 animate-pulse rounded-xl bg-card opacity-70" />
+                  <div className="h-14 animate-pulse rounded-xl bg-card opacity-40" />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 xl:col-span-1">
+            <div className="h-5 w-20 animate-pulse rounded-md bg-card" />
+            <div className="h-14 animate-pulse rounded-xl bg-card" />
+            <div className="h-14 animate-pulse rounded-xl bg-card opacity-70" />
+            <div className="h-14 animate-pulse rounded-xl bg-card opacity-40" />
+          </div>
+        </div>
       ) : todos.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
@@ -159,7 +185,7 @@ function TodosDashboardPage() {
             />
           </CollapsibleTrigger>
 
-          <CollapsibleContent className="mt-3">
+          <CollapsibleContent className="mt-3 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
             <div className="flex flex-col space-y-2">
               {pausedTodos.map((todo) => (
                 <div

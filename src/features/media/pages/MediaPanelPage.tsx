@@ -60,8 +60,21 @@ function MediaPanelPage({ config }: MediaPanelPageProps) {
       </div>
 
       {loading ? (
-        <div className="text-sm text-muted-foreground">
-          Loading your {config.plural.toLowerCase()}…
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <div
+              key={index}
+              className="flex flex-col overflow-hidden rounded-xl border border-border bg-card"
+            >
+              <div
+                className={cn(config.coverAspect, "w-full animate-pulse bg-secondary")}
+              />
+              <div className="flex flex-col gap-2 p-3">
+                <div className="h-3 w-3/4 animate-pulse rounded bg-secondary" />
+                <div className="h-2.5 w-1/3 animate-pulse rounded bg-secondary" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : visibleLogs.length === 0 ? (
         <EmptyState

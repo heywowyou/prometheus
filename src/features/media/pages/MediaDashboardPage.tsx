@@ -13,13 +13,14 @@ function MediaDashboardPage() {
             to={`/media/${config.slug}`}
             className={({ isActive }) =>
               cn(
-                "rounded-xl px-4 py-2 font-medium transition-colors",
+                "flex items-center gap-2 rounded-xl px-4 py-2 font-medium transition-colors",
                 isActive
                   ? "bg-rating text-rating-foreground"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground",
               )
             }
           >
+            <config.icon className="h-4 w-4" strokeWidth={2} />
             {config.plural}
           </NavLink>
         ))}

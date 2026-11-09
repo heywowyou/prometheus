@@ -90,7 +90,17 @@ function NotesDashboardPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
+        <div className={gridClass}>
+          {Array.from({ length: view === "grid" ? 6 : 5 }).map((_, index) => (
+            <div
+              key={index}
+              className={cn(
+                "animate-pulse rounded-lg border border-border bg-card",
+                view === "grid" ? "h-32 p-4" : "h-14 p-3",
+              )}
+            />
+          ))}
+        </div>
       ) : notes.length === 0 ? (
         <EmptyState
           icon={FileText}

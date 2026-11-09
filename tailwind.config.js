@@ -60,7 +60,21 @@ export default {
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 2px)'
+  			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		keyframes: {
+  			'collapsible-down': {
+  				from: { height: '0' },
+  				to: { height: 'var(--radix-collapsible-content-height)' }
+  			},
+  			'collapsible-up': {
+  				from: { height: 'var(--radix-collapsible-content-height)' },
+  				to: { height: '0' }
+  			}
+  		},
+  		animation: {
+  			'collapsible-down': 'collapsible-down 200ms ease-out',
+  			'collapsible-up': 'collapsible-up 200ms ease-out'
   		},
   		typography: {
   			DEFAULT: {

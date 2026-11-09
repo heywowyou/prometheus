@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link, Upload, X } from "lucide-react";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
+import { Button } from "@components/ui/button";
 import { cn } from "@lib/utils";
 import { getErrorMessage } from "@lib/api/errors";
 import { useUploadApi } from "../api/upload-api";
@@ -72,7 +73,7 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
       onClick={() => setMode(target)}
       aria-pressed={mode === target}
       className={cn(
-        "flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-colors",
+        "flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         mode === target
           ? "bg-accent text-accent-foreground"
           : "text-muted-foreground hover:text-foreground",
@@ -92,7 +93,7 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="flex items-center gap-1 text-xs text-destructive transition-colors hover:opacity-80"
+              className="flex items-center gap-1 rounded-md text-xs text-destructive transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <X className="h-3 w-3" />
               Remove
@@ -136,14 +137,15 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
             }}
             disabled={busy}
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
             onClick={() => void handleUrlFetch()}
             disabled={!urlInput.trim() || busy}
-            className="h-9 flex-shrink-0 rounded-xl border border-border px-3 text-sm text-muted-foreground transition-colors hover:border-muted hover:text-foreground disabled:opacity-40"
+            className="flex-shrink-0 text-muted-foreground hover:text-foreground"
           >
             {busy ? "Fetching…" : "Fetch"}
-          </button>
+          </Button>
         </div>
       ) : (
         <div>
@@ -158,7 +160,7 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={busy}
-            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-muted hover:text-foreground disabled:opacity-50"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
           >
             <Upload className="h-3.5 w-3.5" />
             {busy
