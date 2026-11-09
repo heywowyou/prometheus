@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { useApiClient } from "../../../lib/api/api-client";
+import { useCallback, useMemo } from "react";
+import { useApiClient } from "@lib/api/api-client";
 
-export interface UploadCoverResult {
+export interface UploadedImage {
   url: string;
   publicId: string;
 }
@@ -10,35 +10,39 @@ export const useUploadApi = () => {
   const client = useApiClient();
 
   const uploadCover = useCallback(
-    async (file: File): Promise<UploadCoverResult> => {
+    async (file: File): Promise<UploadedImage> => {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await client.post<UploadCoverResult>(
+      const { data } = await client.post<UploadedImage>(
         "/images/upload",
-        formData
+        formData,
       );
-      return response.data;
+      return data;
     },
-    [client]
+    [client],
   );
 
+  /** Mirrors a remote image into Cloudinary via the API's validated importer. */
   const uploadCoverFromUrl = useCallback(
-    async (url: string): Promise<UploadCoverResult> => {
-      const response = await client.post<UploadCoverResult>(
+    async (url: string): Promise<UploadedImage> => {
+      const { data } = await client.post<UploadedImage>(
         "/images/upload-from-url",
-        { url }
+        { url },
       );
-      return response.data;
+      return data;
     },
-    [client]
+    [client],
   );
 
   const deleteCover = useCallback(
     async (publicId: string): Promise<void> => {
       await client.delete("/images", { params: { publicId } });
     },
-    [client]
+    [client],
   );
 
-  return { uploadCover, uploadCoverFromUrl, deleteCover };
+  return useMemo(
+    () => ({ uploadCover, uploadCoverFromUrl, deleteCover }),
+    [uploadCover, uploadCoverFromUrl, deleteCover],
+  );
 };

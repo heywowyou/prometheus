@@ -1,101 +1,87 @@
-import { useState, useEffect, useCallback } from "react";
-import { useMediaApi } from "../api/media-api";
-import type { MediaLog, MediaLogType } from "../types/media-types";
-import type {
-  CreateMediaLogPayload,
-  UpdateMediaLogPayload,
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@lib/query/keys";
+import {
+  useMediaApi,
+  type CreateMediaLogPayload,
+  type UpdateMediaLogPayload,
 } from "../api/media-api";
+import type { MediaLog, MediaLogType } from "../types/media-types";
+
+const byDateDesc = (a: MediaLog, b: MediaLog) =>
+  new Date(b.date).getTime() - new Date(a.date).getTime();
 
 export const useMediaLogs = (type?: MediaLogType) => {
-  const [logs, setLogs] = useState<MediaLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const api = useMediaApi();
+  const listKey = queryKeys.media.list(type);
 
-  const {
-    fetchLogs: apiFetchLogs,
-    createLog: apiCreateLog,
-    updateLog: apiUpdateLog,
-    deleteLog: apiDeleteLog,
-    toggleFavorite: apiToggleFavorite,
-  } = useMediaApi();
+  const query = useQuery({
+    queryKey: listKey,
+    queryFn: () => api.fetchLogs(type),
+  });
 
-  const fetchLogs = useCallback(async () => {
-    try {
-      const data = await apiFetchLogs(type);
-      setLogs(data);
-    } catch (error) {
-      console.error("Failed to fetch media logs:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiFetchLogs, type]);
-
-  const createLog = async (payload: CreateMediaLogPayload) => {
-    try {
-      const created = await apiCreateLog(payload);
-      setLogs((prev) =>
-        [...prev, created].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )
-      );
-      return created;
-    } catch (error) {
-      console.error("Failed to create media log:", error);
-      throw error;
-    }
-  };
-
-  const updateLog = async (id: string, payload: UpdateMediaLogPayload) => {
-    try {
-      const updated = await apiUpdateLog(id, payload);
-      setLogs((prev) =>
-        prev
-          .map((log) => (log._id === id ? updated : log))
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      );
-      return updated;
-    } catch (error) {
-      console.error("Failed to update media log:", error);
-      throw error;
-    }
-  };
-
-  const deleteLog = async (id: string) => {
-    try {
-      await apiDeleteLog(id);
-      setLogs((prev) => prev.filter((log) => log._id !== id));
-    } catch (error) {
-      console.error("Failed to delete media log:", error);
-    }
-  };
-
-  const toggleFavorite = async (id: string) => {
-    // Optimistic update
-    setLogs((prev) =>
-      prev.map((log) => (log._id === id ? { ...log, favorite: !log.favorite } : log))
+  const writeToCache = (updated: MediaLog) => {
+    queryClient.setQueryData<MediaLog[]>(listKey, (previous) =>
+      previous
+        ?.map((log) => (log._id === updated._id ? updated : log))
+        .sort(byDateDesc),
     );
-    try {
-      const updated = await apiToggleFavorite(id);
-      setLogs((prev) => prev.map((log) => (log._id === id ? updated : log)));
-    } catch (error) {
-      // Revert on failure
-      setLogs((prev) =>
-        prev.map((log) => (log._id === id ? { ...log, favorite: !log.favorite } : log))
-      );
-      console.error("Failed to toggle favorite:", error);
-    }
   };
 
-  useEffect(() => {
-    void fetchLogs();
-  }, [fetchLogs]);
+  const createLog = useMutation({
+    mutationFn: (payload: CreateMediaLogPayload) => api.createLog(payload),
+    onSuccess: (created) => {
+      queryClient.setQueryData<MediaLog[]>(listKey, (previous) =>
+        [...(previous ?? []), created].sort(byDateDesc),
+      );
+    },
+  });
+
+  const updateLog = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateMediaLogPayload }) =>
+      api.updateLog(id, payload),
+    onSuccess: writeToCache,
+  });
+
+  const deleteLog = useMutation({
+    mutationFn: (id: string) => api.deleteLog(id),
+    onSuccess: (_result, id) => {
+      queryClient.setQueryData<MediaLog[]>(listKey, (previous) =>
+        previous?.filter((log) => log._id !== id),
+      );
+    },
+  });
+
+  const toggleFavorite = useMutation({
+    mutationFn: (id: string) => api.toggleFavorite(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: listKey });
+      const snapshot = queryClient.getQueryData<MediaLog[]>(listKey);
+
+      queryClient.setQueryData<MediaLog[]>(listKey, (previous) =>
+        previous?.map((log) =>
+          log._id === id ? { ...log, favorite: !log.favorite } : log,
+        ),
+      );
+      return { snapshot };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(listKey, context.snapshot);
+      }
+    },
+    onSuccess: writeToCache,
+  });
 
   return {
-    logs,
-    loading,
-    createLog,
-    updateLog,
-    deleteLog,
-    toggleFavorite,
-    refetch: fetchLogs,
+    logs: query.data ?? [],
+    loading: query.isPending,
+    error: query.error,
+    createLog: (payload: CreateMediaLogPayload) => createLog.mutateAsync(payload),
+    updateLog: (id: string, payload: UpdateMediaLogPayload) =>
+      updateLog.mutateAsync({ id, payload }),
+    deleteLog: (id: string) => deleteLog.mutate(id),
+    toggleFavorite: (id: string) => toggleFavorite.mutate(id),
+    refetch: query.refetch,
   };
 };

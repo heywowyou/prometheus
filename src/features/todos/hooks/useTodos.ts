@@ -1,191 +1,158 @@
-import { useState, useEffect, useCallback } from "react";
-import { useTodosApi } from "../api/todos-api";
-import { getNextResetTime } from "../../../lib/date/recurrence";
-import type {
-  Todo,
-  RecurrenceType,
-} from "../types/todo-types";
+import { useMemo } from "react";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { queryKeys } from "@lib/query/keys";
+import { useTodosApi, type CreateTodoPayload, type UpdateTodoPayload } from "../api/todos-api";
+import type { Todo } from "../types/todo-types";
 
+/**
+ * Active (non-paused) todos plus the mutations the dashboard needs.
+ *
+ * Recurrence rollover is resolved by the API, so there is no client-side
+ * reconstruction of "this task is due again" and no synthetic ids.
+ */
 export const useTodos = () => {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const api = useTodosApi();
+  const listKey = queryKeys.todos.list();
 
-  const {
-    fetchTodos: apiFetchTodos,
-    createTodo: apiCreateTodo,
-    updateTodo: apiUpdateTodo,
-    pauseTodo: apiPauseTodo,
-    deleteTodo: apiDeleteTodo,
-  } = useTodosApi();
+  const query = useQuery({
+    queryKey: listKey,
+    queryFn: () => api.fetchTodos(),
+  });
 
-  const fetchTodos = useCallback(async () => {
-    try {
-      const data = await apiFetchTodos();
-
-      const now = new Date();
-      const todosToDisplay: Todo[] = [];
-
-      data.forEach((todo) => {
-        if (!todo.completed) {
-          todosToDisplay.push(todo);
-          return;
-        }
-
-        if (todo.recurrenceType === "none") {
-          todosToDisplay.push(todo);
-          return;
-        }
-
-        const resetTime = getNextResetTime(
-          todo.lastCompletedAt ?? null,
-          todo.recurrenceType as RecurrenceType
-        );
-
-        if (now < resetTime) {
-          todosToDisplay.push(todo);
-        } else {
-          const nextInstance: Todo = {
-            ...todo,
-            _id: `${todo._id}-active`,
-            completed: false,
-            lastCompletedAt: null,
-          };
-
-          todosToDisplay.push(nextInstance);
-        }
-      });
-
-      setTodos(todosToDisplay);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch todos:", error);
-      setLoading(false);
-    }
-  }, [apiFetchTodos]);
-
-  const createTodo = async (
-    text: string,
-    recurrenceType: RecurrenceType,
-    interactionType: Todo["interactionType"],
-    durationGoal: number
-  ) => {
-    try {
-      const created = await apiCreateTodo({
-        text,
-        recurrenceType,
-        interactionType,
-        durationGoal,
-      });
-
-      setTodos((prevTodos) => [...prevTodos, created]);
-    } catch (error) {
-      console.error("Failed to create todo:", error);
-    }
+  /** Replaces one todo in the cached list without a round trip. */
+  const writeToCache = (updated: Todo) => {
+    queryClient.setQueryData<Todo[]>(listKey, (previous) =>
+      previous?.map((todo) => (todo._id === updated._id ? updated : todo)),
+    );
   };
 
-  const toggleTodo = async (id: string) => {
-    const apiId = id.toString().replace("-active", "");
-
-    try {
-      const updatedTodo = await apiUpdateTodo(apiId, {});
-
-      setTodos((prevTodos) => {
-        const withoutOld = prevTodos.filter((todo) => todo._id !== id);
-        return [...withoutOld, updatedTodo];
-      });
-    } catch (error) {
-      console.error("Failed to toggle todo:", error);
-    }
+  const removeFromCache = (id: string) => {
+    queryClient.setQueryData<Todo[]>(listKey, (previous) =>
+      previous?.filter((todo) => todo._id !== id),
+    );
   };
 
-  const updateTask = async (
-    id: string,
-    updates: Partial<
-      Pick<Todo, "text" | "recurrenceType" | "interactionType" | "durationGoal">
-    >
-  ) => {
-    const apiId = id.toString().replace("-active", "");
-    try {
-      const updatedTodo = await apiUpdateTodo(apiId, updates);
-
-      setTodos((prevTodos) =>
-        prevTodos.map((t) => (t._id === id ? updatedTodo : t))
+  const createTodo = useMutation({
+    mutationFn: (payload: CreateTodoPayload) => api.createTodo(payload),
+    onSuccess: (created) => {
+      queryClient.setQueryData<Todo[]>(listKey, (previous) =>
+        previous ? [created, ...previous] : [created],
       );
-    } catch (error) {
-      console.error("Failed to update task:", error);
-    }
-  };
+    },
+  });
 
-  const pauseTodo = async (id: string) => {
-    const apiId = id.replace("-active", "");
-    try {
-      await apiPauseTodo(apiId);
-      setTodos((prev) => prev.filter((t) => t._id !== id));
-    } catch (error) {
-      console.error("Failed to pause todo:", error);
-    }
-  };
+  const updateTodo = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateTodoPayload }) =>
+      api.updateTodo(id, payload),
+    onSuccess: writeToCache,
+  });
 
-  const deleteTodo = async (id: string) => {
-    try {
-      await apiDeleteTodo(id);
+  const toggleTodo = useMutation({
+    mutationFn: (id: string) => api.toggleTodo(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: listKey });
+      const snapshot = queryClient.getQueryData<Todo[]>(listKey);
 
-      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
-    } catch (error) {
-      console.error("Failed to delete todo:", error);
-    }
-  };
+      // Optimistic flip: ticking a checkbox should feel instant. The tally is
+      // left alone — only the server knows the authoritative streak.
+      queryClient.setQueryData<Todo[]>(listKey, (previous) =>
+        previous?.map((todo) =>
+          todo._id === id ? { ...todo, completed: !todo.completed } : todo,
+        ),
+      );
+      return { snapshot };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(listKey, context.snapshot);
+      }
+    },
+    onSuccess: writeToCache,
+  });
 
-  useEffect(() => {
-    void fetchTodos();
-  }, [fetchTodos]);
+  const pauseTodo = useMutation({
+    mutationFn: (id: string) => api.pauseTodo(id),
+    onSuccess: (_paused, id) => {
+      removeFromCache(id);
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.todos.list({ paused: true }),
+      });
+    },
+  });
+
+  const deleteTodo = useMutation({
+    mutationFn: (id: string) => api.deleteTodo(id),
+    onSuccess: (_result, id) => removeFromCache(id),
+  });
 
   return {
-    todos,
-    loading,
-    createTodo,
-    toggleTodo,
-    updateTask,
-    pauseTodo,
-    deleteTodo,
-    refetch: fetchTodos,
+    todos: query.data ?? [],
+    loading: query.isPending,
+    error: query.error,
+    createTodo: (payload: CreateTodoPayload) => createTodo.mutateAsync(payload),
+    updateTodo: (id: string, payload: UpdateTodoPayload) =>
+      updateTodo.mutateAsync({ id, payload }),
+    toggleTodo: (id: string) => toggleTodo.mutate(id),
+    pauseTodo: (id: string) => pauseTodo.mutate(id),
+    deleteTodo: (id: string) => deleteTodo.mutate(id),
+    refetch: query.refetch,
   };
 };
 
 export const usePausedTodos = () => {
-  const [pausedTodos, setPausedTodos] = useState<Todo[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const api = useTodosApi();
+  const listKey = queryKeys.todos.list({ paused: true });
 
-  const { fetchTodos: apiFetchTodos, resumeTodo: apiResumeTodo } = useTodosApi();
+  const query = useQuery({
+    queryKey: listKey,
+    queryFn: () => api.fetchTodos({ paused: true }),
+  });
 
-  const fetchPaused = useCallback(async () => {
-    try {
-      const data = await apiFetchTodos({ paused: true });
-      setPausedTodos(data);
-    } catch (error) {
-      console.error("Failed to fetch paused todos:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiFetchTodos]);
-
-  const resumeTodo = async (id: string) => {
-    try {
-      await apiResumeTodo(id);
-      setPausedTodos((prev) => prev.filter((t) => t._id !== id));
-    } catch (error) {
-      console.error("Failed to resume todo:", error);
-    }
-  };
-
-  useEffect(() => {
-    void fetchPaused();
-  }, [fetchPaused]);
+  const resumeTodo = useMutation({
+    mutationFn: (id: string) => api.resumeTodo(id),
+    onSuccess: (_resumed, id) => {
+      queryClient.setQueryData<Todo[]>(listKey, (previous) =>
+        previous?.filter((todo) => todo._id !== id),
+      );
+      void queryClient.invalidateQueries({ queryKey: queryKeys.todos.list() });
+    },
+  });
 
   return {
-    pausedTodos,
-    loading,
-    resumeTodo,
-    refetch: fetchPaused,
+    pausedTodos: query.data ?? [],
+    loading: query.isPending,
+    resumeTodo: (id: string) => resumeTodo.mutate(id),
+    refetch: query.refetch,
   };
 };
+
+/** Splits todos into the dashboard's recurrence columns and history panel. */
+export const useGroupedTodos = (todos: Todo[]) =>
+  useMemo(() => {
+    const byInteractionThenText = (a: Todo, b: Todo) =>
+      a.interactionType === b.interactionType
+        ? a.text.localeCompare(b.text)
+        : a.interactionType.localeCompare(b.interactionType);
+
+    const active = todos.filter((todo) => !todo.completed).sort(byInteractionThenText);
+
+    const completed = todos
+      .filter((todo) => todo.completed)
+      .sort((a, b) => {
+        if (a.interactionType !== b.interactionType) {
+          return a.interactionType.localeCompare(b.interactionType);
+        }
+        return (
+          new Date(b.lastCompletedAt ?? 0).getTime() -
+          new Date(a.lastCompletedAt ?? 0).getTime()
+        );
+      });
+
+    return { active, completed };
+  }, [todos]);

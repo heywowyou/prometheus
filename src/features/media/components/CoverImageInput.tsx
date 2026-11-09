@@ -1,82 +1,90 @@
 import { useRef, useState } from "react";
 import { Link, Upload, X } from "lucide-react";
-import type { CoverImage } from "../types/media-types";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
+import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
+import { cn } from "@lib/utils";
+import { getErrorMessage } from "@lib/api/errors";
 import { useUploadApi } from "../api/upload-api";
+import type { CoverImage } from "../types/media-types";
 
 interface CoverImageInputProps {
   value: CoverImage | null;
   onChange: (value: CoverImage | null) => void;
 }
 
+type Mode = "url" | "upload";
+
+/**
+ * Picks a cover either by remote URL or by file upload.
+ *
+ * Both paths store the image in Cloudinary so covers don't break when the
+ * source site reorganises; the API owns deleting replaced assets.
+ */
 function CoverImageInput({ value, onChange }: CoverImageInputProps) {
-  const [mode, setMode] = useState<"url" | "upload">(
-    value?.source === "upload" ? "upload" : "url"
+  const { uploadCover, uploadCoverFromUrl } = useUploadApi();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [mode, setMode] = useState<Mode>(
+    value?.source === "upload" ? "upload" : "url",
   );
   const [urlInput, setUrlInput] = useState("");
-  const [urlUploading, setUrlUploading] = useState(false);
-  const [urlError, setUrlError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadCover, uploadCoverFromUrl } = useUploadApi();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUrlFetch = async () => {
     const trimmed = urlInput.trim();
     if (!trimmed) return;
-    setUrlUploading(true);
-    setUrlError(null);
+
+    setBusy(true);
+    setError(null);
     try {
       const result = await uploadCoverFromUrl(trimmed);
       onChange({ url: result.url, source: "upload", publicId: result.publicId });
       setUrlInput("");
-    } catch (err: unknown) {
-      const msg =
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-          ? String((err.response.data as { message: string }).message)
-          : "Failed to fetch image. Check the URL and try again.";
-      setUrlError(msg);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
-      setUrlUploading(false);
+      setBusy(false);
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    setUploadError(null);
+
+    setBusy(true);
+    setError(null);
     try {
       const result = await uploadCover(file);
       onChange({ url: result.url, source: "upload", publicId: result.publicId });
-    } catch {
-      setUploadError("Upload failed. Please try again.");
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
-      setUploading(false);
-      // Reset so the same file can be re-selected after an error
+      setBusy(false);
+      // Reset so the same file can be re-selected after an error.
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  const modeButtonClass = (active: boolean) =>
-    `px-2 py-0.5 rounded-md flex items-center gap-1 text-xs transition-colors ${
-      active
-        ? "bg-accent text-accent-foreground"
-        : "text-muted-foreground hover:text-foreground"
-    }`;
+  const modeButton = (target: Mode, icon: typeof Link, label: string) => (
+    <button
+      type="button"
+      onClick={() => setMode(target)}
+      aria-pressed={mode === target}
+      className={cn(
+        "flex items-center gap-1 rounded-md px-2 py-0.5 text-xs transition-colors",
+        mode === target
+          ? "bg-accent text-accent-foreground"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {icon === Link ? <Link className="h-3 w-3" /> : <Upload className="h-3 w-3" />}
+      {label}
+    </button>
+  );
 
   return (
     <div className="space-y-2">
-      {/* Header row */}
       <div className="flex items-center justify-between">
         <Label>Cover image</Label>
         <div className="flex items-center gap-2">
@@ -84,79 +92,58 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
             <button
               type="button"
               onClick={() => onChange(null)}
-              className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors"
+              className="flex items-center gap-1 text-xs text-destructive transition-colors hover:opacity-80"
             >
-              <X className="w-3 h-3" />
+              <X className="h-3 w-3" />
               Remove
             </button>
           )}
           <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={() => setMode("url")}
-              className={modeButtonClass(mode === "url")}
-            >
-              <Link className="w-3 h-3" />
-              URL
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("upload")}
-              className={modeButtonClass(mode === "upload")}
-            >
-              <Upload className="w-3 h-3" />
-              Upload
-            </button>
+            {modeButton("url", Link, "URL")}
+            {modeButton("upload", Upload, "Upload")}
           </div>
         </div>
       </div>
 
-      {/* Current cover preview */}
       {value?.url && (
-        <div className="w-14 aspect-square overflow-hidden rounded-lg border border-border">
+        <div className="aspect-square w-14 overflow-hidden rounded-lg border border-border">
           <img
             src={value.url}
             alt="Cover preview"
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
+            className="h-full w-full object-cover"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
             }}
           />
         </div>
       )}
 
-      {/* Input controls — always visible for entering or replacing */}
       {mode === "url" ? (
-        <div className="space-y-1.5">
-          <div className="flex gap-2">
-            <Input
-              type="url"
-              placeholder={value ? "Paste a new URL to replace…" : "https://…"}
-              value={urlInput}
-              onChange={(e) => {
-                setUrlInput(e.target.value);
-                setUrlError(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  void handleUrlFetch();
-                }
-              }}
-              disabled={urlUploading}
-            />
-            <button
-              type="button"
-              onClick={() => void handleUrlFetch()}
-              disabled={!urlInput.trim() || urlUploading}
-              className="flex-shrink-0 px-3 h-9 rounded-xl border border-border text-sm text-muted-foreground hover:text-foreground hover:border-muted transition-colors disabled:opacity-40"
-            >
-              {urlUploading ? "Fetching…" : "Fetch"}
-            </button>
-          </div>
-          {urlError && (
-            <p className="text-xs text-red-400">{urlError}</p>
-          )}
+        <div className="flex gap-2">
+          <Input
+            type="url"
+            placeholder={value ? "Paste a new URL to replace…" : "https://…"}
+            value={urlInput}
+            onChange={(event) => {
+              setUrlInput(event.target.value);
+              setError(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleUrlFetch();
+              }
+            }}
+            disabled={busy}
+          />
+          <button
+            type="button"
+            onClick={() => void handleUrlFetch()}
+            disabled={!urlInput.trim() || busy}
+            className="h-9 flex-shrink-0 rounded-xl border border-border px-3 text-sm text-muted-foreground transition-colors hover:border-muted hover:text-foreground disabled:opacity-40"
+          >
+            {busy ? "Fetching…" : "Fetch"}
+          </button>
         </div>
       ) : (
         <div>
@@ -165,22 +152,25 @@ function CoverImageInput({ value, onChange }: CoverImageInputProps) {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             className="hidden"
-            onChange={(e) => void handleFileChange(e)}
+            onChange={(event) => void handleFileChange(event)}
           />
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full h-9 flex items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-muted transition-colors disabled:opacity-50"
+            disabled={busy}
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border text-sm text-muted-foreground transition-colors hover:border-muted hover:text-foreground disabled:opacity-50"
           >
-            <Upload className="w-3.5 h-3.5" />
-            {uploading ? "Uploading…" : value ? "Choose a replacement file" : "Choose file"}
+            <Upload className="h-3.5 w-3.5" />
+            {busy
+              ? "Uploading…"
+              : value
+                ? "Choose a replacement file"
+                : "Choose file"}
           </button>
-          {uploadError && (
-            <p className="text-xs text-red-400 mt-1">{uploadError}</p>
-          )}
         </div>
       )}
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

@@ -34,6 +34,11 @@ export default {
   			destructive: {
   				DEFAULT: 'var(--destructive)'
   			},
+  			rating: {
+  				DEFAULT: 'var(--rating)',
+  				hover: 'var(--rating-hover)',
+  				foreground: 'var(--rating-foreground)'
+  			},
   			border: 'var(--border)',
   			input: 'var(--input)',
   			ring: 'var(--ring)',
