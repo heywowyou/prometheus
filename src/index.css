@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --radius: 0.1875rem;
+    --radius: 0.75rem;
 
     /* Core palette */
     --background: #141414;
@@ -63,16 +63,6 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Radix/shadcn animation keyframes */
-  @keyframes accordion-down {
-    from { height: 0; }
-    to { height: var(--radix-accordion-content-height); }
-  }
-  @keyframes accordion-up {
-    from { height: var(--radix-accordion-content-height); }
-    to { height: 0; }
   }
 }
 

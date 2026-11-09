@@ -1,10 +1,18 @@
+import {
+  CheckSquare,
+  Clapperboard,
+  NotebookText,
+  CalendarDays,
+  Dumbbell,
+} from "lucide-react";
+
 /** The subapps shown in the header, in order. */
 export const NAV_ITEMS = [
-  { to: "/todos", label: "Todos" },
-  { to: "/media", label: "Media" },
-  { to: "/notes", label: "Notes" },
-  { to: "/calendar", label: "Calendar" },
-  { to: "/workouts", label: "Workouts" },
+  { to: "/todos", label: "Todos", icon: CheckSquare },
+  { to: "/media", label: "Media", icon: Clapperboard },
+  { to: "/notes", label: "Notes", icon: NotebookText },
+  { to: "/calendar", label: "Calendar", icon: CalendarDays },
+  { to: "/workouts", label: "Workouts", icon: Dumbbell },
 ] as const;
 
 /** Where signed-in users land. */

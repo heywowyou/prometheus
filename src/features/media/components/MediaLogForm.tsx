@@ -5,6 +5,11 @@ import { Label } from "@components/ui/label";
 import { Textarea } from "@components/ui/textarea";
 import { StarRating } from "@components/ui/star-rating";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@components/ui/collapsible";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -117,90 +122,87 @@ function MediaLogForm({
 
       <DateFieldInput value={values.date} onChange={(v) => set("date", v)} />
 
-      <button
-        type="button"
-        onClick={() => setShowAdvanced((open) => !open)}
-        aria-expanded={showAdvanced}
-        className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ChevronDown
-          className={cn(
-            "h-3 w-3 transition-transform",
-            showAdvanced && "rotate-180",
-          )}
-        />
-        {showAdvanced ? "Hide advanced options" : "Show advanced options"}
-      </button>
-
-      {showAdvanced && (
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Status</Label>
-            <Select
-              value={values.status}
-              onValueChange={(value) => set("status", value as MediaLogStatus)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="finished">Finished</SelectItem>
-                <SelectItem value="in_progress">In progress</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {credits.length > 0 && (
-            <div
-              className={cn(
-                "gap-3",
-                credits.length > 1 ? "grid grid-cols-2" : "space-y-1.5",
-              )}
-            >
-              {credits.map((credit) => (
-                <div key={credit} className="space-y-1.5">
-                  <Label htmlFor={`media-${credit}`}>
-                    {CREDIT_LABELS[credit]}
-                  </Label>
-                  <Input
-                    id={`media-${credit}`}
-                    type={credit === "pages" ? "number" : "text"}
-                    min={credit === "pages" ? 1 : undefined}
-                    value={values[credit]}
-                    onChange={(event) => set(credit, event.target.value)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <Label htmlFor="media-review">Review</Label>
-            <Textarea
-              id="media-review"
-              placeholder="What did you think?"
-              value={values.review}
-              onChange={(event) => set("review", event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="media-url">URL</Label>
-            <Input
-              id="media-url"
-              type="url"
-              placeholder="https://..."
-              value={values.url}
-              onChange={(event) => set("url", event.target.value)}
-            />
-          </div>
-
-          <CoverImageInput
-            value={values.cover}
-            onChange={(cover) => set("cover", cover)}
+      <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
+        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          <ChevronDown
+            className={cn(
+              "h-3 w-3 transition-transform",
+              showAdvanced && "rotate-180",
+            )}
           />
-        </div>
-      )}
+          {showAdvanced ? "Hide advanced options" : "Show advanced options"}
+        </CollapsibleTrigger>
+
+        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+          <div className="space-y-4 pt-4">
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select
+                value={values.status}
+                onValueChange={(value) => set("status", value as MediaLogStatus)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="finished">Finished</SelectItem>
+                  <SelectItem value="in_progress">In progress</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {credits.length > 0 && (
+              <div
+                className={cn(
+                  "gap-3",
+                  credits.length > 1 ? "grid grid-cols-2" : "space-y-1.5",
+                )}
+              >
+                {credits.map((credit) => (
+                  <div key={credit} className="space-y-1.5">
+                    <Label htmlFor={`media-${credit}`}>
+                      {CREDIT_LABELS[credit]}
+                    </Label>
+                    <Input
+                      id={`media-${credit}`}
+                      type={credit === "pages" ? "number" : "text"}
+                      min={credit === "pages" ? 1 : undefined}
+                      value={values[credit]}
+                      onChange={(event) => set(credit, event.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="media-review">Review</Label>
+              <Textarea
+                id="media-review"
+                placeholder="What did you think?"
+                value={values.review}
+                onChange={(event) => set("review", event.target.value)}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="media-url">URL</Label>
+              <Input
+                id="media-url"
+                type="url"
+                placeholder="https://..."
+                value={values.url}
+                onChange={(event) => set("url", event.target.value)}
+              />
+            </div>
+
+            <CoverImageInput
+              value={values.cover}
+              onChange={(cover) => set("cover", cover)}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }

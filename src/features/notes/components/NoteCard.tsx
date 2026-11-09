@@ -51,7 +51,7 @@ function NoteCard({
         }
       }}
       className={cn(
-        "group relative cursor-pointer rounded-lg border border-border bg-surface transition-colors hover:border-rating/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        "group relative cursor-pointer rounded-lg border border-border bg-card transition-colors hover:border-rating/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
         isGrid ? "flex flex-col p-4" : "flex items-start gap-3 p-3",
       )}
     >
