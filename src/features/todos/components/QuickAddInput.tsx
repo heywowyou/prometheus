@@ -47,7 +47,11 @@ function QuickAddInput({ recurrenceType, label, onCreate }: QuickAddInputProps) 
           }
         }}
         disabled={busy}
-        placeholder={`Add ${label.toLowerCase()} task — "Read 30m" for a timer`}
+        placeholder={
+          recurrenceType === "none"
+            ? `Add a task — "Pay rent @fri", "Study 45m @tomorrow"`
+            : `Add a ${label.toLowerCase()} task — "Read 30m" makes a timer`
+        }
         aria-label={`Add a ${label.toLowerCase()} task`}
         className="min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
       />

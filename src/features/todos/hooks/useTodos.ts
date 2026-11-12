@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import {
   useQuery,
   useMutation,
@@ -192,44 +191,4 @@ export const useTodoHistory = (id: string | null, days: number) => {
     enabled: id !== null,
   });
   return { history: query.data ?? null, loading: query.isPending };
-};
-
-/** How long a finished one-time task stays in the History column. */
-export const RECENT_COMPLETION_DAYS = 7;
-
-/** Splits todos into the dashboard's recurrence columns and history panel. */
-export const useGroupedTodos = (todos: Todo[]) => {
-  // "Now" for the age cutoff, fixed at mount: reading the clock during render
-  // is impure, and a page open across days is refreshed by refetches anyway.
-  const [mountedAt] = useState(() => Date.now());
-
-  return useMemo(() => {
-    const byModeThenText = (a: Todo, b: Todo) =>
-      a.interactionType === b.interactionType
-        ? a.text.localeCompare(b.text)
-        : a.interactionType.localeCompare(b.interactionType);
-
-    const active = todos.filter((todo) => !todo.completed).sort(byModeThenText);
-
-    const completed = todos
-      .filter((todo) => todo.completed)
-      .sort(
-        (a, b) =>
-          new Date(b.lastCompletedAt ?? 0).getTime() -
-          new Date(a.lastCompletedAt ?? 0).getTime(),
-      );
-
-    // Finished one-time tasks pile up forever; only recent ones are shown
-    // unless the user asks for the rest.
-    const cutoff = mountedAt - RECENT_COMPLETION_DAYS * 86_400_000;
-    const isOld = (todo: Todo) =>
-      todo.recurrenceType === "none" &&
-      new Date(todo.lastCompletedAt ?? 0).getTime() < cutoff;
-
-    return {
-      active,
-      recentCompleted: completed.filter((todo) => !isOld(todo)),
-      olderCompleted: completed.filter(isOld),
-    };
-  }, [todos, mountedAt]);
 };

@@ -8,6 +8,7 @@ import { relativeDate } from "@lib/date/relative";
 import { useTodos } from "@features/todos/hooks/useTodos";
 import TodoItem from "@features/todos/components/TodoItem";
 import type { RecurrenceType, Todo } from "@features/todos/types/todo-types";
+import { compareOpenTodos } from "@features/todos/due";
 import { useMediaLogs } from "@features/media/hooks/useMediaLogs";
 import { configForType } from "@features/media/media-config";
 import { resolveCoverUrl } from "@features/media/types/media-types";
@@ -76,7 +77,10 @@ function TodayPage() {
   const { notes, loading: notesLoading } = useNotes({ view: "active" });
   const { createNote } = useNoteActions();
 
-  const due = useMemo(() => todos.filter((todo) => !todo.completed), [todos]);
+  const due = useMemo(
+    () => todos.filter((todo) => !todo.completed).sort(compareOpenTodos),
+    [todos],
+  );
   const daily = todos.filter((todo) => todo.recurrenceType === "daily");
   const dailyDone = daily.filter((todo) => todo.completed).length;
   const inProgress = logs.filter((log) => log.status === "in_progress");
