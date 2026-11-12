@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   CalendarClock,
   CalendarDays,
@@ -68,6 +68,8 @@ interface TodoItemProps {
   onEdit?: (todo: Todo) => void;
   onPause?: (id: string) => void;
   onHistory?: (todo: Todo) => void;
+  /** A drag handle, rendered at the row's left edge when the list is sortable. */
+  handle?: ReactNode;
 }
 
 /** SVG ring showing timer progress around the play/pause icon. */
@@ -100,6 +102,7 @@ function TodoItem({
   onEdit,
   onPause,
   onHistory,
+  handle,
 }: TodoItemProps) {
   const isRecurring = todo.recurrenceType !== "none";
   const isTimer = todo.interactionType === "timer" && Boolean(onTimer);
@@ -188,6 +191,7 @@ function TodoItem({
       )}
 
       <div className="relative z-10 flex min-w-0 flex-1 items-center">
+        {handle}
         {isTimer && !todo.completed ? (
           <button
             type="button"

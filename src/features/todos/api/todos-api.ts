@@ -62,6 +62,14 @@ export const useTodosApi = () => {
     [client],
   );
 
+  /** Saves a section's manual order: `ids[i]` takes position `i`. */
+  const reorderTodos = useCallback(
+    async (ids: string[]): Promise<void> => {
+      await client.patch(`${TODOS_PATH}/reorder`, { ids });
+    },
+    [client],
+  );
+
   const updateTimer = useCallback(
     async (id: string, action: TimerAction): Promise<Todo> => {
       const { data } = await client.patch<Todo>(`${TODOS_PATH}/${id}/timer`, {
@@ -111,6 +119,7 @@ export const useTodosApi = () => {
       createTodo,
       updateTodo,
       toggleTodo,
+      reorderTodos,
       updateTimer,
       fetchHistory,
       pauseTodo,
@@ -118,6 +127,7 @@ export const useTodosApi = () => {
       deleteTodo,
     }),
     [
+      reorderTodos,
       fetchTodos,
       createTodo,
       updateTodo,

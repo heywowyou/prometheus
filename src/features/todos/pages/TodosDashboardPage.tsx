@@ -10,7 +10,8 @@ import TaskModal, { type TaskSubmitValues } from "../components/TaskModal";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import TodoHistoryDialog from "../components/TodoHistoryDialog";
 import QuickAddInput from "../components/QuickAddInput";
-import { compareOpenTodos, daysUntil, isOverdue } from "../due";
+import SortableTodoList from "../components/SortableTodoList";
+import { compareSectionTodos, daysUntil, isOverdue } from "../due";
 import type { RecurrenceType, Todo } from "../types/todo-types";
 
 type ModalState =
@@ -69,6 +70,7 @@ function TodosDashboardPage() {
     createTodo,
     updateTodo,
     toggleTodo,
+    reorderTodos,
     timerAction,
     pauseTodo,
     deleteTodo,
@@ -102,7 +104,7 @@ function TodosDashboardPage() {
       const isOld = (todo: Todo) =>
         key === "none" && new Date(todo.lastCompletedAt ?? 0).getTime() < cutoff;
       result[key] = {
-        open: items.filter((todo) => !todo.completed).sort(compareOpenTodos),
+        open: items.filter((todo) => !todo.completed).sort(compareSectionTodos),
         done: done.filter((todo) => !isOld(todo)),
         olderDone: done.filter(isOld),
       };
@@ -216,9 +218,11 @@ function TodosDashboardPage() {
 
                   {!isCollapsed && (
                     <div className="space-y-1.5">
-                      {data.open.map((todo) => (
-                        <TodoItem key={todo._id} todo={todo} {...itemHandlers} />
-                      ))}
+                      <SortableTodoList
+                        todos={data.open}
+                        onReorder={reorderTodos}
+                        {...itemHandlers}
+                      />
                       <QuickAddInput recurrenceType={key} label={quickAdd} onCreate={createTodo} />
 
                       {data.done.length > 0 && (

@@ -73,3 +73,17 @@ export const compareOpenTodos = (a: Todo, b: Todo): number => {
   }
   return a.text.localeCompare(b.text);
 };
+
+/**
+ * Order within a dashboard section: the user's manual (dragged) order. Tasks
+ * that were never placed — older data — come first in the automatic order;
+ * new tasks get a position at the bottom from the API.
+ */
+export const compareSectionTodos = (a: Todo, b: Todo): number => {
+  const aPlaced = typeof a.order === "number";
+  const bPlaced = typeof b.order === "number";
+  if (aPlaced && bPlaced) return (a.order as number) - (b.order as number);
+  if (aPlaced) return 1;
+  if (bPlaced) return -1;
+  return compareOpenTodos(a, b);
+};
