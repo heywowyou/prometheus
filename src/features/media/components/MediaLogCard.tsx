@@ -1,172 +1,114 @@
-import { Pencil, Trash2, ImageIcon, Heart } from "lucide-react";
-import { StarRating } from "@components/ui/star-rating";
+import { Heart, ImageIcon, Star } from "lucide-react";
 import { cn } from "@lib/utils";
+import { STATUS_META, creditLine } from "../media-status";
 import { resolveCoverUrl, type MediaLog } from "../types/media-types";
+
+export type CardDensity = "comfortable" | "compact";
 
 interface MediaLogCardProps {
   log: MediaLog;
   /** Tailwind aspect ratio for the cover, from the type's config. */
   coverAspect: string;
-  onEdit?: (log: MediaLog) => void;
-  onDelete?: (log: MediaLog) => void;
-  onToggleFavorite?: (id: string) => void;
+  density: CardDensity;
+  onOpen: (log: MediaLog) => void;
+  onToggleFavorite: (id: string) => void;
 }
 
-const formatDate = (value: string | null | undefined): string | null => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString();
-};
-
-/** The type-specific credit line under the title, if the log has one. */
-const creditLine = (log: MediaLog): string | null => {
-  switch (log.type) {
-    case "movie":
-      return log.director ? `Directed by ${log.director}` : null;
-    case "book":
-      return (
-        [log.author, log.pages ? `${log.pages} pages` : null]
-          .filter(Boolean)
-          .join(" · ") || null
-      );
-    case "music_album":
-      return log.artist || null;
-    default:
-      return null;
-  }
-};
-
-function MediaLogCard({
-  log,
-  coverAspect,
-  onEdit,
-  onDelete,
-  onToggleFavorite,
-}: MediaLogCardProps) {
-  const coverUrl = resolveCoverUrl(log.cover);
-  const dateLabel = formatDate(log.date);
-  // "2021 · Directed by Denis Villeneuve" — the year tells remakes apart.
-  const credit =
-    [log.releaseYear, creditLine(log)].filter(Boolean).join(" · ") || null;
-  const isFinished = log.status === "finished";
+/**
+ * A cover tile. Clicking opens the detail view, which holds every action;
+ * only "favorite" stays on the tile, as the one-tap action people repeat.
+ */
+function MediaLogCard({ log, coverAspect, density, onOpen, onToggleFavorite }: MediaLogCardProps) {
+  const cover = resolveCoverUrl(log.cover);
+  const compact = density === "compact";
+  const status = log.status && log.status !== "finished" ? STATUS_META[log.status] : null;
+  const meta = [log.releaseYear, creditLine(log)].filter(Boolean).join(" · ");
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-muted">
-      <div
-        className={cn(
-          coverAspect,
-          "relative flex w-full flex-shrink-0 items-center justify-center overflow-hidden bg-secondary",
-        )}
+    <article className="group relative">
+      <button
+        type="button"
+        onClick={() => onOpen(log)}
+        aria-label={`Open ${log.title}`}
+        className="block w-full text-left focus-visible:outline-none"
       >
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt=""
-            className="h-full w-full object-cover"
-            loading="lazy"
-            onError={(event) => {
-              event.currentTarget.style.display = "none";
-            }}
-          />
-        ) : (
-          <ImageIcon className="h-8 w-8 text-muted-foreground opacity-20" />
-        )}
-
-        {(onEdit || onDelete) && (
-          // Hover/focus overlay on desktop; on touch screens the buttons sit
-          // permanently in the cover's bottom-left corner instead.
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-overlay/60 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 touch:inset-auto touch:bottom-2 touch:left-2 touch:bg-transparent touch:opacity-100">
-            {onEdit && (
-              <button
-                type="button"
-                onClick={() => onEdit(log)}
-                aria-label={`Edit ${log.title}`}
-                className="rounded-xl bg-card/80 p-2 text-foreground transition-colors hover:bg-card"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                type="button"
-                onClick={() => onDelete(log)}
-                aria-label={`Delete ${log.title}`}
-                className="rounded-xl bg-card/80 p-2 text-destructive transition-colors hover:bg-card"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-        )}
-
-        {onToggleFavorite && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggleFavorite(log._id);
-            }}
-            aria-label={log.favorite ? "Remove from favorites" : "Add to favorites"}
-            aria-pressed={log.favorite}
-            className="absolute right-2.5 top-2.5 z-10 rounded-2xl bg-overlay/40 p-1.5 transition-colors hover:bg-overlay/60"
-          >
-            <Heart
-              className={cn(
-                "h-4 w-4",
-                log.favorite
-                  ? "fill-rating text-rating"
-                  : "fill-transparent text-muted-foreground",
-              )}
+        <div
+          className={cn(
+            coverAspect,
+            "relative flex w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary transition-all group-hover:border-rating/60 group-focus-visible:ring-2 group-focus-visible:ring-ring",
+          )}
+        >
+          {cover ? (
+            <img
+              src={cover}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
             />
-          </button>
-        )}
-      </div>
+          ) : (
+            <div className="flex flex-col items-center gap-1 px-2 text-center">
+              <ImageIcon className="h-6 w-6 text-muted-foreground opacity-30" />
+              {compact && (
+                <span className="line-clamp-3 text-[10px] text-muted-foreground">{log.title}</span>
+              )}
+            </div>
+          )}
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
-        <div className="flex min-w-0 items-start justify-between gap-1">
-          <div className="min-w-0 flex-1">
-            {log.url ? (
-              <a
-                href={log.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block truncate text-sm font-semibold leading-tight text-foreground hover:text-muted-foreground"
-              >
-                {log.title}
-              </a>
-            ) : (
-              <span className="block truncate text-sm font-semibold leading-tight text-foreground">
-                {log.title}
-              </span>
-            )}
-            {credit && (
-              <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                {credit}
-              </span>
-            )}
-          </div>
-          {dateLabel && (
-            <span className="mt-0.5 flex-shrink-0 text-[10px] tabular-nums text-muted-foreground">
-              {dateLabel}
+          {status && (
+            <span
+              className={cn(
+                "absolute bottom-1.5 left-1.5 rounded-full border px-1.5 py-0.5 text-[10px] font-medium backdrop-blur-sm",
+                status.badge,
+              )}
+            >
+              {status.label}
             </span>
           )}
+
+          {log.rating && compact ? (
+            <span className="absolute bottom-1.5 right-1.5 flex items-center gap-0.5 rounded-full bg-overlay/60 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-foreground">
+              <Star className="h-2.5 w-2.5 fill-rating text-rating" />
+              {log.rating}
+            </span>
+          ) : null}
         </div>
 
-        <div>
-          <span
-            className={cn(
-              "rounded-xl border px-1.5 py-0.5 text-[10px] uppercase tracking-wide",
-              isFinished
-                ? "border-success/40 bg-success/15 text-success"
-                : "border-warning/40 bg-warning/15 text-warning",
-            )}
-          >
-            {isFinished ? "Done" : "In progress"}
-          </span>
-        </div>
+        {!compact && (
+          <div className="mt-2 min-w-0 px-0.5">
+            <p className="truncate text-sm font-medium leading-tight text-foreground">{log.title}</p>
+            <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span className="truncate">{meta || " "}</span>
+              {log.rating ? (
+                <span className="flex shrink-0 items-center gap-0.5 tabular-nums">
+                  <Star className="h-3 w-3 fill-rating text-rating" />
+                  {log.rating}
+                </span>
+              ) : null}
+            </div>
+          </div>
+        )}
+      </button>
 
-        <StarRating value={log.rating} size="sm" className="mt-auto pt-1" />
-      </div>
+      <button
+        type="button"
+        onClick={() => onToggleFavorite(log._id)}
+        aria-label={log.favorite ? `Remove ${log.title} from favorites` : `Add ${log.title} to favorites`}
+        aria-pressed={log.favorite}
+        className={cn(
+          "absolute right-1.5 top-1.5 rounded-full bg-overlay/50 p-1.5 transition-opacity hover:bg-overlay/70 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+          log.favorite ? "opacity-100" : "opacity-0 group-hover:opacity-100 touch:opacity-100",
+        )}
+      >
+        <Heart
+          className={cn(
+            "h-3.5 w-3.5",
+            log.favorite ? "fill-rating text-rating" : "fill-transparent text-foreground",
+          )}
+        />
+      </button>
     </article>
   );
 }

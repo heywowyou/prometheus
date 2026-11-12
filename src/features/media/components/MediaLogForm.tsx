@@ -1,40 +1,23 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
-import { ChevronDown } from "lucide-react";
+import type { Dispatch, KeyboardEvent, SetStateAction } from "react";
+import { Link2, Search, X } from "lucide-react";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
 import { Textarea } from "@components/ui/textarea";
 import { StarRating } from "@components/ui/star-rating";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@components/ui/collapsible";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@components/ui/select";
+import { dateToParts } from "@lib/date/date-parts";
 import { cn } from "@lib/utils";
 import CoverImageInput from "./CoverImageInput";
 import DateFieldInput from "./DateFieldInput";
-import MetadataTitleField from "./MetadataTitleField";
 import type { MediaLogFormValues } from "./media-form-values";
-import {
-  MEDIA_LOG_TYPES,
-  MEDIA_TYPE_LABELS,
-  type MediaLogStatus,
-  type MediaLogType,
-} from "../types/media-types";
-import type { MetadataDetails } from "../types/metadata-types";
+import { MEDIA_LOG_STATUSES } from "../types/media-types";
+import { STATUS_META } from "../media-status";
 import { configForType, type CreditField } from "../media-config";
 
 interface MediaLogFormProps {
   values: MediaLogFormValues;
   onChange: Dispatch<SetStateAction<MediaLogFormValues>>;
-  /** When true, the type is fixed and shown as read-only text. */
-  lockedType?: boolean;
+  /** Opens the catalogue search (to fill in or re-link this log). */
+  onSearch: () => void;
   onSubmit: () => void;
 }
 
@@ -45,193 +28,209 @@ const CREDIT_LABELS: Record<CreditField, string> = {
   artist: "Artist",
 };
 
+const daysAgo = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  return dateToParts(date);
+};
+
+const sameParts = (a: MediaLogFormValues["date"], b: MediaLogFormValues["date"]) =>
+  Number(a.day) === Number(b.day) && Number(a.month) === Number(b.month) && a.year === b.year;
+
 /**
- * Overlays catalogue details onto the form. Only fields the catalogue knows
- * are replaced, so a rating, date or review already entered is kept.
+ * The media log form: cover on the left, everything else on the right (stacked
+ * on phones). Shared by create and edit.
  */
-const applyDetails = (
-  values: MediaLogFormValues,
-  details: MetadataDetails,
-): MediaLogFormValues => ({
-  ...values,
-  title: details.title,
-  releaseYear: details.year ? String(details.year) : values.releaseYear,
-  url: details.url ?? values.url,
-  cover: details.coverUrl
-    ? { url: details.coverUrl, source: "external" }
-    : values.cover,
-  director: details.credits.director ?? values.director,
-  author: details.credits.author ?? values.author,
-  pages: details.credits.pages ? String(details.credits.pages) : values.pages,
-  artist: details.credits.artist ?? values.artist,
-  external: { provider: details.provider, id: details.externalId },
-});
-
-/** The media log form body, shared by the create and edit modals. */
-function MediaLogForm({
-  values,
-  onChange,
-  lockedType = false,
-  onSubmit,
-}: MediaLogFormProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false);
+function MediaLogForm({ values, onChange, onSearch, onSubmit }: MediaLogFormProps) {
   const config = configForType(values.type);
+  const status = STATUS_META[values.status];
 
-  // Functional updates: a picked search result lands asynchronously and must
-  // not overwrite keystrokes made while its details were loading.
-  const set = <K extends keyof MediaLogFormValues>(
-    key: K,
-    value: MediaLogFormValues[K],
-  ) => onChange((previous) => ({ ...previous, [key]: value }));
+  const set = <K extends keyof MediaLogFormValues>(key: K, value: MediaLogFormValues[K]) =>
+    onChange((previous) => ({ ...previous, [key]: value }));
+
+  const submitOnEnter = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onSubmit();
+    }
+  };
+
+  const today = daysAgo(0);
+  const yesterday = daysAgo(1);
 
   return (
-    <div className="space-y-4 py-2">
-      <div className="space-y-1.5">
-        <Label>Type</Label>
-        {lockedType ? (
-          <div className="flex h-9 w-full items-center rounded-xl border border-border bg-secondary px-3 text-sm text-muted-foreground">
-            {MEDIA_TYPE_LABELS[values.type]}
+    <div className="grid gap-5 py-1 sm:grid-cols-[168px_1fr]">
+      <div className="mx-auto w-36 sm:w-full">
+        <CoverImageInput
+          value={values.cover}
+          onChange={(cover) => set("cover", cover)}
+          coverAspect={config.coverAspect}
+        />
+      </div>
+
+      <div className="min-w-0 space-y-4">
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="media-title">Title</Label>
+            <button
+              type="button"
+              onClick={onSearch}
+              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Search className="h-3 w-3" />
+              Search {config.metadataSource}
+            </button>
           </div>
-        ) : (
-          <Select
-            value={values.type}
-            onValueChange={(value) => set("type", value as MediaLogType)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MEDIA_LOG_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {MEDIA_TYPE_LABELS[type]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
-
-      <MetadataTitleField
-        type={values.type}
-        value={values.title}
-        onChange={(title) => set("title", title)}
-        onPick={(details) => onChange((previous) => applyDetails(previous, details))}
-        linked={values.external}
-        onUnlink={() => set("external", null)}
-        sourceLabel={config.metadataSource}
-        onSubmit={onSubmit}
-      />
-
-      <CoverImageInput
-        value={values.cover}
-        onChange={(cover) => set("cover", cover)}
-        coverAspect={config.coverAspect}
-      />
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>Rating</Label>
-          <span className="text-sm font-semibold tabular-nums text-rating">
-            {values.rating}/10
-          </span>
-        </div>
-        <StarRating value={values.rating} onChange={(v) => set("rating", v)} />
-      </div>
-
-      <DateFieldInput value={values.date} onChange={(v) => set("date", v)} />
-
-      <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-          <ChevronDown
-            className={cn(
-              "h-3 w-3 transition-transform",
-              showAdvanced && "rotate-180",
-            )}
+          <Input
+            id="media-title"
+            value={values.title}
+            onChange={(event) => set("title", event.target.value)}
+            onKeyDown={submitOnEnter}
+            placeholder={`${config.singular[0]?.toUpperCase()}${config.singular.slice(1)} title`}
+            autoFocus={!values.title}
           />
-          {showAdvanced ? "Hide details" : "More details"}
-        </CollapsibleTrigger>
+          {values.external && (
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Link2 className="h-3 w-3 text-rating" />
+              Linked to {config.metadataSource}
+              <button
+                type="button"
+                onClick={() => set("external", null)}
+                className="ml-1 flex items-center gap-0.5 hover:text-foreground"
+              >
+                <X className="h-3 w-3" />
+                Unlink
+              </button>
+            </p>
+          )}
+        </div>
 
-        <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
-          <div className="space-y-4 pt-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select
-                  value={values.status}
-                  onValueChange={(value) => set("status", value as MediaLogStatus)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="finished">Finished</SelectItem>
-                    <SelectItem value="in_progress">In progress</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="media-release-year">Release year</Label>
-                <Input
-                  id="media-release-year"
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={4}
-                  placeholder="YYYY"
-                  value={values.releaseYear}
-                  onChange={(event) =>
-                    set("releaseYear", event.target.value.replace(/\D/g, ""))
-                  }
-                />
-              </div>
-            </div>
-
-            {config.credits.length > 0 && (
-              <div
+        <div className="space-y-1.5">
+          <Label>Status</Label>
+          <div role="radiogroup" aria-label="Status" className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {MEDIA_LOG_STATUSES.map((value) => (
+              <button
+                key={value}
+                type="button"
+                role="radio"
+                aria-checked={values.status === value}
+                onClick={() => set("status", value)}
                 className={cn(
-                  "gap-3",
-                  config.credits.length > 1 ? "grid grid-cols-2" : "space-y-1.5",
+                  "rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                  values.status === value
+                    ? STATUS_META[value].badge
+                    : "border-border text-muted-foreground hover:text-foreground",
                 )}
               >
-                {config.credits.map((credit) => (
-                  <div key={credit} className="space-y-1.5">
-                    <Label htmlFor={`media-${credit}`}>
-                      {CREDIT_LABELS[credit]}
-                    </Label>
-                    <Input
-                      id={`media-${credit}`}
-                      type={credit === "pages" ? "number" : "text"}
-                      min={credit === "pages" ? 1 : undefined}
-                      value={values[credit]}
-                      onChange={(event) => set(credit, event.target.value)}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <Label htmlFor="media-review">Review</Label>
-              <Textarea
-                id="media-review"
-                placeholder="What did you think?"
-                value={values.review}
-                onChange={(event) => set("review", event.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="media-url">URL</Label>
-              <Input
-                id="media-url"
-                type="url"
-                placeholder="https://..."
-                value={values.url}
-                onChange={(event) => set("url", event.target.value)}
-              />
-            </div>
+                {STATUS_META[value].label}
+              </button>
+            ))}
           </div>
-        </CollapsibleContent>
-      </Collapsible>
+        </div>
+
+        {status.rated && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label>Rating</Label>
+              <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                {values.rating !== null ? (
+                  <>
+                    <span className="text-sm font-semibold tabular-nums text-rating">
+                      {values.rating}/10
+                    </span>
+                    <button type="button" onClick={() => set("rating", null)} className="hover:text-foreground">
+                      Clear
+                    </button>
+                  </>
+                ) : (
+                  "Not rated"
+                )}
+              </span>
+            </div>
+            <StarRating value={values.rating ?? 0} onChange={(rating) => set("rating", rating)} />
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <DateFieldInput
+            label={`${status.dateLabel} on`}
+            value={values.date}
+            onChange={(date) => set("date", date)}
+          />
+          <div className="flex gap-1.5">
+            {[
+              { label: "Today", parts: today },
+              { label: "Yesterday", parts: yesterday },
+            ].map(({ label, parts }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => set("date", parts)}
+                className={cn(
+                  "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
+                  sameParts(values.date, parts)
+                    ? "border-rating bg-rating/10 text-rating"
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {config.credits.map((credit) => (
+            <div key={credit} className="space-y-1.5">
+              <Label htmlFor={`media-${credit}`}>{CREDIT_LABELS[credit]}</Label>
+              <Input
+                id={`media-${credit}`}
+                type={credit === "pages" ? "number" : "text"}
+                inputMode={credit === "pages" ? "numeric" : undefined}
+                min={credit === "pages" ? 1 : undefined}
+                value={values[credit]}
+                onChange={(event) => set(credit, event.target.value)}
+                onKeyDown={submitOnEnter}
+              />
+            </div>
+          ))}
+          <div className="space-y-1.5">
+            <Label htmlFor="media-release-year">Released</Label>
+            <Input
+              id="media-release-year"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="YYYY"
+              value={values.releaseYear}
+              onChange={(event) => set("releaseYear", event.target.value.replace(/\D/g, ""))}
+              onKeyDown={submitOnEnter}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="media-review">Review</Label>
+          <Textarea
+            id="media-review"
+            placeholder="What did you think?"
+            rows={3}
+            value={values.review}
+            onChange={(event) => set("review", event.target.value)}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="media-url">Link</Label>
+          <Input
+            id="media-url"
+            type="url"
+            placeholder="https://…"
+            value={values.url}
+            onChange={(event) => set("url", event.target.value)}
+            onKeyDown={submitOnEnter}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -9,7 +9,12 @@ export const MEDIA_LOG_TYPES = [
 ] as const;
 export type MediaLogType = (typeof MEDIA_LOG_TYPES)[number];
 
-export const MEDIA_LOG_STATUSES = ["finished", "in_progress"] as const;
+export const MEDIA_LOG_STATUSES = [
+  "finished",
+  "in_progress",
+  "planned",
+  "dropped",
+] as const;
 export type MediaLogStatus = (typeof MEDIA_LOG_STATUSES)[number];
 
 export interface CoverImage {
@@ -26,8 +31,8 @@ export interface MediaLog {
   url?: string | null;
   /** May be a plain URL string on documents written before the cover refactor. */
   cover?: CoverImage | string | null;
-  /** 1–10. */
-  rating: number;
+  /** 1–10; absent for planned or unrated titles. */
+  rating?: number | null;
   review?: string | null;
   date: string;
   status: MediaLogStatus;
@@ -62,12 +67,4 @@ export const toCoverImage = (
     return cover ? { url: cover, source: "external" } : null;
   }
   return cover.url ? cover : null;
-};
-
-export const MEDIA_TYPE_LABELS: Record<MediaLogType, string> = {
-  movie: "Movie",
-  tvshow: "TV Show",
-  book: "Book",
-  music_album: "Music Album",
-  game: "Game",
 };
