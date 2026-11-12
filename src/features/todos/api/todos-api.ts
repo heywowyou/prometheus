@@ -15,9 +15,14 @@ export interface CreateTodoPayload {
   recurrenceType: RecurrenceType;
   interactionType: InteractionType;
   durationGoal: number;
+  /** One-time tasks only, `YYYY-MM-DD`. */
+  dueDate?: string;
 }
 
-export type UpdateTodoPayload = Partial<CreateTodoPayload>;
+/** `dueDate: null` clears the due date. */
+export type UpdateTodoPayload = Partial<Omit<CreateTodoPayload, "dueDate">> & {
+  dueDate?: string | null;
+};
 
 export const useTodosApi = () => {
   const client = useApiClient();

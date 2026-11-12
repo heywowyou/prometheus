@@ -40,6 +40,8 @@ export interface Todo {
   timer?: TodoTimer;
   /** Recurring tasks only. */
   streak?: Streak;
+  /** One-time tasks only: the day it's due, `YYYY-MM-DD`. */
+  dueDate?: string | null;
   paused?: boolean;
   pausedAt?: string | null;
   /** Set when a recurring task's previous completion belongs to an elapsed cycle. */

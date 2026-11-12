@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { RECURRENCE_TYPES, RECURRENCE_LABELS } from "@lib/date/recurrence";
+import { cn } from "@lib/utils";
+import { dayKeyFromToday, describeDue } from "../due";
 import {
   MAX_DURATION_GOAL,
   type InteractionType,
@@ -30,6 +32,8 @@ interface TaskFormValues {
   recurrenceType: RecurrenceType;
   interactionType: InteractionType;
   durationGoal: string;
+  /** `YYYY-MM-DD` or "" for none. One-time tasks only. */
+  dueDate: string;
 }
 
 const initialValues = (task: Todo | null): TaskFormValues =>
@@ -39,12 +43,14 @@ const initialValues = (task: Todo | null): TaskFormValues =>
         recurrenceType: task.recurrenceType,
         interactionType: task.interactionType,
         durationGoal: task.durationGoal ? String(task.durationGoal) : "",
+        dueDate: task.dueDate ?? "",
       }
     : {
         text: "",
         recurrenceType: "none",
         interactionType: "checkbox",
         durationGoal: "",
+        dueDate: "",
       };
 
 const RECURRENCE_OPTIONS = RECURRENCE_TYPES.map((value) => ({
@@ -57,6 +63,8 @@ export interface TaskSubmitValues {
   recurrenceType: RecurrenceType;
   interactionType: InteractionType;
   durationGoal: number;
+  /** null clears it; always null for recurring tasks. */
+  dueDate: string | null;
 }
 
 interface TaskModalProps {
@@ -101,6 +109,7 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
         recurrenceType: values.recurrenceType,
         interactionType: values.interactionType,
         durationGoal: minutes,
+        dueDate: values.recurrenceType === "none" && values.dueDate ? values.dueDate : null,
       });
       onClose();
     } catch {
@@ -162,6 +171,56 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
             </p>
           )}
         </div>
+
+        {values.recurrenceType === "none" && (
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="task-due">Due</Label>
+              {values.dueDate && (
+                <span className="text-xs text-muted-foreground">
+                  {describeDue(values.dueDate).label}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { label: "Today", key: dayKeyFromToday(0) },
+                { label: "Tomorrow", key: dayKeyFromToday(1) },
+                { label: "In a week", key: dayKeyFromToday(7) },
+              ].map(({ label, key }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => set("dueDate", values.dueDate === key ? "" : key)}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                    values.dueDate === key
+                      ? "border-rating bg-rating/10 text-rating"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+              <Input
+                id="task-due"
+                type="date"
+                value={values.dueDate}
+                onChange={(event) => set("dueDate", event.target.value)}
+                className="h-8 w-auto flex-1 text-xs"
+              />
+              {values.dueDate && (
+                <button
+                  type="button"
+                  onClick={() => set("dueDate", "")}
+                  className="px-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">

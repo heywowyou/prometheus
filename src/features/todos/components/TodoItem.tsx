@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  CalendarClock,
   CalendarDays,
   Check,
   Ellipsis,
@@ -11,6 +12,7 @@ import {
   Repeat2,
   RotateCcw,
   Shredder,
+  Type,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -22,6 +24,7 @@ import {
 } from "@components/ui/dropdown-menu";
 import { useNow } from "@lib/hooks/useNow";
 import { cn } from "@lib/utils";
+import { describeDue, type DueTone } from "../due";
 import {
   timerElapsedMs,
   type RecurrenceType,
@@ -34,6 +37,13 @@ const RESET_LABELS: Record<RecurrenceType, string | null> = {
   daily: "Resets daily",
   weekly: "Resets every Monday",
   monthly: "Resets on the 1st",
+};
+
+const DUE_TONES: Record<DueTone, string> = {
+  overdue: "text-destructive",
+  today: "text-warning",
+  soon: "text-rating",
+  later: "text-muted-foreground",
 };
 
 /** 754_000 → "12:34"; 3_725_000 → "1:02:05". */
@@ -51,6 +61,8 @@ interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onTimer?: (id: string, action: TimerAction) => void;
+  /** Enables inline renaming (menu → Rename, or F2 on the focused row). */
+  onRename?: (id: string, text: string) => void;
   /** Omit (with onEdit) for a compact item, e.g. on the Today page. */
   onDelete?: (todo: Todo) => void;
   onEdit?: (todo: Todo) => void;
@@ -83,6 +95,7 @@ function TodoItem({
   todo,
   onToggle,
   onTimer,
+  onRename,
   onDelete,
   onEdit,
   onPause,
@@ -97,6 +110,11 @@ function TodoItem({
   const elapsed = isTimer ? timerElapsedMs(todo, now) : 0;
   const fraction = Math.min(1, elapsed / goalMs);
   const streak = todo.streak?.current ?? 0;
+  const due = todo.dueDate && !isRecurring ? describeDue(todo.dueDate) : null;
+
+  const [renaming, setRenaming] = useState(false);
+  const [draft, setDraft] = useState(todo.text);
+  const renameFromMenuRef = useRef(false);
 
   // Complete the task once the running timer reaches its goal — once per run,
   // also when the page opens on a timer that finished while it was closed.
@@ -116,8 +134,21 @@ function TodoItem({
 
   /** Row activation: timers start/pause; everything else (and done timers) toggles. */
   const activate = () => {
+    if (renaming) return;
     if (isTimer && !todo.completed) startOrPause();
     else onToggle(todo._id);
+  };
+
+  const startRename = () => {
+    if (!onRename) return;
+    setDraft(todo.text);
+    setRenaming(true);
+  };
+
+  const commitRename = () => {
+    const text = draft.trim();
+    setRenaming(false);
+    if (text && text !== todo.text) onRename?.(todo._id, text);
   };
 
   const detail = (() => {
@@ -132,13 +163,19 @@ function TodoItem({
       role="button"
       tabIndex={0}
       aria-pressed={todo.completed}
-      className="group relative flex cursor-pointer select-none items-center overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      className={cn(
+        "group relative flex cursor-pointer select-none items-center overflow-hidden rounded-xl border bg-card px-3 py-2.5 transition-colors hover:border-muted-foreground/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        due?.tone === "overdue" ? "border-destructive/40" : "border-border",
+      )}
       onClick={activate}
       onKeyDown={(event) => {
         if (event.target !== event.currentTarget) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           activate();
+        } else if (event.key === "F2") {
+          event.preventDefault();
+          startRename();
         }
       }}
     >
@@ -150,7 +187,7 @@ function TodoItem({
         />
       )}
 
-      <div className="relative z-10 flex flex-1 items-center">
+      <div className="relative z-10 flex min-w-0 flex-1 items-center">
         {isTimer && !todo.completed ? (
           <button
             type="button"
@@ -172,56 +209,77 @@ function TodoItem({
           <div
             aria-hidden
             className={cn(
-              "mr-3 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-xl border transition-all duration-200 ease-in-out",
+              "mr-3 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border transition-colors duration-200",
               todo.completed
-                ? "border-primary bg-primary"
-                : "border-border group-hover:border-muted-foreground",
+                ? "border-success bg-success"
+                : "border-muted-foreground/50 group-hover:border-foreground",
             )}
           >
-            {todo.completed && (
-              <div className="h-2 w-2 rounded-[1px] bg-primary-foreground" />
-            )}
+            {todo.completed && <Check className="h-3 w-3 text-background" strokeWidth={3} />}
           </div>
         )}
 
-        <span
-          className={cn(
-            "flex flex-1 items-center justify-between gap-3 transition-colors",
-            todo.completed ? "text-muted-foreground" : "text-foreground",
-          )}
-        >
+        <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
           <span className="flex min-w-0 flex-col text-sm">
-            <span className={cn(todo.completed && "line-through opacity-60")}>
-              {todo.text}
-            </span>
-            {detail && (
+            {renaming ? (
+              <input
+                autoFocus
+                value={draft}
+                maxLength={500}
+                aria-label="Task name"
+                onChange={(event) => setDraft(event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => {
+                  event.stopPropagation();
+                  if (event.key === "Enter") commitRename();
+                  if (event.key === "Escape") setRenaming(false);
+                }}
+                onBlur={commitRename}
+                className="-mx-1 rounded-md border border-ring bg-background px-1 text-sm text-foreground outline-none"
+              />
+            ) : (
               <span
                 className={cn(
-                  "mt-0.5 text-xs tabular-nums",
-                  running ? "text-rating" : "text-muted-foreground",
+                  "truncate",
+                  todo.completed ? "text-muted-foreground line-through decoration-muted-foreground/60" : "text-foreground",
                 )}
               >
-                {detail}
+                {todo.text}
+              </span>
+            )}
+            {(detail || due) && (
+              <span className="mt-0.5 flex items-center gap-2 text-xs">
+                {due && !todo.completed && (
+                  <span className={cn("flex items-center gap-1", DUE_TONES[due.tone])}>
+                    <CalendarClock className="h-3 w-3" />
+                    {due.label}
+                  </span>
+                )}
+                {detail && (
+                  <span className={cn("tabular-nums", running ? "text-rating" : "text-muted-foreground")}>
+                    {detail}
+                  </span>
+                )}
               </span>
             )}
           </span>
 
-          <span className="flex items-center gap-2">
-            {isRecurring && (
-              <span
-                className="flex items-center text-muted-foreground"
-                title={RESET_LABELS[todo.recurrenceType] ?? undefined}
-              >
-                <Repeat2 className="h-4 w-4" strokeWidth={2} />
-              </span>
-            )}
+          <span className="flex shrink-0 items-center gap-2">
             {streak > 0 && (
               <span
-                className="flex items-center text-xs font-normal text-streak"
+                className="flex items-center text-xs font-medium tabular-nums text-streak"
                 title={`Streak ${streak} · best ${todo.streak?.best ?? streak} · ${todo.completionCount} total`}
               >
-                <Flame className="mr-1 h-3.5 w-3.5" strokeWidth={2.5} />
+                <Flame className="mr-0.5 h-3.5 w-3.5" strokeWidth={2.5} />
                 {streak}
+              </span>
+            )}
+            {isRecurring && streak === 0 && (
+              <span
+                className="flex items-center text-muted-foreground/60"
+                title={RESET_LABELS[todo.recurrenceType] ?? undefined}
+              >
+                <Repeat2 className="h-3.5 w-3.5" strokeWidth={2} />
               </span>
             )}
           </span>
@@ -233,7 +291,7 @@ function TodoItem({
               type="button"
               aria-label={`Actions for ${todo.text}`}
               onClick={(event) => event.stopPropagation()}
-              className="rounded-xl p-1.5 text-muted-foreground opacity-0 transition duration-200 ease-in-out hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 touch:opacity-100"
+              className="ml-1 rounded-lg p-1.5 text-muted-foreground opacity-0 transition duration-200 hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 touch:opacity-100"
             >
               <Ellipsis className="h-4 w-4" strokeWidth={1.5} />
             </button>
@@ -241,7 +299,26 @@ function TodoItem({
           <DropdownMenuContent
             align="end"
             onClick={(event) => event.stopPropagation()}
+            // After "Rename", keep focus in the new input rather than handing
+            // it back to the trigger (which would blur and end the rename).
+            onCloseAutoFocus={(event) => {
+              if (renameFromMenuRef.current) {
+                renameFromMenuRef.current = false;
+                event.preventDefault();
+              }
+            }}
           >
+            {onRename && (
+              <DropdownMenuItem
+                onClick={() => {
+                  renameFromMenuRef.current = true;
+                  startRename();
+                }}
+              >
+                <Type className="mr-2 h-3.5 w-3.5" />
+                Rename
+              </DropdownMenuItem>
+            )}
             {onEdit && (
               <DropdownMenuItem onClick={() => onEdit(todo)}>
                 <Pencil className="mr-2 h-3.5 w-3.5" />
