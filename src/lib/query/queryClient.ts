@@ -29,8 +29,10 @@ export const createQueryClient = (): QueryClient =>
     },
     queryCache: new QueryCache({
       onError: (error, query) => {
-        // Background refetches of already-rendered data shouldn't nag.
+        // Background refetches of already-rendered data shouldn't nag, and a
+        // query can opt out when it reports its own errors inline.
         if (query.state.data !== undefined) return;
+        if (query.meta?.silentErrors) return;
         toast.error(getErrorMessage(error));
       },
     }),

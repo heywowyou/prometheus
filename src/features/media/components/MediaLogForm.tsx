@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { ChevronDown } from "lucide-react";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
@@ -19,6 +19,7 @@ import {
 import { cn } from "@lib/utils";
 import CoverImageInput from "./CoverImageInput";
 import DateFieldInput from "./DateFieldInput";
+import MetadataTitleField from "./MetadataTitleField";
 import type { MediaLogFormValues } from "./media-form-values";
 import {
   MEDIA_LOG_TYPES,
@@ -26,11 +27,12 @@ import {
   type MediaLogStatus,
   type MediaLogType,
 } from "../types/media-types";
+import type { MetadataDetails } from "../types/metadata-types";
 import { configForType, type CreditField } from "../media-config";
 
 interface MediaLogFormProps {
   values: MediaLogFormValues;
-  onChange: (values: MediaLogFormValues) => void;
+  onChange: Dispatch<SetStateAction<MediaLogFormValues>>;
   /** When true, the type is fixed and shown as read-only text. */
   lockedType?: boolean;
   onSubmit: () => void;
@@ -44,11 +46,28 @@ const CREDIT_LABELS: Record<CreditField, string> = {
 };
 
 /**
- * The media log form body, shared by the create and edit modals.
- *
- * Both modals previously carried their own ~300-line copy of these fields,
- * which is how the two drifted apart.
+ * Overlays catalogue details onto the form. Only fields the catalogue knows
+ * are replaced, so a rating, date or review already entered is kept.
  */
+const applyDetails = (
+  values: MediaLogFormValues,
+  details: MetadataDetails,
+): MediaLogFormValues => ({
+  ...values,
+  title: details.title,
+  releaseYear: details.year ? String(details.year) : values.releaseYear,
+  url: details.url ?? values.url,
+  cover: details.coverUrl
+    ? { url: details.coverUrl, source: "external" }
+    : values.cover,
+  director: details.credits.director ?? values.director,
+  author: details.credits.author ?? values.author,
+  pages: details.credits.pages ? String(details.credits.pages) : values.pages,
+  artist: details.credits.artist ?? values.artist,
+  external: { provider: details.provider, id: details.externalId },
+});
+
+/** The media log form body, shared by the create and edit modals. */
 function MediaLogForm({
   values,
   onChange,
@@ -56,19 +75,14 @@ function MediaLogForm({
   onSubmit,
 }: MediaLogFormProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const credits = configForType(values.type).credits;
+  const config = configForType(values.type);
 
+  // Functional updates: a picked search result lands asynchronously and must
+  // not overwrite keystrokes made while its details were loading.
   const set = <K extends keyof MediaLogFormValues>(
     key: K,
     value: MediaLogFormValues[K],
-  ) => onChange({ ...values, [key]: value });
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      onSubmit();
-    }
-  };
+  ) => onChange((previous) => ({ ...previous, [key]: value }));
 
   return (
     <div className="space-y-4 py-2">
@@ -97,18 +111,22 @@ function MediaLogForm({
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="media-title">Title *</Label>
-        <Input
-          id="media-title"
-          type="text"
-          placeholder="Title"
-          value={values.title}
-          onChange={(event) => set("title", event.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
-      </div>
+      <MetadataTitleField
+        type={values.type}
+        value={values.title}
+        onChange={(title) => set("title", title)}
+        onPick={(details) => onChange((previous) => applyDetails(previous, details))}
+        linked={values.external}
+        onUnlink={() => set("external", null)}
+        sourceLabel={config.metadataSource}
+        onSubmit={onSubmit}
+      />
+
+      <CoverImageInput
+        value={values.cover}
+        onChange={(cover) => set("cover", cover)}
+        coverAspect={config.coverAspect}
+      />
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -130,35 +148,51 @@ function MediaLogForm({
               showAdvanced && "rotate-180",
             )}
           />
-          {showAdvanced ? "Hide advanced options" : "Show advanced options"}
+          {showAdvanced ? "Hide details" : "More details"}
         </CollapsibleTrigger>
 
         <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
           <div className="space-y-4 pt-4">
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select
-                value={values.status}
-                onValueChange={(value) => set("status", value as MediaLogStatus)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="finished">Finished</SelectItem>
-                  <SelectItem value="in_progress">In progress</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Status</Label>
+                <Select
+                  value={values.status}
+                  onValueChange={(value) => set("status", value as MediaLogStatus)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="finished">Finished</SelectItem>
+                    <SelectItem value="in_progress">In progress</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="media-release-year">Release year</Label>
+                <Input
+                  id="media-release-year"
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="YYYY"
+                  value={values.releaseYear}
+                  onChange={(event) =>
+                    set("releaseYear", event.target.value.replace(/\D/g, ""))
+                  }
+                />
+              </div>
             </div>
 
-            {credits.length > 0 && (
+            {config.credits.length > 0 && (
               <div
                 className={cn(
                   "gap-3",
-                  credits.length > 1 ? "grid grid-cols-2" : "space-y-1.5",
+                  config.credits.length > 1 ? "grid grid-cols-2" : "space-y-1.5",
                 )}
               >
-                {credits.map((credit) => (
+                {config.credits.map((credit) => (
                   <div key={credit} className="space-y-1.5">
                     <Label htmlFor={`media-${credit}`}>
                       {CREDIT_LABELS[credit]}
@@ -195,11 +229,6 @@ function MediaLogForm({
                 onChange={(event) => set("url", event.target.value)}
               />
             </div>
-
-            <CoverImageInput
-              value={values.cover}
-              onChange={(cover) => set("cover", cover)}
-            />
           </div>
         </CollapsibleContent>
       </Collapsible>

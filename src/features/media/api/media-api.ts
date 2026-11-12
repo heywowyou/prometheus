@@ -6,6 +6,7 @@ import type {
   MediaLogStatus,
   MediaLogType,
 } from "../types/media-types";
+import type { ExternalRef } from "../types/metadata-types";
 
 const MEDIA_PATH = "/media";
 
@@ -26,12 +27,17 @@ export interface MediaLogFields {
 
 export interface CreateMediaLogPayload extends MediaLogFields {
   type: MediaLogType;
+  /** An `external` cover is copied into Cloudinary by the API on save. */
   cover?: CoverImage;
+  releaseYear?: number;
+  external?: ExternalRef;
 }
 
+/** For the nullable keys, `null` clears the value; omit to leave unchanged. */
 export type UpdateMediaLogPayload = Partial<MediaLogFields> & {
-  /** `null` clears the cover; omit the key to leave it unchanged. */
   cover?: CoverImage | null;
+  releaseYear?: number | null;
+  external?: ExternalRef | null;
 };
 
 export const useMediaApi = () => {

@@ -1,3 +1,5 @@
+import type { ExternalRef } from "./metadata-types";
+
 export const MEDIA_LOG_TYPES = [
   "movie",
   "tvshow",
@@ -33,6 +35,9 @@ export interface MediaLog {
   author?: string | null;
   pages?: number | null;
   artist?: string | null;
+  releaseYear?: number | null;
+  /** The catalogue entry this log was filled from, if any. */
+  external?: ExternalRef | null;
   favorite: boolean;
   userId: string;
   createdAt: string;

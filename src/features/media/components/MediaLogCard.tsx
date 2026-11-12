@@ -45,7 +45,9 @@ function MediaLogCard({
 }: MediaLogCardProps) {
   const coverUrl = resolveCoverUrl(log.cover);
   const dateLabel = formatDate(log.date);
-  const credit = creditLine(log);
+  // "2021 · Directed by Denis Villeneuve" — the year tells remakes apart.
+  const credit =
+    [log.releaseYear, creditLine(log)].filter(Boolean).join(" · ") || null;
   const isFinished = log.status === "finished";
 
   return (
