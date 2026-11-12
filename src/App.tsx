@@ -30,7 +30,7 @@ const NoteEditorPage = lazy(
 
 function App() {
   return (
-    <BrowserRouter unstable_useTransitions>
+    <BrowserRouter useTransitions>
       <Routes>
         {/* Public routes — rendered without the app shell. */}
         <Route path="/" element={<LandingPage />} />
