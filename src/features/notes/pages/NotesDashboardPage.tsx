@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, LayoutGrid, List, Pin } from "lucide-react";
+import { Archive, FileText, LayoutGrid, List, Pin } from "lucide-react";
 import { Button } from "@components/ui/button";
 import EmptyState from "@components/feedback/EmptyState";
 import ConfirmDialog from "@components/feedback/ConfirmDialog";
@@ -17,24 +17,38 @@ const isView = (value: unknown): value is View =>
 
 function NotesDashboardPage() {
   const navigate = useNavigate();
-  const { notes, loading, createNote, pinNote, archiveNote, deleteNote } =
-    useNotes();
+  const [showArchived, setShowArchived] = useState(false);
+  const {
+    notes,
+    loading,
+    createNote,
+    pinNote,
+    archiveNote,
+    unarchiveNote,
+    deleteNote,
+  } = useNotes({ archived: showArchived });
 
   const [view, setView] = useLocalStorage<View>("notes-view", "grid", isView);
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
 
-  const handleNewNote = async () => {
-    const note = await createNote();
-    navigate(`/notes/${note._id}`);
+  // Failures are toasted by the query client; there's nothing to open then.
+  const openCreated = async (payload?: Parameters<typeof createNote>[0]) => {
+    try {
+      const note = await createNote(payload);
+      navigate(`/notes/${note._id}`);
+    } catch {
+      /* already reported */
+    }
   };
 
-  const handleDuplicate = async (note: Note) => {
-    const copy = await createNote({ title: note.title, content: note.content });
-    navigate(`/notes/${copy._id}`);
-  };
+  const handleDuplicate = (note: Note) =>
+    void openCreated({ title: note.title, content: note.content });
 
-  const pinned = notes.filter((note) => note.pinned);
-  const unpinned = notes.filter((note) => !note.pinned);
+  const handleToggleArchive = (note: Note) =>
+    note.archived ? unarchiveNote(note._id) : archiveNote(note._id);
+
+  const pinned = showArchived ? [] : notes.filter((note) => note.pinned);
+  const unpinned = showArchived ? notes : notes.filter((note) => !note.pinned);
 
   const gridClass =
     view === "grid"
@@ -67,7 +81,7 @@ function NotesDashboardPage() {
           view={view}
           onPin={pinNote}
           onDuplicate={handleDuplicate}
-          onArchive={archiveNote}
+          onToggleArchive={handleToggleArchive}
           onDelete={setNoteToDelete}
         />
       ))}
@@ -76,14 +90,28 @@ function NotesDashboardPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="page-title">Notes</h2>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h2 className="page-title">{showArchived ? "Archive" : "Notes"}</h2>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowArchived((on) => !on)}
+            aria-pressed={showArchived}
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors",
+              showArchived
+                ? "border-rating bg-rating/10 text-rating"
+                : "border-border text-muted-foreground hover:border-muted hover:text-foreground",
+            )}
+          >
+            <Archive className="h-3 w-3" />
+            Archived
+          </button>
           <div className="flex items-center overflow-hidden rounded-md border border-border">
             {viewButton("list", List, "List view")}
             {viewButton("grid", LayoutGrid, "Grid view")}
           </div>
-          <Button size="sm" onClick={() => void handleNewNote()}>
+          <Button size="sm" onClick={() => void openCreated()}>
             New note
           </Button>
         </div>
@@ -102,11 +130,18 @@ function NotesDashboardPage() {
           ))}
         </div>
       ) : notes.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          message="No notes yet."
-          action={{ label: "Create your first note", onClick: () => void handleNewNote() }}
-        />
+        showArchived ? (
+          <EmptyState icon={Archive} message="No archived notes." />
+        ) : (
+          <EmptyState
+            icon={FileText}
+            message="No notes yet."
+            action={{
+              label: "Create your first note",
+              onClick: () => void openCreated(),
+            }}
+          />
+        )
       ) : (
         <div className="space-y-6">
           {pinned.length > 0 && (

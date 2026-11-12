@@ -71,7 +71,9 @@ function MediaLogCard({
         )}
 
         {(onEdit || onDelete) && (
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+          // Hover/focus overlay on desktop; on touch screens the buttons sit
+          // permanently in the cover's bottom-left corner instead.
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 touch:inset-auto touch:bottom-2 touch:left-2 touch:bg-transparent touch:opacity-100">
             {onEdit && (
               <button
                 type="button"

@@ -8,7 +8,6 @@ import {
   DialogFooter,
 } from "@components/ui/dialog";
 import { Button } from "@components/ui/button";
-import { getErrorMessage } from "@lib/api/errors";
 import { partsToIso } from "@lib/date/date-parts";
 import MediaLogForm from "./MediaLogForm";
 import {
@@ -90,8 +89,8 @@ function MediaLogModalBody({
         });
       }
       onClose();
-    } catch (error) {
-      toast.error(getErrorMessage(error));
+    } catch {
+      // Already toasted by the query client; stay open so nothing is lost.
     } finally {
       setSubmitting(false);
     }

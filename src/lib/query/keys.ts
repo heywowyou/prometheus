@@ -16,7 +16,10 @@ export const queryKeys = {
   },
   notes: {
     all: ["notes"] as const,
-    list: () => ["notes", "list"] as const,
+    /** Prefix matching both the active and archived lists. */
+    lists: () => ["notes", "list"] as const,
+    list: (opts: { archived?: boolean } = {}) =>
+      ["notes", "list", { archived: opts.archived ?? false }] as const,
     detail: (id: string) => ["notes", "detail", id] as const,
   },
 } as const;

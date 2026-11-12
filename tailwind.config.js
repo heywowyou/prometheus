@@ -4,6 +4,11 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
   	extend: {
+  		screens: {
+  			// touch: devices without hover (phones, tablets), where
+  			// hover-revealed controls must be shown outright.
+  			touch: { raw: '(hover: none)' }
+  		},
   		colors: {
   			background: 'var(--background)',
   			foreground: 'var(--foreground)',

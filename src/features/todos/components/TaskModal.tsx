@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,6 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { cn } from "@lib/utils";
-import { getErrorMessage } from "@lib/api/errors";
 import { RECURRENCE_TYPES, RECURRENCE_LABELS } from "@lib/date/recurrence";
 import type {
   InteractionType,
@@ -94,8 +92,8 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
         durationGoal: isHold ? Math.max(0, Number(values.durationGoal) || 0) : 0,
       });
       onClose();
-    } catch (error) {
-      toast.error(getErrorMessage(error));
+    } catch {
+      // Already toasted by the query client; stay open so nothing is lost.
     } finally {
       setSubmitting(false);
     }

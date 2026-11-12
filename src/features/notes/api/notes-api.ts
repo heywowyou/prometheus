@@ -11,10 +11,15 @@ const NOTES_PATH = "/notes";
 export const useNotesApi = () => {
   const client = useApiClient();
 
-  const fetchNotes = useCallback(async (): Promise<Note[]> => {
-    const { data } = await client.get<Note[]>(NOTES_PATH);
-    return data;
-  }, [client]);
+  const fetchNotes = useCallback(
+    async (opts: { archived?: boolean } = {}): Promise<Note[]> => {
+      const { data } = await client.get<Note[]>(NOTES_PATH, {
+        params: opts.archived ? { archived: "true" } : undefined,
+      });
+      return data;
+    },
+    [client],
+  );
 
   const fetchNote = useCallback(
     async (id: string): Promise<Note> => {
