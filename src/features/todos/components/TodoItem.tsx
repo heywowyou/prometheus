@@ -167,7 +167,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) 
               onClick={(event) => event.stopPropagation()}
               onMouseDown={(event) => event.stopPropagation()}
               onTouchStart={(event) => event.stopPropagation()}
-              className="rounded-xl p-1.5 text-muted-foreground opacity-0 transition duration-200 ease-in-out hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="rounded-xl p-1.5 text-muted-foreground opacity-0 transition duration-200 ease-in-out hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 touch:opacity-100"
             >
               <Ellipsis className="h-4 w-4" strokeWidth={1.5} />
             </button>

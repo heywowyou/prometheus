@@ -17,7 +17,7 @@ interface NoteCardProps {
   view: "list" | "grid";
   onPin: (id: string, pinned: boolean) => void;
   onDuplicate: (note: Note) => void;
-  onArchive: (id: string) => void;
+  onToggleArchive: (note: Note) => void;
   onDelete: (note: Note) => void;
 }
 
@@ -33,7 +33,7 @@ function NoteCard({
   view,
   onPin,
   onDuplicate,
-  onArchive,
+  onToggleArchive,
   onDelete,
 }: NoteCardProps) {
   const navigate = useNavigate();
@@ -83,7 +83,9 @@ function NoteCard({
       <div
         onClick={(event) => event.stopPropagation()}
         className={cn(
-          "shrink-0 opacity-0 transition-opacity group-hover:opacity-100",
+          // Hover reveals the menu on desktop; keyboard focus, an open menu and
+          // touch screens (no hover) keep it visible.
+          "shrink-0 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 has-[[data-state=open]]:opacity-100 touch:opacity-100",
           isGrid && "absolute right-3 top-3",
         )}
       >
@@ -99,15 +101,17 @@ function NoteCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onPin(note._id, !note.pinned)}>
-              {note.pinned ? "Unpin" : "Pin"}
-            </DropdownMenuItem>
+            {!note.archived && (
+              <DropdownMenuItem onClick={() => onPin(note._id, !note.pinned)}>
+                {note.pinned ? "Unpin" : "Pin"}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => onDuplicate(note)}>
               Duplicate
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onArchive(note._id)}>
-              Archive
+            <DropdownMenuItem onClick={() => onToggleArchive(note)}>
+              {note.archived ? "Unarchive" : "Archive"}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"

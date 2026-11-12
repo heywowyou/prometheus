@@ -16,7 +16,8 @@ function AppShell() {
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <Header />
-      <div className="mx-auto max-w-7xl px-6 py-6">
+      {/* Bottom padding clears the phone tab bar rendered by Header. */}
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:pb-6">
         <main className="py-4">
           <ErrorBoundary resetKey={pathname}>
             <Suspense fallback={<PageLoader />}>

@@ -15,7 +15,13 @@ import type {
   UpdateNotePayload,
 } from "../types/note-types";
 
-function SaveIndicator({ status }: { status: SaveStatus }) {
+function SaveIndicator({
+  status,
+  onRetry,
+}: {
+  status: SaveStatus;
+  onRetry: () => void;
+}) {
   switch (status) {
     case "pending":
     case "saving":
@@ -29,10 +35,15 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
       );
     case "error":
       return (
-        <span className="flex items-center gap-1 text-destructive">
+        <button
+          type="button"
+          onClick={onRetry}
+          title="Your changes are kept and retried automatically"
+          className="flex items-center gap-1 text-destructive hover:underline"
+        >
           <AlertCircle className="h-3.5 w-3.5" />
-          Not saved
-        </span>
+          Not saved · retry now
+        </button>
       );
     default:
       return null;
@@ -53,7 +64,9 @@ function NoteEditor({ note, save, onBack }: EditorProps) {
     note.fontFamily ?? "sans",
   );
 
-  const { status, schedule } = useDebouncedSave<UpdateNotePayload>({ save });
+  const { status, schedule, flush } = useDebouncedSave<UpdateNotePayload>({
+    save,
+  });
 
   const uploadImage = useCallback(
     async (file: File): Promise<string> => (await uploadCover(file)).url,
@@ -78,7 +91,7 @@ function NoteEditor({ note, save, onBack }: EditorProps) {
           Notes
         </Button>
         <div className="flex min-w-[70px] items-center justify-end gap-1.5 text-xs text-muted-foreground">
-          <SaveIndicator status={status} />
+          <SaveIndicator status={status} onRetry={() => void flush()} />
         </div>
       </div>
 

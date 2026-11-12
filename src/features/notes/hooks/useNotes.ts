@@ -7,21 +7,22 @@ import type {
   UpdateNotePayload,
 } from "../types/note-types";
 
-export const useNotes = () => {
+const byPinnedThenRecent = (a: Note, b: Note) => {
+  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+  return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+};
+
+/** The notes list — active by default, or the archive — plus its mutations. */
+export const useNotes = (opts: { archived?: boolean } = {}) => {
+  const archived = opts.archived ?? false;
   const queryClient = useQueryClient();
   const api = useNotesApi();
-  const listKey = queryKeys.notes.list();
+  const listKey = queryKeys.notes.list({ archived });
 
   const query = useQuery({
     queryKey: listKey,
-    queryFn: api.fetchNotes,
+    queryFn: () => api.fetchNotes({ archived }),
   });
-
-  const prependToCache = (note: Note) => {
-    queryClient.setQueryData<Note[]>(listKey, (previous) =>
-      previous ? [note, ...previous] : [note],
-    );
-  };
 
   const removeFromCache = (id: string) => {
     queryClient.setQueryData<Note[]>(listKey, (previous) =>
@@ -31,7 +32,12 @@ export const useNotes = () => {
 
   const createNote = useMutation({
     mutationFn: (payload: CreateNotePayload = {}) => api.createNote(payload),
-    onSuccess: prependToCache,
+    // New notes are never archived, so they belong in the active list.
+    onSuccess: (note) => {
+      queryClient.setQueryData<Note[]>(queryKeys.notes.list(), (previous) =>
+        previous ? [note, ...previous] : [note],
+      );
+    },
   });
 
   const updateNote = useMutation({
@@ -42,20 +48,23 @@ export const useNotes = () => {
       queryClient.setQueryData<Note[]>(listKey, (previous) =>
         previous
           ?.map((note) => (note._id === updated._id ? updated : note))
-          .sort((a, b) => {
-            if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-            return (
-              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-            );
-          }),
+          .sort(byPinnedThenRecent),
       );
       queryClient.setQueryData(queryKeys.notes.detail(updated._id), updated);
     },
   });
 
-  const archiveNote = useMutation({
-    mutationFn: (id: string) => api.updateNote(id, { archived: true }),
-    onSuccess: (_archived, id) => removeFromCache(id),
+  /** Moves a note between the active list and the archive. */
+  const setArchived = useMutation({
+    mutationFn: ({ id, archived: next }: { id: string; archived: boolean }) =>
+      api.updateNote(id, { archived: next }),
+    onSuccess: (updated) => {
+      removeFromCache(updated._id);
+      queryClient.setQueryData(queryKeys.notes.detail(updated._id), updated);
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.notes.list({ archived: updated.archived }),
+      });
+    },
   });
 
   const deleteNote = useMutation({
@@ -75,7 +84,8 @@ export const useNotes = () => {
       updateNote.mutateAsync({ id, payload }),
     pinNote: (id: string, pinned: boolean) =>
       updateNote.mutate({ id, payload: { pinned } }),
-    archiveNote: (id: string) => archiveNote.mutate(id),
+    archiveNote: (id: string) => setArchived.mutate({ id, archived: true }),
+    unarchiveNote: (id: string) => setArchived.mutate({ id, archived: false }),
     deleteNote: (id: string) => deleteNote.mutate(id),
     refetch: query.refetch,
   };
@@ -98,8 +108,12 @@ export const useNote = (id: string | undefined) => {
     onSuccess: (updated) => {
       queryClient.setQueryData(queryKeys.notes.detail(updated._id), updated);
       // The dashboard's ordering depends on updatedAt, so let it refetch.
-      void queryClient.invalidateQueries({ queryKey: queryKeys.notes.list() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.notes.lists() });
     },
+    // Opts out of the global toast: autosave retries with backoff and the
+    // editor's save indicator reports the failure, so a toast per retry would
+    // only be noise.
+    onError: () => undefined,
   });
 
   return {
