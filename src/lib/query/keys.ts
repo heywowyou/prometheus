@@ -21,10 +21,15 @@ export const queryKeys = {
   },
   notes: {
     all: ["notes"] as const,
-    /** Prefix matching both the active and archived lists. */
+    /** Prefix matching every list (any view, search or tag). */
     lists: () => ["notes", "list"] as const,
-    list: (opts: { archived?: boolean } = {}) =>
-      ["notes", "list", { archived: opts.archived ?? false }] as const,
+    list: (filter: { view: string; query?: string; tag?: string }) =>
+      [
+        "notes",
+        "list",
+        { view: filter.view, query: filter.query ?? "", tag: filter.tag ?? "" },
+      ] as const,
+    tags: () => ["notes", "tags"] as const,
     detail: (id: string) => ["notes", "detail", id] as const,
   },
 } as const;
