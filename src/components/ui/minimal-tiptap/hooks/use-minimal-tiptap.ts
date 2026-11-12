@@ -47,6 +47,20 @@ async function fakeuploader(file: File): Promise<string> {
   return src
 }
 
+/** Uploads a pasted/dropped image; falls back to base64 only with no uploader. */
+async function storeImage(
+  file: File,
+  uploader?: (file: File) => Promise<string>
+): Promise<string | null> {
+  if (!uploader) return fileToBase64(file)
+  try {
+    return await uploader(file)
+  } catch {
+    toast.error("Image upload failed", { position: "bottom-right" })
+    return null
+  }
+}
+
 const createExtensions = ({
   placeholder,
   uploader,
@@ -149,9 +163,13 @@ const createExtensions = ({
     allowBase64: true,
     allowedMimeTypes: ["image/*"],
     maxFileSize: 5 * 1024 * 1024,
+    // Prometheus: pasted/dropped images go through `uploader` like toolbar
+    // images do. Inlining them as base64 put megabytes into the note body,
+    // which then exceeded the API's 2 MB request limit on every autosave.
     onDrop: (editor, files, pos) => {
       files.forEach(async (file) => {
-        const src = await fileToBase64(file)
+        const src = await storeImage(file, uploader)
+        if (!src) return
         editor.commands.insertContentAt(pos, {
           type: "image",
           attrs: { src },
@@ -160,7 +178,8 @@ const createExtensions = ({
     },
     onPaste: (editor, files) => {
       files.forEach(async (file) => {
-        const src = await fileToBase64(file)
+        const src = await storeImage(file, uploader)
+        if (!src) return
         editor.commands.insertContent({
           type: "image",
           attrs: { src },
