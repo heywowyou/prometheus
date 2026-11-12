@@ -1,5 +1,5 @@
 import { UserButton } from "@clerk/clerk-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useMatch } from "react-router-dom";
 import { Download } from "lucide-react";
 import { NAV_ITEMS } from "@app/navigation";
 import { useDataExport } from "@app/useDataExport";
@@ -12,10 +12,13 @@ import logo from "../assets/logo.png";
  */
 function Header() {
   const downloadBackup = useDataExport();
+  // The workout screen has its own bottom action bar; tabs would sit under thumbs.
+  const immersive = useMatch("/workouts/session/:id") !== null;
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border bg-navbar/90 backdrop-blur-md">
+      {/* Top padding clears the iPhone status bar in standalone mode. */}
+      <header className="sticky top-0 z-40 w-full border-b border-border bg-navbar/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           <img
             src={logo}
@@ -60,7 +63,10 @@ function Header() {
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-navbar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-navbar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden",
+          immersive && "hidden",
+        )}
       >
         {NAV_ITEMS.map((item) => (
           <NavLink

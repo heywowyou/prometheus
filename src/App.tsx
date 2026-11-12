@@ -27,6 +27,27 @@ const NotesDashboardPage = lazy(
 const NoteEditorPage = lazy(
   () => import("@features/notes/pages/NoteEditorPage"),
 );
+const WorkoutsLayout = lazy(
+  () => import("@features/workouts/pages/WorkoutsLayout"),
+);
+const WorkoutStartPage = lazy(
+  () => import("@features/workouts/pages/StartPage"),
+);
+const WorkoutHistoryPage = lazy(
+  () => import("@features/workouts/pages/HistoryPage"),
+);
+const ExercisesPage = lazy(
+  () => import("@features/workouts/pages/ExercisesPage"),
+);
+const ExerciseProgressPage = lazy(
+  () => import("@features/workouts/pages/ExerciseProgressPage"),
+);
+const RoutineEditorPage = lazy(
+  () => import("@features/workouts/pages/RoutineEditorPage"),
+);
+const WorkoutSessionPage = lazy(
+  () => import("@features/workouts/pages/SessionPage"),
+);
 
 function App() {
   return (
@@ -61,10 +82,16 @@ function App() {
               path="/calendar"
               element={<ComingSoonPage title="Calendar" />}
             />
-            <Route
-              path="/workouts"
-              element={<ComingSoonPage title="Workouts" />}
-            />
+
+            {/* Tabbed hub; the full-screen pages below sit outside the tabs. */}
+            <Route path="/workouts" element={<WorkoutsLayout />}>
+              <Route index element={<WorkoutStartPage />} />
+              <Route path="history" element={<WorkoutHistoryPage />} />
+              <Route path="exercises" element={<ExercisesPage />} />
+            </Route>
+            <Route path="/workouts/exercises/:id" element={<ExerciseProgressPage />} />
+            <Route path="/workouts/routines/:id" element={<RoutineEditorPage />} />
+            <Route path="/workouts/session/:id" element={<WorkoutSessionPage />} />
 
             <Route path="*" element={<Navigate to={DEFAULT_ROUTE} replace />} />
           </Route>

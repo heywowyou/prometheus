@@ -76,6 +76,18 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Standalone (home-screen) mode: no rubber-band bounce or grey tap flash. */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS zooms the page when a focused field is under 16px; keep phones at 16. */
+  @media (hover: none) {
+    input,
+    textarea,
+    select {
+      font-size: max(16px, 1em);
+    }
   }
 }
 

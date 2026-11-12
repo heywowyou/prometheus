@@ -22,6 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@components/ui/dropdown-menu";
+import { ProgressRing } from "@components/ui/progress-ring";
+import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
 import { cn } from "@lib/utils";
 import { describeDue, type DueTone } from "../due";
@@ -46,17 +48,6 @@ const DUE_TONES: Record<DueTone, string> = {
   later: "text-muted-foreground",
 };
 
-/** 754_000 → "12:34"; 3_725_000 → "1:02:05". */
-const formatClock = (ms: number): string => {
-  const total = Math.floor(ms / 1000);
-  const hours = Math.floor(total / 3600);
-  const minutes = Math.floor((total % 3600) / 60);
-  const seconds = String(total % 60).padStart(2, "0");
-  return hours > 0
-    ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`
-    : `${minutes}:${seconds}`;
-};
-
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
@@ -70,27 +61,6 @@ interface TodoItemProps {
   onHistory?: (todo: Todo) => void;
   /** A drag handle, rendered at the row's left edge when the list is sortable. */
   handle?: ReactNode;
-}
-
-/** SVG ring showing timer progress around the play/pause icon. */
-function ProgressRing({ fraction }: { fraction: number }) {
-  const radius = 13;
-  const circumference = 2 * Math.PI * radius;
-  return (
-    <svg viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden>
-      <circle cx="16" cy="16" r={radius} className="fill-none stroke-border" strokeWidth="2.5" />
-      <circle
-        cx="16"
-        cy="16"
-        r={radius}
-        className="fill-none stroke-rating transition-[stroke-dashoffset] duration-1000 ease-linear"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={circumference * (1 - fraction)}
-      />
-    </svg>
-  );
 }
 
 function TodoItem({

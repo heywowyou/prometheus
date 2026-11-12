@@ -13,6 +13,7 @@ import { useMediaLogs } from "@features/media/hooks/useMediaLogs";
 import { configForType } from "@features/media/media-config";
 import { resolveCoverUrl } from "@features/media/types/media-types";
 import { useNoteActions, useNotes } from "@features/notes/hooks/useNotes";
+import WorkoutsTodayCard from "@features/workouts/components/WorkoutsTodayCard";
 
 const TODO_SECTIONS: Array<{ key: RecurrenceType; label: string }> = [
   { key: "daily", label: "Daily" },
@@ -161,6 +162,11 @@ function TodayPage() {
         </section>
 
         <div className="space-y-10 lg:col-span-2">
+          <section>
+            <SectionHeader title="Training" to="/workouts" linkLabel="Workouts" />
+            <WorkoutsTodayCard />
+          </section>
+
           <section>
             <SectionHeader title="In progress" to="/media" linkLabel="Media log" />
             {mediaLoading ? (
