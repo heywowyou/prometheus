@@ -10,9 +10,11 @@ import {
   MEDIA_TYPE_CONFIGS,
   DEFAULT_MEDIA_SLUG,
 } from "@features/media/media-config";
+import { DEFAULT_ROUTE } from "@app/navigation";
 
 // Route-level code splitting. The notes editor in particular pulls in Tiptap
 // and its highlighting bundle, which no other route needs.
+const TodayPage = lazy(() => import("@features/today/pages/TodayPage"));
 const TodosDashboardPage = lazy(
   () => import("@features/todos/pages/TodosDashboardPage"),
 );
@@ -38,6 +40,7 @@ function App() {
         {/* Signed-in routes — auth boundary, then shell. */}
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
+            <Route path="/today" element={<TodayPage />} />
             <Route path="/todos" element={<TodosDashboardPage />} />
 
             <Route path="/media" element={<MediaDashboardPage />}>
@@ -63,7 +66,7 @@ function App() {
               element={<ComingSoonPage title="Workouts" />}
             />
 
-            <Route path="*" element={<Navigate to="/todos" replace />} />
+            <Route path="*" element={<Navigate to={DEFAULT_ROUTE} replace />} />
           </Route>
         </Route>
       </Routes>

@@ -1,3 +1,14 @@
+/**
+ * A theme colour backed by `--<name>`, with opacity-modifier support:
+ * `bg-rating` → var(--rating); `bg-rating/10` → 10% rating over transparent.
+ */
+const token =
+  (name) =>
+  ({ opacityValue } = {}) =>
+    opacityValue === undefined || opacityValue === "1"
+      ? `var(--${name})`
+      : `color-mix(in srgb, var(--${name}) calc(${opacityValue} * 100%), transparent)`;
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -9,48 +20,58 @@ export default {
   			// hover-revealed controls must be shown outright.
   			touch: { raw: '(hover: none)' }
   		},
+  		// Every colour is a CSS variable holding a hex value. Tailwind can't
+  		// apply an opacity modifier (`bg-rating/10`) to a plain var() — it
+  		// silently emits no rule — so each token is a function that mixes the
+  		// variable with transparent via color-mix() when a modifier is used.
   		colors: {
-  			background: 'var(--background)',
-  			foreground: 'var(--foreground)',
+  			background: token('background'),
+  			foreground: token('foreground'),
   			card: {
-  				DEFAULT: 'var(--card)',
-  				foreground: 'var(--card-foreground)'
+  				DEFAULT: token('card'),
+  				foreground: token('card-foreground')
   			},
   			popover: {
-  				DEFAULT: 'var(--popover)',
-  				foreground: 'var(--popover-foreground)'
+  				DEFAULT: token('popover'),
+  				foreground: token('popover-foreground')
   			},
   			primary: {
-  				DEFAULT: 'var(--primary)',
-  				foreground: 'var(--primary-foreground)'
+  				DEFAULT: token('primary'),
+  				foreground: token('primary-foreground')
   			},
   			secondary: {
-  				DEFAULT: 'var(--secondary)',
-  				foreground: 'var(--secondary-foreground)'
+  				DEFAULT: token('secondary'),
+  				foreground: token('secondary-foreground')
   			},
   			muted: {
-  				DEFAULT: 'var(--muted)',
-  				foreground: 'var(--muted-foreground)'
+  				DEFAULT: token('muted'),
+  				foreground: token('muted-foreground')
   			},
   			accent: {
-  				DEFAULT: 'var(--accent)',
-  				foreground: 'var(--accent-foreground)'
+  				DEFAULT: token('accent'),
+  				foreground: token('accent-foreground')
   			},
   			destructive: {
-  				DEFAULT: 'var(--destructive)'
+  				DEFAULT: token('destructive'),
+  				foreground: token('destructive-foreground')
   			},
   			rating: {
-  				DEFAULT: 'var(--rating)',
-  				hover: 'var(--rating-hover)',
-  				foreground: 'var(--rating-foreground)'
+  				DEFAULT: token('rating'),
+  				hover: token('rating-hover'),
+  				foreground: token('rating-foreground')
   			},
-  			border: 'var(--border)',
-  			input: 'var(--input)',
-  			ring: 'var(--ring)',
-  			surface: 'var(--secondary)',
-  			'surface-hover': 'var(--accent)',
-  			text: 'var(--foreground)',
-  			'text-muted': 'var(--muted-foreground)'
+  			success: token('success'),
+  			warning: token('warning'),
+  			streak: token('streak'),
+  			overlay: token('overlay'),
+  			navbar: token('navbar'),
+  			border: token('border'),
+  			input: token('input'),
+  			ring: token('ring'),
+  			surface: token('secondary'),
+  			'surface-hover': token('accent'),
+  			text: token('foreground'),
+  			'text-muted': token('muted-foreground')
   		},
   		fontFamily: {
   			sans: [
