@@ -28,13 +28,14 @@ function DeleteConfirmModalBody({
   onConfirm: (id: string) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const hasStreak = task.recurrenceType !== "none" && task.completionCount > 0;
+  const hasHistory = task.recurrenceType !== "none" && task.completionCount > 0;
+  const streak = task.streak?.current ?? 0;
 
   return (
     <>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-destructive">
-          {hasStreak && <Flame className="h-4 w-4" />}
+          {hasHistory && <Flame className="h-4 w-4" />}
           {confirming ? "Confirm permanently" : "Confirm deletion"}
         </DialogTitle>
       </DialogHeader>
@@ -57,15 +58,20 @@ function DeleteConfirmModalBody({
       ) : (
         <>
           <p className="py-2 text-sm text-foreground">
-            {hasStreak ? (
+            {hasHistory ? (
               <>
                 You are about to delete the recurring task{" "}
-                <strong>&ldquo;{task.text}&rdquo;</strong>, along with its streak
-                of{" "}
-                <strong className="text-destructive">
-                  {task.completionCount}
-                </strong>
-                .
+                <strong>&ldquo;{task.text}&rdquo;</strong>, along with its{" "}
+                <strong className="text-destructive">{task.completionCount}</strong>{" "}
+                recorded completions
+                {streak > 0 && (
+                  <>
+                    {" "}
+                    and its current streak of{" "}
+                    <strong className="text-destructive">{streak}</strong>
+                  </>
+                )}
+                . Pausing it keeps all of that.
               </>
             ) : (
               <>
@@ -77,8 +83,11 @@ function DeleteConfirmModalBody({
             <Button variant="ghost" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={() => setConfirming(true)}>
-              Proceed
+            <Button
+              variant="destructive"
+              onClick={() => (hasHistory ? setConfirming(true) : onConfirm(task._id))}
+            >
+              {hasHistory ? "Proceed" : "Delete"}
             </Button>
           </DialogFooter>
         </>
@@ -88,10 +97,8 @@ function DeleteConfirmModalBody({
 }
 
 /**
- * Two-step delete for tasks.
- *
- * Recurring tasks carry a streak that can't be rebuilt, so the second step
- * spells out what is lost before the delete goes through.
+ * Delete for tasks. Recurring tasks with history take two steps, because their
+ * completions and streak can't be rebuilt; plain tasks take one.
  */
 function DeleteConfirmModal({
   isOpen,

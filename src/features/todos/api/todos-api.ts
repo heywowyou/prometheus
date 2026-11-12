@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from "react";
 import { useApiClient } from "@lib/api/api-client";
-import type { InteractionType, RecurrenceType, Todo } from "../types/todo-types";
+import type {
+  InteractionType,
+  RecurrenceType,
+  TimerAction,
+  Todo,
+  TodoHistory,
+} from "../types/todo-types";
 
 const TODOS_PATH = "/todos";
 
@@ -51,6 +57,26 @@ export const useTodosApi = () => {
     [client],
   );
 
+  const updateTimer = useCallback(
+    async (id: string, action: TimerAction): Promise<Todo> => {
+      const { data } = await client.patch<Todo>(`${TODOS_PATH}/${id}/timer`, {
+        action,
+      });
+      return data;
+    },
+    [client],
+  );
+
+  const fetchHistory = useCallback(
+    async (id: string, days: number): Promise<TodoHistory> => {
+      const { data } = await client.get<TodoHistory>(`${TODOS_PATH}/${id}/history`, {
+        params: { days },
+      });
+      return data;
+    },
+    [client],
+  );
+
   const pauseTodo = useCallback(
     async (id: string): Promise<Todo> => {
       const { data } = await client.patch<Todo>(`${TODOS_PATH}/${id}/pause`);
@@ -80,6 +106,8 @@ export const useTodosApi = () => {
       createTodo,
       updateTodo,
       toggleTodo,
+      updateTimer,
+      fetchHistory,
       pauseTodo,
       resumeTodo,
       deleteTodo,
@@ -89,6 +117,8 @@ export const useTodosApi = () => {
       createTodo,
       updateTodo,
       toggleTodo,
+      updateTimer,
+      fetchHistory,
       pauseTodo,
       resumeTodo,
       deleteTodo,
