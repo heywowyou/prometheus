@@ -14,7 +14,7 @@ function AppShell() {
   const { pathname } = useLocation();
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
+    <div className="min-h-dvh bg-background font-sans text-foreground">
       <Header />
       {/* Bottom padding clears the phone tab bar rendered by Header. */}
       <div className="mx-auto max-w-7xl px-4 pb-24 pt-6 sm:px-6 lg:pb-6">

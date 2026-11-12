@@ -35,4 +35,20 @@ export const queryKeys = {
     tags: () => ["notes", "tags"] as const,
     detail: (id: string) => ["notes", "detail", id] as const,
   },
+  workouts: {
+    all: ["workouts"] as const,
+    exercises: (opts: { archived?: boolean } = {}) =>
+      ["workouts", "exercises", { archived: opts.archived ?? false }] as const,
+    /** Prefix matching every exercise list. */
+    exerciseLists: () => ["workouts", "exercises"] as const,
+    progress: (exerciseId: string) => ["workouts", "progress", exerciseId] as const,
+    lastSets: (exerciseId: string) => ["workouts", "last-sets", exerciseId] as const,
+    routines: () => ["workouts", "routines"] as const,
+    routine: (id: string) => ["workouts", "routine", id] as const,
+    activeSession: () => ["workouts", "sessions", "active"] as const,
+    session: (id: string) => ["workouts", "sessions", "detail", id] as const,
+    sessionHistory: () => ["workouts", "sessions", "history"] as const,
+    history: (days: number) => ["workouts", "history", days] as const,
+    summary: () => ["workouts", "summary"] as const,
+  },
 } as const;
