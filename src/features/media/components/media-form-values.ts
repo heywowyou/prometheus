@@ -6,12 +6,13 @@ import {
   type MediaLogStatus,
   type MediaLogType,
 } from "../types/media-types";
-import type { ExternalRef } from "../types/metadata-types";
+import type { ExternalRef, MetadataDetails } from "../types/metadata-types";
 
 export interface MediaLogFormValues {
   type: MediaLogType;
   title: string;
-  rating: number;
+  /** 1–10, or null when unrated. */
+  rating: number | null;
   date: DateParts;
   status: MediaLogStatus;
   url: string;
@@ -28,7 +29,7 @@ export interface MediaLogFormValues {
 const empty = (type: MediaLogType): MediaLogFormValues => ({
   type,
   title: "",
-  rating: 5,
+  rating: null,
   date: isoToParts(null),
   status: "finished",
   url: "",
@@ -45,7 +46,7 @@ const empty = (type: MediaLogType): MediaLogFormValues => ({
 const fromLog = (log: MediaLog): MediaLogFormValues => ({
   type: log.type,
   title: log.title,
-  rating: log.rating,
+  rating: log.rating ?? null,
   date: isoToParts(log.date),
   status: log.status ?? "finished",
   url: log.url ?? "",
@@ -64,3 +65,23 @@ export const initialFormValues = (
   log: MediaLog | null,
   presetType: MediaLogType | undefined,
 ): MediaLogFormValues => (log ? fromLog(log) : empty(presetType ?? "movie"));
+
+/**
+ * Overlays catalogue details onto the form. Only fields the catalogue knows
+ * are replaced, so a rating, date, status or review already entered is kept.
+ */
+export const applyDetails = (
+  values: MediaLogFormValues,
+  details: MetadataDetails,
+): MediaLogFormValues => ({
+  ...values,
+  title: details.title,
+  releaseYear: details.year ? String(details.year) : values.releaseYear,
+  url: details.url ?? values.url,
+  cover: details.coverUrl ? { url: details.coverUrl, source: "external" } : values.cover,
+  director: details.credits.director ?? values.director,
+  author: details.credits.author ?? values.author,
+  pages: details.credits.pages ? String(details.credits.pages) : values.pages,
+  artist: details.credits.artist ?? values.artist,
+  external: { provider: details.provider, id: details.externalId },
+});

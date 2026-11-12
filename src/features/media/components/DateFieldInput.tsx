@@ -3,6 +3,8 @@ import { Label } from "@components/ui/label";
 import type { DateParts } from "@lib/date/date-parts";
 
 interface DateFieldInputProps {
+  /** Defaults to "Date"; the media form says "Finished on", "Started on"… */
+  label?: string;
   value: DateParts;
   onChange: (value: DateParts) => void;
 }
@@ -10,7 +12,7 @@ interface DateFieldInputProps {
 const DIGITS_ONLY = /\D/g;
 
 /** DD / MM / YYYY entry. Validation lives in `partsToIso`. */
-function DateFieldInput({ value, onChange }: DateFieldInputProps) {
+function DateFieldInput({ label = "Date", value, onChange }: DateFieldInputProps) {
   const field = (
     key: keyof DateParts,
     placeholder: string,
@@ -36,7 +38,7 @@ function DateFieldInput({ value, onChange }: DateFieldInputProps) {
 
   return (
     <div className="space-y-1.5">
-      <Label>Date</Label>
+      <Label>{label}</Label>
       <div className="flex items-center gap-1.5">
         {field("day", "DD", 2, "w-12")}
         <span className="text-sm text-muted-foreground">/</span>

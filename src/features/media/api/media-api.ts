@@ -12,8 +12,8 @@ const MEDIA_PATH = "/media";
 
 export interface MediaLogFields {
   title: string;
-  /** 1–10. */
-  rating: number;
+  /** 1–10, optional. */
+  rating?: number;
   /** `YYYY-MM-DD`. */
   date: string;
   url?: string;
@@ -34,7 +34,8 @@ export interface CreateMediaLogPayload extends MediaLogFields {
 }
 
 /** For the nullable keys, `null` clears the value; omit to leave unchanged. */
-export type UpdateMediaLogPayload = Partial<MediaLogFields> & {
+export type UpdateMediaLogPayload = Partial<Omit<MediaLogFields, "rating">> & {
+  rating?: number | null;
   cover?: CoverImage | null;
   releaseYear?: number | null;
   external?: ExternalRef | null;
