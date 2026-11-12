@@ -9,17 +9,25 @@ import {
 } from "@components/ui/collapsible";
 import EmptyState from "@components/feedback/EmptyState";
 import { cn } from "@lib/utils";
-import { useTodos, usePausedTodos, useGroupedTodos } from "../hooks/useTodos";
+import {
+  RECENT_COMPLETION_DAYS,
+  useGroupedTodos,
+  usePausedTodos,
+  useTodos,
+} from "../hooks/useTodos";
 import TodoItem from "../components/TodoItem";
 import TaskModal from "../components/TaskModal";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
+import TodoHistoryDialog from "../components/TodoHistoryDialog";
+import QuickAddInput from "../components/QuickAddInput";
 import { RECURRENCE_GROUPS, type Todo } from "../types/todo-types";
 
 type ModalState =
   | { type: "none" }
   | { type: "new" }
   | { type: "edit"; task: Todo }
-  | { type: "delete"; task: Todo };
+  | { type: "delete"; task: Todo }
+  | { type: "history"; task: Todo };
 
 function SectionHeading({ label, count }: { label: string; count: number }) {
   return (
@@ -41,27 +49,40 @@ function TodosDashboardPage() {
     createTodo,
     updateTodo,
     toggleTodo,
+    timerAction,
     pauseTodo,
     deleteTodo,
   } = useTodos();
   const { pausedTodos, resumeTodo } = usePausedTodos();
-  const { active, completed } = useGroupedTodos(todos);
+  const { active, recentCompleted, olderCompleted } = useGroupedTodos(todos);
 
   const [modal, setModal] = useState<ModalState>({ type: "none" });
   const [pausedOpen, setPausedOpen] = useState(false);
+  const [showOlder, setShowOlder] = useState(false);
 
   const closeModal = () => setModal({ type: "none" });
-  const openEdit = (task: Todo) => setModal({ type: "edit", task });
-  const openDelete = (task: Todo) => setModal({ type: "delete", task });
+
+  const itemHandlers = {
+    onToggle: toggleTodo,
+    onTimer: timerAction,
+    onEdit: (task: Todo) => setModal({ type: "edit", task }),
+    onDelete: (task: Todo) => setModal({ type: "delete", task }),
+    onHistory: (task: Todo) => setModal({ type: "history", task }),
+  };
+
+  const completedShown = showOlder
+    ? [...recentCompleted, ...olderCompleted]
+    : recentCompleted;
+  const completedTotal = recentCompleted.length + olderCompleted.length;
 
   return (
     <>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="page-title">Dashboard</h2>
+          <h2 className="page-title">Todos</h2>
           {!loading && todos.length > 0 && (
             <p className="mt-1 text-sm text-muted-foreground">
-              {active.length} open · {completed.length} done
+              {active.length} open · {completedTotal} done
             </p>
           )}
         </div>
@@ -92,7 +113,7 @@ function TodosDashboardPage() {
             <div className="h-14 animate-pulse rounded-xl bg-card opacity-40" />
           </div>
         </div>
-      ) : todos.length === 0 ? (
+      ) : todos.length === 0 && pausedTodos.length === 0 ? (
         <EmptyState
           icon={CheckSquare}
           message="Your workspace is empty."
@@ -113,25 +134,25 @@ function TodosDashboardPage() {
                 return (
                   <div key={group.key} className="flex flex-col">
                     <SectionHeading label={group.label} count={items.length} />
-                    <div className="flex min-h-[200px] flex-col space-y-2">
-                      {items.length === 0 ? (
-                        <div className="flex h-full items-center justify-center">
-                          <p className="text-sm italic text-muted-foreground">
-                            No active tasks
-                          </p>
-                        </div>
-                      ) : (
-                        items.map((todo) => (
-                          <TodoItem
-                            key={todo._id}
-                            todo={todo}
-                            onToggle={toggleTodo}
-                            onEdit={openEdit}
-                            onDelete={openDelete}
-                            onPause={pauseTodo}
-                          />
-                        ))
+                    <div className="flex flex-col space-y-2">
+                      {items.length === 0 && (
+                        <p className="px-1 py-3 text-sm italic text-muted-foreground">
+                          Nothing due
+                        </p>
                       )}
+                      {items.map((todo) => (
+                        <TodoItem
+                          key={todo._id}
+                          todo={todo}
+                          {...itemHandlers}
+                          onPause={pauseTodo}
+                        />
+                      ))}
+                      <QuickAddInput
+                        recurrenceType={group.key}
+                        label={group.key === "none" ? "one-time" : group.label}
+                        onCreate={createTodo}
+                      />
                     </div>
                   </div>
                 );
@@ -141,22 +162,29 @@ function TodosDashboardPage() {
 
           <div className="xl:col-span-1">
             <div className="sticky top-24">
-              <SectionHeading label="History" count={completed.length} />
-              <div className="flex min-h-[500px] flex-col space-y-2 opacity-60 transition-opacity duration-300 hover:opacity-100">
-                {completed.length === 0 ? (
+              <SectionHeading label="Done" count={completedTotal} />
+              <div className="flex flex-col space-y-2 opacity-60 transition-opacity duration-300 hover:opacity-100">
+                {completedTotal === 0 ? (
                   <p className="text-sm italic text-muted-foreground">
                     No completed tasks yet.
                   </p>
                 ) : (
-                  completed.map((todo) => (
-                    <TodoItem
-                      key={todo._id}
-                      todo={todo}
-                      onToggle={toggleTodo}
-                      onEdit={openEdit}
-                      onDelete={openDelete}
-                    />
+                  completedShown.map((todo) => (
+                    <TodoItem key={todo._id} todo={todo} {...itemHandlers} />
                   ))
+                )}
+                {olderCompleted.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowOlder((on) => !on)}
+                    className="px-1 py-1 text-left text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {showOlder
+                      ? "Hide older one-time tasks"
+                      : `Show ${olderCompleted.length} one-time task${
+                          olderCompleted.length === 1 ? "" : "s"
+                        } done over ${RECENT_COMPLETION_DAYS} days ago`}
+                  </button>
                 )}
               </div>
             </div>
@@ -200,6 +228,8 @@ function TodosDashboardPage() {
                       {todo.recurrenceType}
                       {todo.pausedAt &&
                         ` · paused ${new Date(todo.pausedAt).toLocaleDateString()}`}
+                      {todo.streak && todo.streak.best > 0 &&
+                        ` · best streak ${todo.streak.best}`}
                     </span>
                   </div>
                   <button
@@ -240,6 +270,10 @@ function TodosDashboardPage() {
           deleteTodo(id);
           closeModal();
         }}
+      />
+      <TodoHistoryDialog
+        todo={modal.type === "history" ? modal.task : null}
+        onClose={closeModal}
       />
     </>
   );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@components/ui/select";
-import { cn } from "@lib/utils";
 import { RECURRENCE_TYPES, RECURRENCE_LABELS } from "@lib/date/recurrence";
-import type {
-  InteractionType,
-  RecurrenceType,
-  Todo,
+import {
+  MAX_DURATION_GOAL,
+  type InteractionType,
+  type RecurrenceType,
+  type Todo,
 } from "../types/todo-types";
 
 interface TaskFormValues {
@@ -37,13 +38,13 @@ const initialValues = (task: Todo | null): TaskFormValues =>
         text: task.text,
         recurrenceType: task.recurrenceType,
         interactionType: task.interactionType,
-        durationGoal: String(task.durationGoal ?? 0),
+        durationGoal: task.durationGoal ? String(task.durationGoal) : "",
       }
     : {
         text: "",
         recurrenceType: "none",
         interactionType: "checkbox",
-        durationGoal: "0",
+        durationGoal: "",
       };
 
 const RECURRENCE_OPTIONS = RECURRENCE_TYPES.map((value) => ({
@@ -77,10 +78,21 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
   const set = <K extends keyof TaskFormValues>(key: K, value: TaskFormValues[K]) =>
     setValues((previous) => ({ ...previous, [key]: value }));
 
-  const isHold = values.interactionType === "hold";
+  const isTimer = values.interactionType === "timer";
+  const minutes = Math.min(MAX_DURATION_GOAL, Math.max(0, Math.floor(Number(values.durationGoal) || 0)));
+  const missingGoal = isTimer && minutes < 1;
+
+  // Switching a recurring task to one-time deletes its completion history.
+  const erasesHistory =
+    isEdit &&
+    task.recurrenceType !== "none" &&
+    values.recurrenceType === "none" &&
+    task.completionCount > 0;
+
+  const canSubmit = values.text.trim() !== "" && !missingGoal && !submitting;
 
   const handleSubmit = async () => {
-    if (!values.text.trim() || submitting) return;
+    if (!canSubmit) return;
 
     setSubmitting(true);
     try {
@@ -88,8 +100,7 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
         text: values.text.trim(),
         recurrenceType: values.recurrenceType,
         interactionType: values.interactionType,
-        // The target only applies to hold tasks.
-        durationGoal: isHold ? Math.max(0, Number(values.durationGoal) || 0) : 0,
+        durationGoal: minutes,
       });
       onClose();
     } catch {
@@ -143,6 +154,13 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
               ))}
             </SelectContent>
           </Select>
+          {erasesHistory && (
+            <p className="flex items-start gap-1.5 pt-1 text-xs text-destructive">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Making this a one-time task permanently erases its{" "}
+              {task.completionCount} completions and its streak.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -159,35 +177,40 @@ function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="checkbox">Checkbox</SelectItem>
-                <SelectItem value="hold">Hold to fill</SelectItem>
+                <SelectItem value="timer">Timer</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div
-            className={cn("space-y-1.5", !isHold && "pointer-events-none opacity-30")}
-          >
-            <Label htmlFor="task-duration">Target (mins)</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="task-duration">
+              {isTimer ? "Target (min) *" : "Minutes (optional)"}
+            </Label>
             <Input
               id="task-duration"
               type="number"
-              min={0}
+              inputMode="numeric"
+              min={isTimer ? 1 : 0}
+              max={MAX_DURATION_GOAL}
+              placeholder={isTimer ? "30" : "—"}
               value={values.durationGoal}
               onChange={(event) => set("durationGoal", event.target.value)}
-              disabled={!isHold}
+              aria-invalid={missingGoal && values.durationGoal !== ""}
             />
           </div>
         </div>
+        <p className="text-xs text-muted-foreground">
+          {isTimer
+            ? "Start the timer when you begin; the task ticks itself once the target is reached. Progress syncs across devices."
+            : "Tick it when it's done. Minutes, if set, are shown as a reminder."}
+        </p>
       </div>
 
       <DialogFooter>
         <Button variant="ghost" onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
-        <Button
-          onClick={() => void handleSubmit()}
-          disabled={!values.text.trim() || submitting}
-        >
+        <Button onClick={() => void handleSubmit()} disabled={!canSubmit}>
           {submitting ? "Saving…" : isEdit ? "Save changes" : "Create"}
         </Button>
       </DialogFooter>

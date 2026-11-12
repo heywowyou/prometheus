@@ -1,23 +1,33 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import {
-  Flame,
-  Repeat2,
-  Pencil,
-  Shredder,
+  CalendarDays,
+  Check,
   Ellipsis,
+  Flame,
   PauseCircle,
+  Pause,
+  Pencil,
+  Play,
+  Repeat2,
+  RotateCcw,
+  Shredder,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@components/ui/dropdown-menu";
+import { useNow } from "@lib/hooks/useNow";
 import { cn } from "@lib/utils";
-import type { RecurrenceType, Todo } from "../types/todo-types";
-
-/** How long a "hold to fill" task must be held before it completes. */
-const HOLD_DURATION_MS = 1000;
+import {
+  timerElapsedMs,
+  type RecurrenceType,
+  type TimerAction,
+  type Todo,
+} from "../types/todo-types";
 
 const RESET_LABELS: Record<RecurrenceType, string | null> = {
   none: null,
@@ -26,89 +36,138 @@ const RESET_LABELS: Record<RecurrenceType, string | null> = {
   monthly: "Resets on the 1st",
 };
 
+/** 754_000 → "12:34"; 3_725_000 → "1:02:05". */
+const formatClock = (ms: number): string => {
+  const total = Math.floor(ms / 1000);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = String(total % 60).padStart(2, "0");
+  return hours > 0
+    ? `${hours}:${String(minutes).padStart(2, "0")}:${seconds}`
+    : `${minutes}:${seconds}`;
+};
+
 interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
+  onTimer?: (id: string, action: TimerAction) => void;
   onDelete: (todo: Todo) => void;
   onEdit: (todo: Todo) => void;
   onPause?: (id: string) => void;
+  onHistory?: (todo: Todo) => void;
 }
 
-function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) {
+/** SVG ring showing timer progress around the play/pause icon. */
+function ProgressRing({ fraction }: { fraction: number }) {
+  const radius = 13;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <svg viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden>
+      <circle cx="16" cy="16" r={radius} className="fill-none stroke-border" strokeWidth="2.5" />
+      <circle
+        cx="16"
+        cy="16"
+        r={radius}
+        className="fill-none stroke-rating transition-[stroke-dashoffset] duration-1000 ease-linear"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={circumference * (1 - fraction)}
+      />
+    </svg>
+  );
+}
+
+function TodoItem({
+  todo,
+  onToggle,
+  onTimer,
+  onDelete,
+  onEdit,
+  onPause,
+  onHistory,
+}: TodoItemProps) {
   const isRecurring = todo.recurrenceType !== "none";
-  const isHoldTask = todo.interactionType === "hold";
-  const showTally = isRecurring && todo.completionCount > 0;
+  const isTimer = todo.interactionType === "timer" && Boolean(onTimer);
+  const running = isTimer && Boolean(todo.timer?.startedAt) && !todo.completed;
 
-  const [isHolding, setIsHolding] = useState(false);
-  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const now = useNow(running);
+  const goalMs = Math.max(1, todo.durationGoal) * 60_000;
+  const elapsed = isTimer ? timerElapsedMs(todo, now) : 0;
+  const fraction = Math.min(1, elapsed / goalMs);
+  const streak = todo.streak?.current ?? 0;
 
-  // A hold task completes when the press survives HOLD_DURATION_MS; releasing
-  // early cancels it.
+  // Complete the task once the running timer reaches its goal — once per run,
+  // also when the page opens on a timer that finished while it was closed.
+  const completedRunRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isHolding) return;
+    const run = todo.timer?.startedAt ?? null;
+    if (!running || !run || elapsed < goalMs || completedRunRef.current === run) return;
+    completedRunRef.current = run;
+    onToggle(todo._id);
+    toast.success(`${todo.text} — time's up`);
+  }, [running, elapsed, goalMs, onToggle, todo._id, todo.text, todo.timer?.startedAt]);
 
-    holdTimeoutRef.current = setTimeout(() => {
-      onToggle(todo._id);
-      setIsHolding(false);
-    }, HOLD_DURATION_MS);
-
-    return () => {
-      if (holdTimeoutRef.current) clearTimeout(holdTimeoutRef.current);
-      holdTimeoutRef.current = null;
-    };
-  }, [isHolding, onToggle, todo._id]);
-
-  const startHold = () => {
-    if (!todo.completed) setIsHolding(true);
+  const startOrPause = () => {
+    if (!onTimer) return;
+    onTimer(todo._id, running ? "pause" : "start");
   };
 
+  /** Row activation: timers start/pause; everything else (and done timers) toggles. */
   const activate = () => {
-    // A completed hold task is un-completed with a plain click; an incomplete
-    // one needs the hold gesture.
-    if (!isHoldTask || todo.completed) onToggle(todo._id);
+    if (isTimer && !todo.completed) startOrPause();
+    else onToggle(todo._id);
   };
 
-  const holdHandlers = isHoldTask
-    ? {
-        onMouseDown: startHold,
-        onMouseUp: () => setIsHolding(false),
-        onTouchStart: startHold,
-        onTouchEnd: () => setIsHolding(false),
-      }
-    : {};
+  const detail = (() => {
+    if (isTimer && !todo.completed && elapsed > 0) {
+      return `${formatClock(elapsed)} / ${formatClock(goalMs)}`;
+    }
+    return todo.durationGoal > 0 ? `${todo.durationGoal} min` : null;
+  })();
 
   return (
     <div
       role="button"
       tabIndex={0}
       aria-pressed={todo.completed}
-      className="group relative flex cursor-pointer select-none items-center rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-      {...holdHandlers}
-      onMouseLeave={() => setIsHolding(false)}
+      className="group relative flex cursor-pointer select-none items-center overflow-hidden rounded-xl border border-border bg-card p-4 transition-all hover:border-border/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       onClick={activate}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          // Keyboard users complete in one action rather than holding.
-          onToggle(todo._id);
+          activate();
         }
       }}
     >
-      {isHoldTask && !todo.completed && (
+      {isTimer && !todo.completed && fraction > 0 && (
         <div
           aria-hidden
-          className="absolute inset-0 z-0 rounded-xl bg-secondary"
-          style={{
-            width: isHolding ? "100%" : "0%",
-            transition: isHolding
-              ? `width ${HOLD_DURATION_MS}ms linear`
-              : "width 0.3s ease-out",
-          }}
+          className="absolute inset-y-0 left-0 z-0 bg-secondary transition-[width] duration-1000 ease-linear"
+          style={{ width: `${fraction * 100}%` }}
         />
       )}
 
       <div className="relative z-10 flex flex-1 items-center">
-        {!isHoldTask && (
+        {isTimer && !todo.completed ? (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              startOrPause();
+            }}
+            aria-label={running ? `Pause timer for ${todo.text}` : `Start timer for ${todo.text}`}
+            className="relative mr-3 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <ProgressRing fraction={fraction} />
+            {running ? (
+              <Pause className="relative h-3.5 w-3.5 fill-current" />
+            ) : (
+              <Play className="relative ml-0.5 h-3.5 w-3.5 fill-current" />
+            )}
+          </button>
+        ) : (
           <div
             aria-hidden
             className={cn(
@@ -130,13 +189,18 @@ function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) 
             todo.completed ? "text-muted-foreground" : "text-foreground",
           )}
         >
-          <span className="flex flex-col text-sm">
+          <span className="flex min-w-0 flex-col text-sm">
             <span className={cn(todo.completed && "line-through opacity-60")}>
               {todo.text}
             </span>
-            {isHoldTask && todo.durationGoal > 0 && (
-              <span className="mt-0.5 text-xs text-muted-foreground">
-                {todo.durationGoal} mins
+            {detail && (
+              <span
+                className={cn(
+                  "mt-0.5 text-xs tabular-nums",
+                  running ? "text-rating" : "text-muted-foreground",
+                )}
+              >
+                {detail}
               </span>
             )}
           </span>
@@ -150,10 +214,13 @@ function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) 
                 <Repeat2 className="h-4 w-4" strokeWidth={2} />
               </span>
             )}
-            {showTally && (
-              <span className="flex items-center text-xs font-normal text-orange-400">
+            {streak > 0 && (
+              <span
+                className="flex items-center text-xs font-normal text-orange-400"
+                title={`Streak ${streak} · best ${todo.streak?.best ?? streak} · ${todo.completionCount} total`}
+              >
                 <Flame className="mr-1 h-3.5 w-3.5" strokeWidth={2.5} />
-                {todo.completionCount}
+                {streak}
               </span>
             )}
           </span>
@@ -165,8 +232,6 @@ function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) 
               type="button"
               aria-label={`Actions for ${todo.text}`}
               onClick={(event) => event.stopPropagation()}
-              onMouseDown={(event) => event.stopPropagation()}
-              onTouchStart={(event) => event.stopPropagation()}
               className="rounded-xl p-1.5 text-muted-foreground opacity-0 transition duration-200 ease-in-out hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 touch:opacity-100"
             >
               <Ellipsis className="h-4 w-4" strokeWidth={1.5} />
@@ -180,12 +245,31 @@ function TodoItem({ todo, onToggle, onDelete, onEdit, onPause }: TodoItemProps) 
               <Pencil className="mr-2 h-3.5 w-3.5" />
               Edit
             </DropdownMenuItem>
+            {isTimer && !todo.completed && (
+              <DropdownMenuItem onClick={() => onToggle(todo._id)}>
+                <Check className="mr-2 h-3.5 w-3.5" />
+                Mark done
+              </DropdownMenuItem>
+            )}
+            {isTimer && !todo.completed && elapsed > 0 && onTimer && (
+              <DropdownMenuItem onClick={() => onTimer(todo._id, "reset")}>
+                <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                Reset timer
+              </DropdownMenuItem>
+            )}
+            {isRecurring && onHistory && (
+              <DropdownMenuItem onClick={() => onHistory(todo)}>
+                <CalendarDays className="mr-2 h-3.5 w-3.5" />
+                History
+              </DropdownMenuItem>
+            )}
             {isRecurring && onPause && (
               <DropdownMenuItem onClick={() => onPause(todo._id)}>
                 <PauseCircle className="mr-2 h-3.5 w-3.5" />
                 Pause
               </DropdownMenuItem>
             )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onClick={() => onDelete(todo)}

@@ -10,6 +10,9 @@ export const queryKeys = {
     all: ["todos"] as const,
     list: (opts: { paused?: boolean } = {}) =>
       ["todos", "list", { paused: opts.paused ?? false }] as const,
+    /** Prefix matching one todo's history at any window size. */
+    historyOf: (id: string) => ["todos", "history", id] as const,
+    history: (id: string, days: number) => ["todos", "history", id, days] as const,
   },
   media: {
     all: ["media"] as const,
