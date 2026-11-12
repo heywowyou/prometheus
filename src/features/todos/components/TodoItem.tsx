@@ -51,8 +51,9 @@ interface TodoItemProps {
   todo: Todo;
   onToggle: (id: string) => void;
   onTimer?: (id: string, action: TimerAction) => void;
-  onDelete: (todo: Todo) => void;
-  onEdit: (todo: Todo) => void;
+  /** Omit (with onEdit) for a compact item, e.g. on the Today page. */
+  onDelete?: (todo: Todo) => void;
+  onEdit?: (todo: Todo) => void;
   onPause?: (id: string) => void;
   onHistory?: (todo: Todo) => void;
 }
@@ -216,7 +217,7 @@ function TodoItem({
             )}
             {streak > 0 && (
               <span
-                className="flex items-center text-xs font-normal text-orange-400"
+                className="flex items-center text-xs font-normal text-streak"
                 title={`Streak ${streak} · best ${todo.streak?.best ?? streak} · ${todo.completionCount} total`}
               >
                 <Flame className="mr-1 h-3.5 w-3.5" strokeWidth={2.5} />
@@ -241,10 +242,12 @@ function TodoItem({
             align="end"
             onClick={(event) => event.stopPropagation()}
           >
-            <DropdownMenuItem onClick={() => onEdit(todo)}>
-              <Pencil className="mr-2 h-3.5 w-3.5" />
-              Edit
-            </DropdownMenuItem>
+            {onEdit && (
+              <DropdownMenuItem onClick={() => onEdit(todo)}>
+                <Pencil className="mr-2 h-3.5 w-3.5" />
+                Edit
+              </DropdownMenuItem>
+            )}
             {isTimer && !todo.completed && (
               <DropdownMenuItem onClick={() => onToggle(todo._id)}>
                 <Check className="mr-2 h-3.5 w-3.5" />
@@ -269,14 +272,18 @@ function TodoItem({
                 Pause
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => onDelete(todo)}
-            >
-              <Shredder className="mr-2 h-3.5 w-3.5" />
-              Delete
-            </DropdownMenuItem>
+            {onDelete && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => onDelete(todo)}
+                >
+                  <Shredder className="mr-2 h-3.5 w-3.5" />
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

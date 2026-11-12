@@ -4,6 +4,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { queryKeys } from "@lib/query/keys";
 import { useTodosApi, type CreateTodoPayload, type UpdateTodoPayload } from "../api/todos-api";
 import type { TimerAction, Todo } from "../types/todo-types";
@@ -108,12 +109,27 @@ export const useTodos = () => {
     onSuccess: writeToCache,
   });
 
+  const refreshBothLists = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.todos.list() });
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.todos.list({ paused: true }),
+    });
+  };
+
+  const resumeTodo = useMutation({
+    mutationFn: (id: string) => api.resumeTodo(id),
+    onSuccess: refreshBothLists,
+  });
+
   const pauseTodo = useMutation({
     mutationFn: (id: string) => api.pauseTodo(id),
-    onSuccess: (_paused, id) => {
+    onSuccess: (paused, id) => {
       removeFromCache(id);
       void queryClient.invalidateQueries({
         queryKey: queryKeys.todos.list({ paused: true }),
+      });
+      toast(`Paused “${paused.text}”`, {
+        action: { label: "Undo", onClick: () => resumeTodo.mutate(id) },
       });
     },
   });

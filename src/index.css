@@ -49,6 +49,19 @@
 
     /* Navbar surface */
     --navbar: #1a1a1a;
+
+    /* Text on a destructive (red) fill */
+    --destructive-foreground: #ffffff;
+
+    /* Status: finished / in progress (media badges) */
+    --success: #5fcf9a;
+    --warning: #f0b45a;
+
+    /* Streak flame on recurring todos */
+    --streak: #fb923c;
+
+    /* Scrim behind dialogs and over cover images */
+    --overlay: #000000;
   }
 
   * {

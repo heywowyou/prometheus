@@ -75,7 +75,7 @@ function MediaLogCard({
         {(onEdit || onDelete) && (
           // Hover/focus overlay on desktop; on touch screens the buttons sit
           // permanently in the cover's bottom-left corner instead.
-          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 touch:inset-auto touch:bottom-2 touch:left-2 touch:bg-transparent touch:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center gap-2 bg-overlay/60 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 touch:inset-auto touch:bottom-2 touch:left-2 touch:bg-transparent touch:opacity-100">
             {onEdit && (
               <button
                 type="button"
@@ -108,7 +108,7 @@ function MediaLogCard({
             }}
             aria-label={log.favorite ? "Remove from favorites" : "Add to favorites"}
             aria-pressed={log.favorite}
-            className="absolute right-2.5 top-2.5 z-10 rounded-2xl bg-black/40 p-1.5 transition-colors hover:bg-black/60"
+            className="absolute right-2.5 top-2.5 z-10 rounded-2xl bg-overlay/40 p-1.5 transition-colors hover:bg-overlay/60"
           >
             <Heart
               className={cn(
@@ -157,8 +157,8 @@ function MediaLogCard({
             className={cn(
               "rounded-xl border px-1.5 py-0.5 text-[10px] uppercase tracking-wide",
               isFinished
-                ? "border-emerald-700/60 bg-emerald-600/20 text-emerald-300"
-                : "border-amber-700/60 bg-amber-600/20 text-amber-300",
+                ? "border-success/40 bg-success/15 text-success"
+                : "border-warning/40 bg-warning/15 text-warning",
             )}
           >
             {isFinished ? "Done" : "In progress"}
