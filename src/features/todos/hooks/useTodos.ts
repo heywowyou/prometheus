@@ -99,6 +99,23 @@ export const useTodos = () => {
     },
   });
 
+  const reorder = useMutation({
+    mutationFn: (ids: string[]) => api.reorderTodos(ids),
+    // The dropped order shows at once; a failure snaps it back.
+    onMutate: async (ids) => {
+      await queryClient.cancelQueries({ queryKey: listKey });
+      const snapshot = queryClient.getQueryData<Todo[]>(listKey);
+      const position = new Map(ids.map((id, index) => [id, index]));
+      queryClient.setQueryData<Todo[]>(listKey, (previous) =>
+        previous?.map((todo) =>
+          position.has(todo._id) ? { ...todo, order: position.get(todo._id) } : todo,
+        ),
+      );
+      return { snapshot };
+    },
+    onError: (_error, _ids, context) => restore(context),
+  });
+
   const updateTimer = useMutation({
     mutationFn: ({ id, action }: { id: string; action: TimerAction }) =>
       api.updateTimer(id, action),
@@ -146,6 +163,7 @@ export const useTodos = () => {
     updateTodo: (id: string, payload: UpdateTodoPayload) =>
       updateTodo.mutateAsync({ id, payload }),
     toggleTodo: (id: string) => toggleTodo.mutate(id),
+    reorderTodos: (ids: string[]) => reorder.mutate(ids),
     timerAction: (id: string, action: TimerAction) =>
       updateTimer.mutate({ id, action }),
     pauseTodo: (id: string) => pauseTodo.mutate(id),

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ImageIcon, Loader2, PenLine, Search } from "lucide-react";
 import { cn } from "@lib/utils";
+import { getErrorMessage } from "@lib/api/errors";
 import { useDebouncedValue } from "@lib/hooks/useDebouncedValue";
 import {
   MIN_SEARCH_LENGTH,
@@ -28,7 +29,7 @@ function MetadataSearchStep({ config, initialQuery = "", onPick, onManual }: Met
   const [picking, setPicking] = useState<string | null>(null);
 
   const debounced = useDebouncedValue(query.trim(), 300);
-  const { results, isFetching, isError } = useMetadataSearch(config.type, debounced, true);
+  const { results, isFetching, isError, error } = useMetadataSearch(config.type, debounced, true);
   const fetchDetails = useMetadataDetails();
 
   const searching = debounced.length >= MIN_SEARCH_LENGTH;
@@ -78,7 +79,7 @@ function MetadataSearchStep({ config, initialQuery = "", onPick, onManual }: Met
           </p>
         ) : isError ? (
           <p className="pt-16 text-center text-sm text-muted-foreground">
-            {config.metadataSource} search is unavailable right now.
+            {config.metadataSource} search failed: {getErrorMessage(error)}
           </p>
         ) : !showResults ? (
           <p className="pt-16 text-center text-sm text-muted-foreground">

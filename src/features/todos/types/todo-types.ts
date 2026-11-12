@@ -42,6 +42,8 @@ export interface Todo {
   streak?: Streak;
   /** One-time tasks only: the day it's due, `YYYY-MM-DD`. */
   dueDate?: string | null;
+  /** Manual position within its section, set by drag and drop. */
+  order?: number | null;
   paused?: boolean;
   pausedAt?: string | null;
   /** Set when a recurring task's previous completion belongs to an elapsed cycle. */

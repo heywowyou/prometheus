@@ -40,6 +40,7 @@ export const useMetadataSearch = (
     results: result.data ?? [],
     isFetching: result.isFetching,
     isError: result.isError,
+    error: result.error,
   };
 };
 
