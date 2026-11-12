@@ -22,20 +22,8 @@ export const useUploadApi = () => {
     [client],
   );
 
-  /** Mirrors a remote image into Cloudinary via the API's validated importer. */
-  const uploadCoverFromUrl = useCallback(
-    async (url: string): Promise<UploadedImage> => {
-      const { data } = await client.post<UploadedImage>(
-        "/images/upload-from-url",
-        { url },
-      );
-      return data;
-    },
-    [client],
-  );
-
   return useMemo(
-    () => ({ uploadCover, uploadCoverFromUrl }),
-    [uploadCover, uploadCoverFromUrl],
+    () => ({ uploadCover }),
+    [uploadCover],
   );
 };

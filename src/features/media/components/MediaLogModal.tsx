@@ -46,6 +46,15 @@ const toPayload = (values: MediaLogFormValues, date: string) => ({
   artist: optional(values.artist),
 });
 
+const releaseYear = (values: MediaLogFormValues): number | null =>
+  values.releaseYear.trim() ? Number(values.releaseYear) : null;
+
+/** True when Escape was pressed inside an open autocomplete list. */
+const isInOpenCombobox = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement &&
+  target.getAttribute("role") === "combobox" &&
+  target.getAttribute("aria-expanded") === "true";
+
 type BodyProps = Omit<MediaLogModalProps, "isOpen">;
 
 /**
@@ -80,12 +89,16 @@ function MediaLogModalBody({
         await onUpdate(log._id, {
           ...toPayload(values, date),
           cover: values.cover,
+          releaseYear: releaseYear(values),
+          external: values.external,
         });
       } else if (onCreate) {
         await onCreate({
           ...toPayload(values, date),
           type: values.type,
           cover: values.cover ?? undefined,
+          releaseYear: releaseYear(values) ?? undefined,
+          external: values.external ?? undefined,
         });
       }
       onClose();
@@ -133,13 +146,20 @@ function MediaLogModalBody({
 /**
  * One modal for both creating and editing a media log.
  *
- * Cover cleanup is no longer done here — the API deletes the replaced
- * Cloudinary asset, so a client that fails mid-save can't orphan an image.
+ * Cover storage is the API's job: it imports external covers on save and
+ * deletes replaced Cloudinary assets, so a cancelled or failed save can't
+ * orphan an image.
  */
 function MediaLogModal({ isOpen, ...rest }: MediaLogModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && rest.onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
+      <DialogContent
+        className="max-h-[90vh] max-w-md overflow-y-auto"
+        // Escape in the title search closes its suggestions, not the form.
+        onEscapeKeyDown={(event) => {
+          if (isInOpenCombobox(event.target)) event.preventDefault();
+        }}
+      >
         {isOpen && (
           <MediaLogModalBody key={rest.log?._id ?? "new"} {...rest} />
         )}

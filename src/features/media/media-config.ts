@@ -16,6 +16,8 @@ export interface MediaTypeConfig {
   /** Tailwind aspect ratio for the cover art. */
   coverAspect: string;
   credits: readonly CreditField[];
+  /** Catalogue the title field searches, for attribution ("Search TMDB…"). */
+  metadataSource: string;
 }
 
 /**
@@ -34,6 +36,7 @@ export const MEDIA_TYPE_CONFIGS = [
     icon: Film,
     coverAspect: "aspect-[2/3]",
     credits: ["director"],
+    metadataSource: "TMDB",
   },
   {
     type: "tvshow",
@@ -43,6 +46,7 @@ export const MEDIA_TYPE_CONFIGS = [
     icon: Tv,
     coverAspect: "aspect-[2/3]",
     credits: [],
+    metadataSource: "TMDB",
   },
   {
     type: "book",
@@ -52,6 +56,7 @@ export const MEDIA_TYPE_CONFIGS = [
     icon: BookOpen,
     coverAspect: "aspect-[2/3]",
     credits: ["author", "pages"],
+    metadataSource: "Open Library",
   },
   {
     type: "music_album",
@@ -61,6 +66,7 @@ export const MEDIA_TYPE_CONFIGS = [
     icon: Disc3,
     coverAspect: "aspect-square",
     credits: ["artist"],
+    metadataSource: "MusicBrainz",
   },
   {
     type: "game",
@@ -70,6 +76,7 @@ export const MEDIA_TYPE_CONFIGS = [
     icon: Gamepad2,
     coverAspect: "aspect-[2/3]",
     credits: [],
+    metadataSource: "Steam",
   },
 ] as const satisfies ReadonlyArray<MediaTypeConfig>;
 

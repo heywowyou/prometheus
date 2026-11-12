@@ -6,6 +6,7 @@ import {
   type MediaLogStatus,
   type MediaLogType,
 } from "../types/media-types";
+import type { ExternalRef } from "../types/metadata-types";
 
 export interface MediaLogFormValues {
   type: MediaLogType;
@@ -20,6 +21,8 @@ export interface MediaLogFormValues {
   author: string;
   pages: string;
   artist: string;
+  releaseYear: string;
+  external: ExternalRef | null;
 }
 
 const empty = (type: MediaLogType): MediaLogFormValues => ({
@@ -35,6 +38,8 @@ const empty = (type: MediaLogType): MediaLogFormValues => ({
   author: "",
   pages: "",
   artist: "",
+  releaseYear: "",
+  external: null,
 });
 
 const fromLog = (log: MediaLog): MediaLogFormValues => ({
@@ -50,6 +55,8 @@ const fromLog = (log: MediaLog): MediaLogFormValues => ({
   author: log.author ?? "",
   pages: log.pages != null ? String(log.pages) : "",
   artist: log.artist ?? "",
+  releaseYear: log.releaseYear != null ? String(log.releaseYear) : "",
+  external: log.external ?? null,
 });
 
 /** The form's starting state, for either create or edit. */
