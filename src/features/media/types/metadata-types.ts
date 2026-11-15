@@ -40,3 +40,12 @@ export interface MetadataDetails {
     artist?: string;
   };
 }
+
+/** One alternative cover offered by the cover picker. */
+export interface CoverOption {
+  /** Full-size remote image, copied into Cloudinary by the API on save. */
+  url: string;
+  thumbnailUrl: string;
+  /** Language, edition, release or style, when the catalogue says. */
+  label?: string;
+}

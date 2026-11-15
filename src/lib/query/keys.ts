@@ -21,6 +21,11 @@ export const queryKeys = {
       ["media", "metadata", "search", type, query] as const,
     metadataDetails: (provider: MetadataProvider, id: string) =>
       ["media", "metadata", "details", provider, id] as const,
+    metadataCovers: (provider: MetadataProvider, id: string) =>
+      ["media", "metadata", "covers", provider, id] as const,
+  },
+  profile: {
+    all: ["profile"] as const,
   },
   notes: {
     all: ["notes"] as const,

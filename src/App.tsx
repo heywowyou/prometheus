@@ -31,6 +31,7 @@ const NotesLayout = lazy(() => import("@features/notes/pages/NotesLayout"));
 const NotesHomePage = lazy(() => import("@features/notes/pages/NotesHomePage"));
 const DailyNoteRoute = lazy(() => import("@features/notes/pages/DailyNoteRoute"));
 const GraphPage = lazy(() => import("@features/notes/pages/GraphPage"));
+const ProfilePage = lazy(() => import("@features/profile/pages/ProfilePage"));
 const WorkoutsLayout = lazy(
   () => import("@features/workouts/pages/WorkoutsLayout"),
 );
@@ -102,6 +103,8 @@ function App() {
             <Route path="/workouts/exercises/:id" element={<ExerciseProgressPage />} />
             <Route path="/workouts/routines/:id" element={<RoutineEditorPage />} />
             <Route path="/workouts/session/:id" element={<WorkoutSessionPage />} />
+
+            <Route path="/profile" element={<ProfilePage />} />
 
             <Route path="*" element={<Navigate to={DEFAULT_ROUTE} replace />} />
           </Route>

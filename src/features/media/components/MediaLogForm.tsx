@@ -64,7 +64,9 @@ function MediaLogForm({ values, onChange, onSearch, onSubmit }: MediaLogFormProp
         <CoverImageInput
           value={values.cover}
           onChange={(cover) => set("cover", cover)}
-          coverAspect={config.coverAspect}
+          config={config}
+          external={values.external}
+          title={values.title}
         />
       </div>
 

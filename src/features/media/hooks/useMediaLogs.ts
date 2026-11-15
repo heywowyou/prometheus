@@ -20,6 +20,10 @@ export const useMediaLogs = (type?: MediaLogType) => {
     queryFn: () => api.fetchLogs(type),
   });
 
+  // The profile embeds picked logs, so any edit there may be showing.
+  const refreshProfile = () =>
+    void queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+
   const writeToCache = (updated: MediaLog) => {
     queryClient.setQueryData<MediaLog[]>(listKey, (previous) =>
       previous
@@ -40,7 +44,10 @@ export const useMediaLogs = (type?: MediaLogType) => {
   const updateLog = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateMediaLogPayload }) =>
       api.updateLog(id, payload),
-    onSuccess: writeToCache,
+    onSuccess: (updated) => {
+      writeToCache(updated);
+      refreshProfile();
+    },
   });
 
   const deleteLog = useMutation({
@@ -49,6 +56,7 @@ export const useMediaLogs = (type?: MediaLogType) => {
       queryClient.setQueryData<MediaLog[]>(listKey, (previous) =>
         previous?.filter((log) => log._id !== id),
       );
+      refreshProfile();
     },
   });
 

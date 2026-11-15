@@ -1,17 +1,23 @@
 import { useRef, useState } from "react";
-import { ImageIcon, Link, Upload, X } from "lucide-react";
+import { ImageIcon, Images, Link, Upload, X } from "lucide-react";
 import { Input } from "@components/ui/input";
 import { Button } from "@components/ui/button";
 import { cn } from "@lib/utils";
 import { getErrorMessage } from "@lib/api/errors";
 import { useUploadApi } from "../api/upload-api";
+import CoverPickerDialog from "./CoverPickerDialog";
+import type { MediaTypeConfig } from "../media-config";
 import type { CoverImage } from "../types/media-types";
+import type { ExternalRef } from "../types/metadata-types";
 
 interface CoverImageInputProps {
   value: CoverImage | null;
   onChange: (value: CoverImage | null) => void;
-  /** Tailwind aspect ratio for the preview, from the type's config. */
-  coverAspect?: string;
+  config: MediaTypeConfig;
+  /** The linked catalogue entry; enables "Change cover" to browse its covers. */
+  external: ExternalRef | null;
+  /** Shown in the cover picker's header. */
+  title: string;
 }
 
 const isHttpUrl = (raw: string): boolean => {
@@ -31,11 +37,8 @@ const isHttpUrl = (raw: string): boolean => {
  * API on save, so cancelling never leaves an orphaned image. Files have to be
  * uploaded straight away.
  */
-function CoverImageInput({
-  value,
-  onChange,
-  coverAspect = "aspect-[2/3]",
-}: CoverImageInputProps) {
+function CoverImageInput({ value, onChange, config, external, title }: CoverImageInputProps) {
+  const coverAspect = config.coverAspect;
   const { uploadCover } = useUploadApi();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,6 +47,7 @@ function CoverImageInput({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [broken, setBroken] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const set = (cover: CoverImage | null) => {
     setBroken(false);
@@ -116,6 +120,27 @@ function CoverImageInput({
           </button>
         )}
       </div>
+
+      {external && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 w-full text-xs"
+          onClick={() => setPickerOpen(true)}
+        >
+          <Images className="h-3.5 w-3.5" />
+          Change cover
+        </Button>
+      )}
+      <CoverPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        config={config}
+        external={external}
+        title={title || `This ${config.singular}`}
+        onPick={(url) => set({ url, source: "external" })}
+      />
 
       <div className="grid grid-cols-2 gap-1.5">
         <Button

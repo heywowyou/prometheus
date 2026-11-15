@@ -7,7 +7,7 @@ import {
 import { queryKeys } from "@lib/query/keys";
 import { useMetadataApi } from "../api/metadata-api";
 import type { MediaLogType } from "../types/media-types";
-import type { MetadataProvider } from "../types/metadata-types";
+import type { ExternalRef, MetadataProvider } from "../types/metadata-types";
 
 export const MIN_SEARCH_LENGTH = 2;
 
@@ -58,4 +58,30 @@ export const useMetadataDetails = () => {
       }),
     [queryClient, api],
   );
+};
+
+/**
+ * Alternative covers for a catalogue entry. Errors are shown inline by the
+ * picker, which also offers a pasted link as a way out.
+ */
+export const useCoverOptions = (external: ExternalRef | null, enabled: boolean) => {
+  const api = useMetadataApi();
+
+  const result = useQuery({
+    queryKey: external
+      ? queryKeys.media.metadataCovers(external.provider, external.id)
+      : ["media", "metadata", "covers", "none"],
+    queryFn: () => (external ? api.covers(external.provider, external.id) : Promise.resolve([])),
+    enabled: enabled && external !== null,
+    staleTime: 60 * 60_000,
+    retry: false,
+    meta: { silentErrors: true },
+  });
+
+  return {
+    options: result.data ?? [],
+    loading: result.isPending && result.fetchStatus !== "idle",
+    isError: result.isError,
+    error: result.error,
+  };
 };

@@ -1,4 +1,5 @@
-import { ExternalLink, Heart, ImageIcon, Pencil, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Heart, ImageIcon, Images, Pencil, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import { cn } from "@lib/utils";
 import { configForType } from "../media-config";
 import { STATUS_META, creditLine, formatLogDate } from "../media-status";
 import { resolveCoverUrl, type MediaLog } from "../types/media-types";
+import CoverPickerDialog from "./CoverPickerDialog";
 
 interface MediaLogDetailProps {
   log: MediaLog | null;
@@ -18,10 +20,19 @@ interface MediaLogDetailProps {
   onEdit: (log: MediaLog) => void;
   onDelete: (log: MediaLog) => void;
   onToggleFavorite: (id: string) => void;
+  /** Replaces the cover with a remote image; the API imports it. */
+  onChangeCover: (id: string, url: string) => Promise<unknown>;
 }
 
 /** Everything about one log, opened by clicking its card. */
-function MediaLogDetail({ log, onClose, onEdit, onDelete, onToggleFavorite }: MediaLogDetailProps) {
+function MediaLogDetail({
+  log,
+  onClose,
+  onEdit,
+  onDelete,
+  onToggleFavorite,
+  onChangeCover,
+}: MediaLogDetailProps) {
   return (
     <Dialog open={log !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[92dvh] max-w-2xl overflow-y-auto p-0">
@@ -31,6 +42,7 @@ function MediaLogDetail({ log, onClose, onEdit, onDelete, onToggleFavorite }: Me
             onEdit={onEdit}
             onDelete={onDelete}
             onToggleFavorite={onToggleFavorite}
+            onChangeCover={onChangeCover}
           />
         )}
       </DialogContent>
@@ -43,7 +55,9 @@ function DetailBody({
   onEdit,
   onDelete,
   onToggleFavorite,
+  onChangeCover,
 }: Omit<MediaLogDetailProps, "log" | "onClose"> & { log: MediaLog }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
   const config = configForType(log.type);
   const status = STATUS_META[log.status ?? "finished"];
   const cover = resolveCoverUrl(log.cover);
@@ -52,7 +66,15 @@ function DetailBody({
 
   return (
     <div className="grid sm:grid-cols-[240px_1fr]">
-      <div className="bg-secondary p-6 sm:p-0">
+      <div className="group relative bg-secondary p-6 sm:p-0">
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card/90 px-3 py-1.5 text-xs font-medium text-foreground opacity-0 shadow-lg backdrop-blur transition-opacity hover:bg-card focus-visible:opacity-100 group-hover:opacity-100 touch:opacity-100"
+        >
+          <Images className="h-3.5 w-3.5" />
+          Change cover
+        </button>
         <div
           className={cn(
             config.coverAspect,
@@ -66,6 +88,14 @@ function DetailBody({
           )}
         </div>
       </div>
+      <CoverPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        config={config}
+        external={log.external ?? null}
+        title={log.title}
+        onPick={(url) => onChangeCover(log._id, url)}
+      />
 
       <div className="flex min-w-0 flex-col gap-4 p-6">
         <div className="pr-6">

@@ -1,8 +1,7 @@
-import { UserButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { Link, NavLink, useMatch } from "react-router-dom";
-import { Download } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { DEFAULT_ROUTE, NAV_ITEMS } from "@app/navigation";
-import { useDataExport } from "@app/useDataExport";
 import { cn } from "@lib/utils";
 
 /** The serif wordmark, also the way home. */
@@ -20,12 +19,34 @@ export function Wordmark({ className }: { className?: string }) {
   );
 }
 
+/** The avatar opens the profile, which also holds the account actions. */
+function ProfileLink() {
+  const { user } = useUser();
+  return (
+    <NavLink
+      to="/profile"
+      aria-label="Profile"
+      className={({ isActive }) =>
+        cn(
+          "flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-card transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          isActive ? "border-rating ring-2 ring-rating/30" : "border-border hover:border-muted-foreground/60",
+        )
+      }
+    >
+      {user?.imageUrl ? (
+        <img src={user.imageUrl} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <UserRound className="h-4 w-4 text-muted-foreground" />
+      )}
+    </NavLink>
+  );
+}
+
 /**
  * Top bar plus, below `lg`, a bottom tab bar: the labelled tabs don't fit
  * next to the wordmark on a phone, and the bottom of the screen is where thumbs are.
  */
 function Header() {
-  const downloadBackup = useDataExport();
   // The workout screen has its own bottom action bar; tabs would sit under thumbs.
   const immersive = useMatch("/workouts/session/:id") !== null;
 
@@ -56,17 +77,7 @@ function Header() {
               </NavLink>
             ))}
           </nav>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
-            <UserButton>
-              <UserButton.MenuItems>
-                <UserButton.Action
-                  label="Download backup (JSON)"
-                  labelIcon={<Download className="h-4 w-4" />}
-                  onClick={() => void downloadBackup()}
-                />
-              </UserButton.MenuItems>
-            </UserButton>
-          </div>
+          <ProfileLink />
         </div>
       </header>
 

@@ -280,6 +280,7 @@ function MediaPanel({ config }: MediaPanelPageProps) {
           setPendingDelete(log);
         }}
         onToggleFavorite={toggleFavorite}
+        onChangeCover={(id, url) => updateLog(id, { cover: { url, source: "external" } })}
       />
       <MediaLogModal
         isOpen={addOpen}

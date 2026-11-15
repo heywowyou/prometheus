@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useApiClient } from "@lib/api/api-client";
 import type { MediaLogType } from "../types/media-types";
 import type {
+  CoverOption,
   MetadataCandidate,
   MetadataDetails,
   MetadataProvider,
@@ -34,5 +35,15 @@ export const useMetadataApi = () => {
     [client],
   );
 
-  return useMemo(() => ({ search, details }), [search, details]);
+  const covers = useCallback(
+    async (provider: MetadataProvider, id: string): Promise<CoverOption[]> => {
+      const { data } = await client.get<CoverOption[]>(
+        `${METADATA_PATH}/${provider}/${encodeURIComponent(id)}/covers`,
+      );
+      return data;
+    },
+    [client],
+  );
+
+  return useMemo(() => ({ search, details, covers }), [search, details, covers]);
 };
