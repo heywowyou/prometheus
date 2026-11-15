@@ -62,6 +62,9 @@ export default {
   			},
   			success: token('success'),
   			warning: token('warning'),
+  			info: token('info'),
+  			raised: token('raised'),
+  			soft: token('soft-foreground'),
   			streak: token('streak'),
   			overlay: token('overlay'),
   			navbar: token('navbar'),
@@ -75,11 +78,13 @@ export default {
   		},
   		fontFamily: {
   			sans: [
-  				'Roboto',
+  				'Inter',
+  				'system-ui',
   				'sans-serif'
   			],
   			serif: [
   				'EB Garamond',
+  				'Georgia',
   				'serif'
   			]
   		},

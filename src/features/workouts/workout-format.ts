@@ -1,3 +1,5 @@
+import type { WorkoutSummary } from "./types/workout-types";
+
 /**
  * Display and input conversions. The API stores kg, seconds and metres; the
  * UI shows kg, km and minutes.
@@ -62,4 +64,15 @@ export const restLabel = (sec: number) => {
   if (sec === 0) return "Off";
   if (sec < 60) return `${sec} s`;
   return sec % 60 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}` : `${sec / 60} min`;
+};
+
+/**
+ * The routine after the last one trained, so a push/pull/legs split rotates
+ * by itself. Falls back to the first routine.
+ */
+export const nextRoutine = (summary: WorkoutSummary) => {
+  const { routines, lastSession } = summary;
+  if (routines.length === 0) return null;
+  const last = routines.findIndex((routine) => routine.name === lastSession?.name);
+  return routines[last < 0 ? 0 : (last + 1) % routines.length];
 };

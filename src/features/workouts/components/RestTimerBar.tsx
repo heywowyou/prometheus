@@ -27,7 +27,7 @@ function RestTimerBar({ remainingMs, fraction, finished, onAdjust, onSkip }: Res
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs text-muted-foreground">{finished ? "Rest over" : "Rest"}</p>
-        <p className="text-2xl font-semibold tabular-nums leading-tight text-foreground">
+        <p className="font-serif text-3xl tabular-nums leading-tight text-foreground">
           {finished ? "Go!" : formatClock(remainingMs + 999)}
         </p>
       </div>

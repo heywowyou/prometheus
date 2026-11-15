@@ -44,12 +44,12 @@ function FinishSummaryDialog({ result, onClose }: FinishSummaryDialogProps) {
 
         <div className="grid grid-cols-3 gap-2">
           {tiles.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="rounded-xl border border-border bg-secondary/40 p-3">
+            <div key={label} className="rounded-2xl border border-border bg-card p-4">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Icon className="h-3.5 w-3.5" />
                 {label}
               </div>
-              <p className="mt-1 text-base font-semibold tabular-nums text-foreground">{value}</p>
+              <p className="mt-1.5 font-serif text-2xl tabular-nums text-foreground">{value}</p>
             </div>
           ))}
         </div>
@@ -61,7 +61,7 @@ function FinishSummaryDialog({ result, onClose }: FinishSummaryDialogProps) {
             </p>
             <ul className="space-y-1.5">
               {result.prs.map((pr) => (
-                <li key={pr.exerciseId} className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-2">
+                <li key={pr.exerciseId} className="rounded-2xl border border-warning/40 bg-warning/10 px-4 py-2.5">
                   <p className="text-sm font-medium text-foreground">{pr.exerciseName}</p>
                   <p className="text-xs text-muted-foreground">
                     {pr.types.map((type) => PR_LABELS[type]).join(" · ")}

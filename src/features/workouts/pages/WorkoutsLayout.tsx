@@ -20,19 +20,19 @@ function ActiveSessionBanner() {
   return (
     <Link
       to={`/workouts/session/${active._id}`}
-      className="mb-5 flex items-center gap-3 rounded-2xl border border-rating/50 bg-rating/10 p-3 transition-colors hover:bg-rating/15"
+      className="mb-8 flex items-center gap-4 rounded-3xl bg-rating p-4 pr-5 text-rating-foreground transition-colors hover:bg-rating-hover"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rating text-rating-foreground">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rating-foreground text-rating">
         <Dumbbell className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-xs text-muted-foreground">Workout in progress</span>
-        <span className="block truncate font-semibold text-foreground">{active.name}</span>
+        <span className="block text-xs font-semibold uppercase tracking-[0.16em]">In progress</span>
+        <span className="block truncate font-serif text-2xl">{active.name}</span>
       </span>
-      <span className="text-sm tabular-nums text-muted-foreground">
+      <span className="text-sm font-medium tabular-nums">
         {formatClock(now - new Date(active.startedAt).getTime())}
       </span>
-      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      <ChevronRight className="h-5 w-5" />
     </Link>
   );
 }
@@ -40,9 +40,12 @@ function ActiveSessionBanner() {
 /** `/workouts`: the tabbed hub (Start · History · Exercises). */
 function WorkoutsLayout() {
   return (
-    <div className="mx-auto max-w-2xl">
-      <h2 className="page-title mb-4">Workouts</h2>
-      <nav className="mb-5 grid grid-cols-3 gap-1 rounded-xl bg-secondary p-1 text-sm">
+    <div className="mx-auto max-w-[760px]">
+      <h1 className="page-title mb-8 pt-2 sm:pt-6">Workouts</h1>
+      <nav
+        aria-label="Workouts"
+        className="mb-10 grid grid-cols-3 gap-0.5 rounded-full border border-border bg-card p-1 text-[13px] sm:inline-grid"
+      >
         {TABS.map((tab) => (
           <NavLink
             key={tab.to}
@@ -50,9 +53,9 @@ function WorkoutsLayout() {
             end={tab.end}
             className={({ isActive }) =>
               cn(
-                "flex h-10 items-center justify-center gap-1.5 rounded-lg font-medium transition-colors",
+                "flex h-9 items-center justify-center gap-1.5 rounded-full px-5 transition-colors",
                 isActive
-                  ? "bg-rating text-rating-foreground"
+                  ? "bg-primary font-semibold text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )
             }

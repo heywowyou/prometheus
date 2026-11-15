@@ -4,61 +4,68 @@
 
 @layer base {
   :root {
-    --radius: 0.75rem;
+    /* Slate and sage. Alternate palette ("Moss and mist") is documented in
+       the project's ui-redesign notes; swapping it in only changes values. */
+    --radius: 1rem;
 
     /* Core palette */
-    --background: #141414;
-    --foreground: #e8e8e8;
+    --background: #0f1217;
+    --foreground: #e7eaef;
 
     /* Card / surface */
-    --card: #222222;
-    --card-foreground: #e8e8e8;
+    --card: #171b22;
+    --card-foreground: #e7eaef;
 
     /* Popover (dropdowns, tooltips) */
-    --popover: #1c1c1c;
-    --popover-foreground: #e8e8e8;
+    --popover: #171b22;
+    --popover-foreground: #e7eaef;
 
-    /* Primary action (solid foreground-colored buttons) */
-    --primary: #e8e8e8;
-    --primary-foreground: #141414;
+    /* Primary (solid foreground-coloured buttons and active nav) */
+    --primary: #e7eaef;
+    --primary-foreground: #0f1217;
 
-    /* Secondary (ghost/outline default) */
-    --secondary: #1c1c1c;
-    --secondary-foreground: #e8e8e8;
+    /* Secondary: one step above a card (inputs, hovers, skeletons) */
+    --secondary: #1d222b;
+    --secondary-foreground: #e7eaef;
 
     /* Muted / disabled */
-    --muted: #1c1c1c;
-    --muted-foreground: #888888;
+    --muted: #1d222b;
+    --muted-foreground: #9ca3af;
 
-    /* Accent (hover/highlight, NOT for ratings) */
-    --accent: #1c1c1c;
-    --accent-foreground: #e8e8e8;
+    /* Accent (hover/highlight, NOT the brand accent) */
+    --accent: #1d222b;
+    --accent-foreground: #e7eaef;
 
-    /* Destructive */
-    --destructive: #c0392b;
+    /* Raised: done habits, pressed states */
+    --raised: #2c333f;
+
+    /* Secondary reading text: the day summary, finished items */
+    --soft-foreground: #bcc2cc;
+
+    /* Destructive (also overdue) */
+    --destructive: #ee8c80;
+    --destructive-foreground: #0f1217;
 
     /* Borders & inputs */
-    --border: #2e2e2e;
-    --input: #2e2e2e;
-    --ring: #5bb8e8;
+    --border: #242a34;
+    --input: #242a34;
+    --ring: #8fcba8;
 
-    /* Accent used for ratings, active nav, and focus rings */
-    --rating: #5bb8e8;
-    --rating-hover: #3a9fd0;
-    --rating-foreground: #141414;
+    /* Brand accent: sage. Used for ratings, primary actions, focus rings */
+    --rating: #8fcba8;
+    --rating-hover: #a6d8ba;
+    --rating-foreground: #0f1217;
 
     /* Navbar surface */
-    --navbar: #1a1a1a;
+    --navbar: #0f1217;
 
-    /* Text on a destructive (red) fill */
-    --destructive-foreground: #ffffff;
-
-    /* Status: finished / in progress (media badges) */
-    --success: #5fcf9a;
-    --warning: #f0b45a;
+    /* Status colours */
+    --success: #8fcba8;
+    --warning: #e6c27a;
+    --info: #9db4d6;
 
     /* Streak flame on recurring todos */
-    --streak: #fb923c;
+    --streak: #e8a87c;
 
     /* Scrim behind dialogs and over cover images */
     --overlay: #000000;
@@ -94,13 +101,24 @@
 @layer components {
   /* Editorial page/section titles */
   .page-title {
-    @apply font-sans text-3xl font-bold tracking-tight;
+    @apply font-serif text-[2.5rem] font-normal leading-none sm:text-5xl;
     color: var(--foreground);
   }
 
   .section-title {
-    @apply font-sans text-xl font-semibold;
+    @apply font-serif text-[1.75rem] font-medium leading-tight;
     color: var(--foreground);
+  }
+
+  /* Small tracked uppercase label above a title or section. */
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.16em];
+    color: var(--muted-foreground);
+  }
+
+  /* The rounded surface every block of content sits on. */
+  .panel {
+    @apply rounded-3xl border border-border bg-card;
   }
 }
 

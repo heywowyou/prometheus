@@ -80,8 +80,10 @@ function NoteCard({
         }
       }}
       className={cn(
-        "group relative cursor-pointer rounded-lg border border-border bg-card transition-colors hover:border-rating/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-        isGrid ? "flex flex-col p-4" : "flex items-start gap-3 p-3",
+        "group relative cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        isGrid
+          ? "flex min-h-[10rem] flex-col rounded-3xl border border-border bg-card p-5 hover:border-muted-foreground/50"
+          : "flex items-start gap-3 border-t border-border py-4",
         inTrash && "opacity-75",
       )}
     >
@@ -95,15 +97,15 @@ function NoteCard({
       <div className={cn("min-w-0 flex-1", isGrid && "flex flex-col pr-6")}>
         <p
           className={cn(
-            "truncate text-sm font-medium text-foreground",
-            note.fontFamily === "serif" && "font-serif text-base",
+            "truncate font-serif text-xl leading-snug text-foreground transition-colors group-hover:text-rating",
+            !note.title.trim() && "italic text-soft",
           )}
         >
           {title}
         </p>
 
         {isGrid && (
-          <p className="mt-1 line-clamp-3 flex-1 text-xs text-muted-foreground">
+          <p className="mt-2 line-clamp-3 flex-1 text-[13px] leading-relaxed text-muted-foreground">
             {note.excerpt || "No content"}
           </p>
         )}
@@ -119,7 +121,7 @@ function NoteCard({
                   onTagClick(tag);
                 }}
                 className={cn(
-                  "rounded-full px-1.5 py-0.5 text-[10px] transition-colors",
+                  "rounded-full px-2 py-0.5 text-[11px] transition-colors",
                   tag === activeTag
                     ? "bg-rating/15 text-rating"
                     : "bg-secondary text-muted-foreground hover:text-foreground",
@@ -136,7 +138,7 @@ function NoteCard({
           </div>
         )}
 
-        <p className={cn("text-xs text-muted-foreground", isGrid ? "mt-2" : "mt-1")}>
+        <p className={cn("text-xs text-muted-foreground", isGrid ? "mt-3" : "mt-1")}>
           {dateLine}
         </p>
       </div>

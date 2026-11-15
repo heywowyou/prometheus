@@ -42,13 +42,15 @@ createRoot(rootElement).render(
           colorDanger: "var(--destructive)",
           colorNeutral: "var(--foreground)",
           colorShimmer: "var(--border)",
-          borderRadius: "0.75rem",
-          fontFamily: "Roboto, sans-serif",
+          borderRadius: "1rem",
+          fontFamily: "Inter, system-ui, sans-serif",
         },
         elements: {
           rootBox: "w-full",
-          card: "shadow-none border border-border bg-card",
-          headerTitle: "text-foreground",
+          formButtonPrimary:
+            "rounded-full bg-rating text-rating-foreground shadow-none hover:bg-rating-hover",
+          card: "shadow-none border border-border bg-card rounded-3xl",
+          headerTitle: "font-serif text-3xl font-normal text-foreground",
           headerSubtitle: "text-muted-foreground",
           socialButtonsBlockButton:
             "border border-border bg-secondary text-foreground hover:bg-accent",

@@ -23,7 +23,7 @@ import {
 const MAX_ROUTINE_EXERCISES = 30;
 
 const iconButton =
-  "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30";
+  "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-30";
 
 interface SlotCardProps {
   slot: RoutineExercise;
@@ -42,10 +42,10 @@ function SlotCard({ slot, exercise, isFirst, isLast, onChange, onMove, onRemove 
   const patch = (next: Partial<RoutineExercise>) => onChange({ ...slot, ...next });
 
   return (
-    <li className="rounded-2xl border border-border bg-card p-3">
+    <li className="rounded-3xl border border-border bg-card p-3">
       <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-        <span className="min-w-0 flex-1 truncate font-semibold text-foreground">
+        <span className="min-w-0 flex-1 truncate font-serif text-xl text-foreground">
           {exercise?.name ?? "Unknown exercise"}
         </span>
         <button type="button" aria-label="Move up" disabled={isFirst} onClick={() => onMove(-1)} className={iconButton}>
@@ -213,11 +213,11 @@ function RoutineForm({ routine }: { routine: Routine | undefined }) {
         <Link
           to="/workouts"
           aria-label="Back"
-          className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           <ChevronLeft className="h-6 w-6" />
         </Link>
-        <h2 className="min-w-0 flex-1 truncate text-2xl font-bold tracking-tight text-foreground">
+        <h2 className="min-w-0 flex-1 truncate font-serif text-[2.25rem] font-normal leading-tight text-foreground">
           {routine ? "Edit routine" : "New routine"}
         </h2>
         <Button className="h-10" disabled={saving} onClick={() => void save().catch(() => undefined)}>
@@ -232,7 +232,7 @@ function RoutineForm({ routine }: { routine: Routine | undefined }) {
           placeholder="Name, e.g. Push day"
           maxLength={80}
           autoFocus={!routine}
-          className="h-12 w-full rounded-xl border border-input bg-card px-3 text-base font-semibold text-foreground placeholder:font-normal placeholder:text-muted-foreground focus:border-rating focus:outline-none"
+          className="h-14 w-full rounded-2xl border border-input bg-card px-4 font-serif text-2xl text-foreground placeholder:italic placeholder:text-muted-foreground focus:border-rating focus:outline-none"
         />
         <textarea
           value={notes}
@@ -246,7 +246,7 @@ function RoutineForm({ routine }: { routine: Routine | undefined }) {
 
       <h3 className="section-title mb-3 mt-6">Exercises</h3>
       {slots.length === 0 ? (
-        <p className="mb-3 rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+        <p className="mb-3 rounded-3xl border border-dashed border-border px-4 py-8 text-center font-serif text-lg text-soft">
           Add the exercises you do in this routine, in order.
         </p>
       ) : (

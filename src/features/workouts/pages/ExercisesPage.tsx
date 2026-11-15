@@ -44,7 +44,7 @@ function ExercisesPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search exercises"
-            className="h-11 w-full rounded-xl border border-input bg-card pl-9 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:border-rating focus:outline-none"
+            className="h-11 w-full rounded-full border border-input bg-card pl-10 pr-3 text-base text-foreground placeholder:text-muted-foreground focus:border-rating focus:outline-none"
           />
         </div>
         <Button className="h-11" onClick={() => setCreating(true)}>
@@ -60,7 +60,7 @@ function ExercisesPage() {
       {loading ? (
         <div className="space-y-2">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-14 animate-pulse rounded-xl bg-card" />
+            <div key={i} className="h-14 animate-pulse rounded-2xl bg-card" />
           ))}
         </div>
       ) : groups.length === 0 ? (
@@ -78,10 +78,10 @@ function ExercisesPage() {
       ) : (
         groups.map((group) => (
           <section key={group.key}>
-            <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="eyebrow mb-3 px-1">
               {group.label}
             </h3>
-            <ul className="overflow-hidden rounded-2xl border border-border bg-card">
+            <ul className="overflow-hidden rounded-3xl border border-border bg-card">
               {group.exercises.map((exercise, index) => {
                 const Icon = KIND_ICON[exercise.kind];
                 return (

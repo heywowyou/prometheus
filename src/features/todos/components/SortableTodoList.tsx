@@ -45,8 +45,12 @@ function SortableRow({ todo, ...handlers }: ItemHandlers & { todo: Todo }) {
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn("relative", isDragging && "z-20 opacity-90 shadow-lg shadow-overlay/40")}
+      className={cn(
+        "relative border-t border-border py-0.5",
+        isDragging && "z-20 rounded-2xl border-transparent bg-card shadow-xl shadow-overlay/50",
+      )}
     >
+      <div className="-mx-3">
       <TodoItem
         todo={todo}
         {...handlers}
@@ -58,12 +62,13 @@ function SortableRow({ todo, ...handlers }: ItemHandlers & { todo: Todo }) {
             {...listeners}
             aria-label={`Reorder ${todo.text}`}
             onClick={(event) => event.stopPropagation()}
-            className="-ml-1 mr-1 flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing group-hover:opacity-100 touch:opacity-100"
+            className="-ml-1.5 mr-0.5 flex h-8 w-5 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted-foreground/50 opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing group-hover:opacity-100 touch:opacity-100"
           >
             <GripVertical className="h-4 w-4" />
           </button>
         }
       />
+      </div>
     </div>
   );
 }
@@ -98,7 +103,7 @@ function SortableTodoList({ todos, onReorder, ...handlers }: SortableTodoListPro
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-        <div className="space-y-1.5">
+        <div>
           {todos.map((todo) => (
             <SortableRow key={todo._id} todo={todo} {...handlers} />
           ))}

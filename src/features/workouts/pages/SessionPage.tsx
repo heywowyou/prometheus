@@ -159,7 +159,7 @@ function SessionEditor({ session }: { session: WorkoutSession }) {
         <Link
           to={live ? "/workouts" : "/workouts/history"}
           aria-label="Back"
-          className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           <ChevronLeft className="h-6 w-6" />
         </Link>
@@ -172,7 +172,7 @@ function SessionEditor({ session }: { session: WorkoutSession }) {
             }}
             aria-label="Workout name"
             maxLength={80}
-            className="w-full truncate bg-transparent text-2xl font-bold tracking-tight text-foreground focus:outline-none"
+            className="w-full truncate bg-transparent font-serif text-[2.25rem] font-normal leading-tight text-foreground focus:outline-none"
           />
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             {live ? (
@@ -189,7 +189,7 @@ function SessionEditor({ session }: { session: WorkoutSession }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="Workout options"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <Ellipsis className="h-5 w-5" />
           </DropdownMenuTrigger>
@@ -235,7 +235,7 @@ function SessionEditor({ session }: { session: WorkoutSession }) {
         placeholder="Notes (how it felt, what to change next time)…"
         rows={2}
         maxLength={2000}
-        className="mt-4 w-full resize-none rounded-xl border border-border bg-card p-3 text-base text-foreground placeholder:text-muted-foreground focus:border-rating focus:outline-none"
+        className="mt-4 w-full resize-none rounded-2xl border border-border bg-card p-4 text-base text-foreground placeholder:text-muted-foreground focus:border-rating focus:outline-none"
       />
 
       {/* Room for the fixed action bar. */}

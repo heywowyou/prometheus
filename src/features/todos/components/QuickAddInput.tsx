@@ -31,8 +31,10 @@ function QuickAddInput({ recurrenceType, label, onCreate }: QuickAddInputProps) 
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2 text-sm transition-colors focus-within:border-muted-foreground">
-      <Plus className="h-4 w-4 shrink-0 text-muted-foreground" />
+    <div className="border-t border-border py-0.5">
+    <div className="-mx-3 flex min-h-[3.5rem] items-center rounded-2xl px-3 transition-colors focus-within:bg-secondary/60 hover:bg-secondary/40">
+      <span aria-hidden className="-ml-1.5 mr-0.5 w-5 shrink-0" />
+      <Plus className="ml-1.5 mr-[1.125rem] h-5 w-5 shrink-0 text-muted-foreground" strokeWidth={1.75} />
       <input
         type="text"
         value={value}
@@ -53,8 +55,9 @@ function QuickAddInput({ recurrenceType, label, onCreate }: QuickAddInputProps) 
             : `Add a ${label.toLowerCase()} task — "Read 30m" makes a timer`
         }
         aria-label={`Add a ${label.toLowerCase()} task`}
-        className="min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-50"
+        className="min-w-0 flex-1 bg-transparent font-serif text-[1.1875rem] text-foreground outline-none placeholder:font-sans placeholder:text-sm placeholder:text-muted-foreground disabled:opacity-50"
       />
+    </div>
     </div>
   );
 }

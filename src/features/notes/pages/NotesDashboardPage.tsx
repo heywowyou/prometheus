@@ -98,8 +98,8 @@ function NotesDashboardPage() {
 
   const listClass =
     layout === "grid"
-      ? "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-      : "flex flex-col gap-2";
+      ? "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      : "flex flex-col border-b border-border";
 
   const renderSection = (items: NoteSummary[]) => (
     <div className={listClass}>
@@ -130,9 +130,9 @@ function NotesDashboardPage() {
       aria-pressed={layout === target}
       title={label}
       className={cn(
-        "p-1.5",
+        "rounded-full p-1.5",
         layout === target
-          ? "bg-rating/10 text-rating"
+          ? "bg-raised text-foreground"
           : "text-muted-foreground hover:text-foreground",
       )}
     >
@@ -166,16 +166,16 @@ function NotesDashboardPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="page-title">Notes</h2>
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4 pt-2 sm:pt-6">
+        <h1 className="page-title">Notes</h1>
         <Button size="sm" onClick={() => void openNew()}>
           New note
         </Button>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         <div className="relative min-w-[12rem] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             ref={searchRef}
             type="search"
@@ -189,9 +189,9 @@ function NotesDashboardPage() {
             }}
             placeholder="Search notes"
             aria-label="Search notes"
-            className="h-9 w-full rounded-xl border border-border bg-transparent pl-8 pr-14 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-10 w-full rounded-full border border-border bg-card pl-9 pr-16 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
           />
-          <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-border px-1.5 text-[10px] text-muted-foreground sm:block">
+          <kbd className="pointer-events-none absolute right-3.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-border px-1.5 text-[10px] text-muted-foreground sm:block">
             Ctrl K
           </kbd>
         </div>
@@ -199,7 +199,7 @@ function NotesDashboardPage() {
         <div
           role="tablist"
           aria-label="Notes view"
-          className="flex items-center overflow-hidden rounded-xl border border-border text-xs"
+          className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1 text-xs"
         >
           {VIEWS.map((option) => (
             <button
@@ -209,9 +209,9 @@ function NotesDashboardPage() {
               aria-selected={view === option.value}
               onClick={() => setView(option.value)}
               className={cn(
-                "px-3 py-2 font-medium transition-colors",
+                "h-8 rounded-full px-3.5 font-medium transition-colors",
                 view === option.value
-                  ? "bg-rating/10 text-rating"
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -220,14 +220,14 @@ function NotesDashboardPage() {
           ))}
         </div>
 
-        <div className="flex items-center overflow-hidden rounded-md border border-border">
+        <div className="flex items-center gap-0.5 rounded-full border border-border bg-card p-1">
           {layoutButton("list", List, "List view")}
           {layoutButton("grid", LayoutGrid, "Grid view")}
         </div>
       </div>
 
       {view !== "trash" && tags.length > 0 && (
-        <div className="-mx-4 mb-5 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+        <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
           {tags.map(({ tag: name, count }) => (
             <button
               key={name}
@@ -235,7 +235,7 @@ function NotesDashboardPage() {
               aria-pressed={tag === name}
               onClick={() => setTag((current) => (current === name ? null : name))}
               className={cn(
-                "flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors",
+                "flex h-8 shrink-0 items-center gap-1 rounded-full border px-3.5 text-xs transition-colors",
                 tag === name
                   ? "border-rating bg-rating/10 text-rating"
                   : "border-border text-muted-foreground hover:text-foreground",
@@ -261,8 +261,8 @@ function NotesDashboardPage() {
             <div
               key={index}
               className={cn(
-                "animate-pulse rounded-lg border border-border bg-card",
-                layout === "grid" ? "h-32 p-4" : "h-14 p-3",
+                "animate-pulse rounded-3xl bg-card",
+                layout === "grid" ? "h-40 p-4" : "my-1 h-14 rounded-2xl",
               )}
             />
           ))}
@@ -270,14 +270,12 @@ function NotesDashboardPage() {
       ) : notes.length === 0 ? (
         emptyState()
       ) : (
-        <div className={cn("space-y-6 transition-opacity", fetching && "opacity-70")}>
+        <div className={cn("space-y-10 transition-opacity", fetching && "opacity-70")}>
           {pinned.length > 0 && (
             <section>
-              <div className="mb-2 flex items-center gap-1.5">
+              <div className="mb-4 flex items-center gap-1.5">
                 <Pin className="h-3.5 w-3.5 text-rating" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Pinned
-                </span>
+                <span className="eyebrow">Pinned</span>
               </div>
               {renderSection(pinned)}
             </section>
@@ -286,9 +284,7 @@ function NotesDashboardPage() {
           {others.length > 0 && (
             <section>
               {pinned.length > 0 && (
-                <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Notes
-                </span>
+                <span className="eyebrow mb-4 block">Notes</span>
               )}
               {renderSection(others)}
             </section>

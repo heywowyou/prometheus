@@ -137,8 +137,7 @@ function TodoItem({
       tabIndex={0}
       aria-pressed={todo.completed}
       className={cn(
-        "group relative flex cursor-pointer select-none items-center overflow-hidden rounded-xl border bg-card px-3 py-2.5 transition-colors hover:border-muted-foreground/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-        due?.tone === "overdue" ? "border-destructive/40" : "border-border",
+        "group relative flex min-h-[3.5rem] cursor-pointer select-none items-center overflow-hidden rounded-2xl px-3 py-2.5 transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
       onClick={activate}
       onKeyDown={(event) => {
@@ -155,7 +154,7 @@ function TodoItem({
       {isTimer && !todo.completed && fraction > 0 && (
         <div
           aria-hidden
-          className="absolute inset-y-0 left-0 z-0 bg-secondary transition-[width] duration-1000 ease-linear"
+          className="absolute inset-y-0 left-0 z-0 bg-rating/10 transition-[width] duration-1000 ease-linear"
           style={{ width: `${fraction * 100}%` }}
         />
       )}
@@ -183,18 +182,20 @@ function TodoItem({
           <div
             aria-hidden
             className={cn(
-              "mr-3 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border transition-colors duration-200",
+              "ml-1.5 mr-[1.125rem] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-200",
               todo.completed
-                ? "border-success bg-success"
-                : "border-muted-foreground/50 group-hover:border-foreground",
+                ? "border-raised bg-raised"
+                : due?.tone === "overdue"
+                  ? "border-destructive group-hover:bg-destructive/15"
+                  : "border-muted-foreground/70 group-hover:border-foreground",
             )}
           >
-            {todo.completed && <Check className="h-3 w-3 text-background" strokeWidth={3} />}
+            {todo.completed && <Check className="h-3 w-3 text-foreground" strokeWidth={3} />}
           </div>
         )}
 
         <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
-          <span className="flex min-w-0 flex-col text-sm">
+          <span className="flex min-w-0 flex-col">
             {renaming ? (
               <input
                 autoFocus
@@ -209,12 +210,12 @@ function TodoItem({
                   if (event.key === "Escape") setRenaming(false);
                 }}
                 onBlur={commitRename}
-                className="-mx-1 rounded-md border border-ring bg-background px-1 text-sm text-foreground outline-none"
+                className="-mx-1 rounded-lg border border-ring bg-background px-1.5 font-serif text-[1.1875rem] text-foreground outline-none"
               />
             ) : (
               <span
                 className={cn(
-                  "truncate",
+                  "truncate font-serif text-[1.1875rem] leading-snug",
                   todo.completed ? "text-muted-foreground line-through decoration-muted-foreground/60" : "text-foreground",
                 )}
               >
@@ -265,7 +266,7 @@ function TodoItem({
               type="button"
               aria-label={`Actions for ${todo.text}`}
               onClick={(event) => event.stopPropagation()}
-              className="ml-1 rounded-lg p-1.5 text-muted-foreground opacity-0 transition duration-200 hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 touch:opacity-100"
+              className="ml-1 rounded-full p-1.5 text-muted-foreground opacity-0 transition duration-200 hover:bg-secondary hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 data-[state=open]:opacity-100 touch:opacity-100"
             >
               <Ellipsis className="h-4 w-4" strokeWidth={1.5} />
             </button>

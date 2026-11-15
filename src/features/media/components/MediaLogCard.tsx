@@ -35,7 +35,7 @@ function MediaLogCard({ log, coverAspect, density, onOpen, onToggleFavorite }: M
         <div
           className={cn(
             coverAspect,
-            "relative flex w-full items-center justify-center overflow-hidden rounded-lg border border-border bg-secondary transition-all group-hover:border-rating/60 group-focus-visible:ring-2 group-focus-visible:ring-ring",
+            "relative flex w-full items-center justify-center overflow-hidden rounded-2xl border border-border bg-secondary transition-all group-hover:border-muted-foreground/60 group-focus-visible:ring-2 group-focus-visible:ring-ring",
           )}
         >
           {cover ? (
@@ -77,9 +77,9 @@ function MediaLogCard({ log, coverAspect, density, onOpen, onToggleFavorite }: M
         </div>
 
         {!compact && (
-          <div className="mt-2 min-w-0 px-0.5">
-            <p className="truncate text-sm font-medium leading-tight text-foreground">{log.title}</p>
-            <div className="mt-0.5 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <div className="mt-2.5 min-w-0 px-0.5">
+            <p className="truncate font-serif text-lg leading-tight text-foreground">{log.title}</p>
+            <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
               <span className="truncate">{meta || " "}</span>
               {log.rating ? (
                 <span className="flex shrink-0 items-center gap-0.5 tabular-nums">

@@ -210,7 +210,7 @@ function NoteEditor({ note, save, onBack }: EditorProps) {
       </div>
 
       {inTrash && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-card px-5 py-3 text-sm text-muted-foreground">
           <span>This note is in the trash and can't be edited.</span>
           <Button
             size="sm"
@@ -234,8 +234,7 @@ function NoteEditor({ note, save, onBack }: EditorProps) {
         placeholder="Untitled"
         aria-label="Note title"
         className={cn(
-          "mb-2 w-full border-none bg-transparent text-2xl font-semibold text-foreground outline-none placeholder:text-muted-foreground",
-          fontFamily === "serif" && "font-serif",
+          "mb-3 w-full border-none bg-transparent font-serif text-[2.25rem] font-normal leading-tight text-foreground outline-none placeholder:italic placeholder:text-muted-foreground sm:text-[2.75rem]",
         )}
       />
 
@@ -260,7 +259,7 @@ function NoteEditor({ note, save, onBack }: EditorProps) {
         placeholder="Start writing…"
         className="min-h-0 flex-1"
         editorContentClassName={cn(
-          "overflow-y-auto p-4",
+          "overflow-y-auto p-5 sm:p-7",
           fontFamily === "serif" ? "font-serif" : "font-sans",
         )}
         fontFamily={fontFamily}

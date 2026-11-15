@@ -52,7 +52,7 @@ function RoutineRow({ routine, names, onStart, starting }: RowProps) {
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        "flex items-center gap-1 rounded-2xl border border-border bg-card p-2 pl-1",
+        "flex items-center gap-1 rounded-3xl border border-border bg-card p-3 pl-1.5",
         isDragging && "relative z-20 shadow-lg shadow-overlay/40",
       )}
     >
@@ -68,10 +68,10 @@ function RoutineRow({ routine, names, onStart, starting }: RowProps) {
       </button>
       <Link to={`/workouts/routines/${routine._id}`} className="min-w-0 flex-1 py-1">
         <span className="flex items-center gap-1.5">
-          <span className="truncate font-semibold text-foreground">{routine.name}</span>
+          <span className="truncate font-serif text-2xl leading-tight text-foreground">{routine.name}</span>
           <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" />
         </span>
-        <span className="block truncate text-xs text-muted-foreground">
+        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
           {routine.exercises.length} exercise{routine.exercises.length === 1 ? "" : "s"}
           {summary && ` · ${summary}`}
         </span>
@@ -81,7 +81,7 @@ function RoutineRow({ routine, names, onStart, starting }: RowProps) {
         disabled={starting}
         onClick={() => onStart(routine)}
         aria-label={`Start ${routine.name}`}
-        className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-rating px-4 text-sm font-semibold text-rating-foreground transition-colors hover:bg-rating-hover disabled:opacity-50"
+        className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-rating px-5 text-sm font-semibold text-rating-foreground transition-colors hover:bg-rating-hover disabled:opacity-50"
       >
         <Play className="h-4 w-4 fill-current" /> Start
       </button>
@@ -114,7 +114,7 @@ function RoutineList({ routines, names, onStart, onReorder, starting }: RoutineL
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {routines.map((routine) => (
             <RoutineRow
               key={routine._id}

@@ -3,7 +3,6 @@ import { Navigate, Link } from "react-router-dom";
 import { Button } from "@components/ui/button";
 import PageLoader from "@components/feedback/PageLoader";
 import { DEFAULT_ROUTE } from "@app/navigation";
-import logo from "../../assets/logo.png";
 
 function LandingPage() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -19,9 +18,12 @@ function LandingPage() {
   if (isSignedIn) return <Navigate to={DEFAULT_ROUTE} replace />;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6">
-      <div className="flex w-full max-w-sm flex-col items-center gap-8 text-center">
-        <img src={logo} alt="Prometheus" className="w-52 object-contain" />
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6">
+      <div className="flex w-full max-w-sm flex-col items-center gap-10 text-center">
+        <div>
+          <h1 className="font-serif text-6xl font-normal leading-none sm:text-7xl">Prometheus</h1>
+          <p className="mt-5 font-serif text-xl italic text-soft">Your days, kept in one place.</p>
+        </div>
         <div className="flex w-full flex-col gap-3">
           <Button asChild size="lg" className="w-full">
             <Link to="/sign-in">Sign in</Link>

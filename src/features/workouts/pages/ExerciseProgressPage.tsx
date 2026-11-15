@@ -103,7 +103,7 @@ function ProgressView({ progress }: { progress: ExerciseProgress }) {
   return (
     <div className="space-y-6">
       {metric && (
-        <section className="rounded-2xl border border-border bg-card p-3">
+        <section className="rounded-3xl border border-border bg-card p-3">
           {metrics.length > 1 && (
             <div className="mb-3 flex gap-1 overflow-x-auto">
               {metrics.map((m) => (
@@ -112,7 +112,7 @@ function ProgressView({ progress }: { progress: ExerciseProgress }) {
                   type="button"
                   onClick={() => setChosen(m.key)}
                   className={cn(
-                    "h-9 shrink-0 rounded-lg px-3 text-sm font-medium transition-colors",
+                    "h-9 shrink-0 rounded-full px-4 text-[13px] font-medium transition-colors",
                     m.key === metric.key
                       ? "bg-rating text-rating-foreground"
                       : "bg-secondary text-muted-foreground hover:text-foreground",
@@ -134,9 +134,9 @@ function ProgressView({ progress }: { progress: ExerciseProgress }) {
           </h3>
           <div className="grid grid-cols-2 gap-2">
             {records.map((type) => (
-              <div key={type} className="rounded-xl border border-border bg-secondary/40 p-3">
+              <div key={type} className="rounded-2xl border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">{PR_LABELS[type]}</p>
-                <p className="mt-1 text-base font-semibold tabular-nums text-foreground">
+                <p className="mt-1.5 font-serif text-2xl tabular-nums text-foreground">
                   {METRICS[type].format(progress.records[type] as number)}
                 </p>
               </div>
@@ -147,7 +147,7 @@ function ProgressView({ progress }: { progress: ExerciseProgress }) {
 
       <section>
         <h3 className="section-title mb-3">Recent</h3>
-        <ul className="overflow-hidden rounded-2xl border border-border bg-card">
+        <ul className="overflow-hidden rounded-3xl border border-border bg-card">
           {recent.map((point, index) => {
             const m = point.metrics;
             const summary =
@@ -214,12 +214,12 @@ function ExerciseProgressPage() {
         <Link
           to="/workouts/exercises"
           aria-label="Back"
-          className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+          className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           <ChevronLeft className="h-6 w-6" />
         </Link>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-2xl font-bold tracking-tight text-foreground">
+          <h2 className="truncate font-serif text-[2.25rem] font-normal leading-tight text-foreground">
             {progress.exercise.name}
           </h2>
           <p className="text-xs capitalize text-muted-foreground">
@@ -232,7 +232,7 @@ function ExerciseProgressPage() {
           <DropdownMenu>
             <DropdownMenuTrigger
               aria-label="Exercise options"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
             >
               <Ellipsis className="h-5 w-5" />
             </DropdownMenuTrigger>

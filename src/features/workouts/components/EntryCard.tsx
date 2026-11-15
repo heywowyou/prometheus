@@ -66,11 +66,11 @@ function EntryCard({
   };
 
   return (
-    <section className="rounded-2xl border border-border bg-card">
+    <section className="rounded-3xl border border-border bg-card">
       <header className="flex items-start gap-2 p-3 pb-2">
         <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-foreground">{entry.exerciseName}</h3>
+          <h3 className="truncate font-serif text-xl text-foreground">{entry.exerciseName}</h3>
           <p className="text-xs text-muted-foreground">
             {doneCount}/{entry.sets.length} sets
             {entry.restSec > 0 && ` · rest ${restLabel(entry.restSec)}`}
@@ -84,7 +84,7 @@ function EntryCard({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={`${entry.exerciseName} options`}
-            className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="-mr-1 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <Ellipsis className="h-5 w-5" />
           </DropdownMenuTrigger>
@@ -224,7 +224,7 @@ function EntryCard({
           type="button"
           onClick={addSet}
           disabled={entry.sets.length >= MAX_SESSION_SETS}
-          className="flex h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-secondary text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          className="flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-secondary text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
         >
           <Plus className="h-4 w-4" /> Add set
         </button>

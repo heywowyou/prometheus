@@ -44,7 +44,7 @@ export const STATUS_META: Record<MediaLogStatus, StatusMeta> = {
   planned: {
     label: "Planned",
     dateLabel: "Added",
-    badge: "border-rating/40 bg-rating/15 text-rating",
+    badge: "border-info/40 bg-info/15 text-info",
     rated: false,
   },
   dropped: {

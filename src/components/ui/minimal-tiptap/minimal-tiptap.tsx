@@ -50,7 +50,7 @@ const Toolbar = ({
   fontFamily?: FontFamily
   onFontFamilyChange?: (value: FontFamily) => void
 }) => (
-  <div className="border-border flex h-12 shrink-0 overflow-x-auto border-b p-2">
+  <div className="border-border flex h-12 shrink-0 overflow-x-auto border-b px-3 py-2">
     <div className="flex w-max items-center gap-px">
       {/* Font family */}
       <div className="flex items-center gap-px">
@@ -187,7 +187,7 @@ export const MainMinimalTiptapEditor = ({
       as="div"
       name="editor"
       className={cn(
-        "border-input min-data-[orientation=vertical]:h-72 flex h-auto w-full flex-col rounded-md border shadow-xs",
+        "border-border min-data-[orientation=vertical]:h-72 flex h-auto w-full flex-col overflow-hidden rounded-3xl border bg-card",
         className
       )}
     >

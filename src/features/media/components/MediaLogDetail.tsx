@@ -69,12 +69,12 @@ function DetailBody({
 
       <div className="flex min-w-0 flex-col gap-4 p-6">
         <div className="pr-6">
-          <p className="mb-1 flex items-center gap-1.5 text-xs uppercase tracking-wide text-muted-foreground">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
             <config.icon className="h-3.5 w-3.5" />
             {config.singular}
             {log.releaseYear ? ` · ${log.releaseYear}` : ""}
           </p>
-          <DialogTitle className="text-xl leading-tight">{log.title}</DialogTitle>
+          <DialogTitle className="text-[2rem] leading-tight">{log.title}</DialogTitle>
           <DialogDescription className="mt-1">
             {credit ?? `Logged ${date ?? ""}`.trim()}
           </DialogDescription>
@@ -100,9 +100,9 @@ function DetailBody({
           <p className="text-sm text-muted-foreground">Not rated</p>
         ) : null}
 
-        <div className="rounded-xl border border-border bg-secondary/40 p-3">
+        <div className="rounded-2xl border border-border bg-secondary/40 p-4">
           {log.review ? (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{log.review}</p>
+            <p className="whitespace-pre-wrap font-serif text-lg leading-relaxed text-foreground">{log.review}</p>
           ) : (
             <button
               type="button"

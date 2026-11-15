@@ -27,10 +27,10 @@ function SessionRow({ session }: { session: WorkoutSession }) {
     <li>
       <Link
         to={`/workouts/session/${session._id}`}
-        className="block rounded-2xl border border-border bg-card p-3 transition-colors hover:border-rating/50"
+        className="block rounded-3xl border border-border bg-card p-3 transition-colors hover:border-rating/50"
       >
         <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate font-semibold text-foreground">{session.name}</span>
+          <span className="truncate font-serif text-2xl leading-tight text-foreground">{session.name}</span>
           <span className="shrink-0 text-xs text-muted-foreground">
             {formatSessionDate(session.startedAt)}
           </span>
@@ -67,12 +67,12 @@ function HistoryPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-2">
         {stats.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="rounded-xl border border-border bg-secondary/40 p-3">
+          <div key={label} className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Icon className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">{label}</span>
             </div>
-            <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">{value}</p>
+            <p className="mt-1.5 font-serif text-xl tabular-nums text-foreground sm:text-2xl">{value}</p>
           </div>
         ))}
       </div>
@@ -89,7 +89,7 @@ function HistoryPage() {
         {loading ? (
           <div className="space-y-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-20 animate-pulse rounded-2xl bg-card" />
+              <div key={i} className="h-24 animate-pulse rounded-3xl bg-card" />
             ))}
           </div>
         ) : sessions.length === 0 ? (

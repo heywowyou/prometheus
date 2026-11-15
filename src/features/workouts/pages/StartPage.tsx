@@ -19,10 +19,10 @@ function StartPage() {
   const names = useExerciseNames();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       <Button
         variant="secondary"
-        className="h-14 w-full justify-start gap-3 rounded-2xl border border-border px-4 text-base"
+        className="h-16 w-full justify-start gap-3 rounded-3xl px-6 font-serif text-xl font-normal"
         disabled={starting}
         onClick={() => startSession(undefined)}
       >
@@ -31,8 +31,8 @@ function StartPage() {
       </Button>
 
       <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="section-title">Routines</h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-title sm:text-[2rem]">Routines</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -46,7 +46,7 @@ function StartPage() {
         {loading ? (
           <div className="space-y-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-2xl bg-card" />
+              <div key={i} className="h-20 animate-pulse rounded-3xl bg-card" />
             ))}
           </div>
         ) : routines.length === 0 ? (

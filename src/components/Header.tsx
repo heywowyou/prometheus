@@ -1,14 +1,28 @@
 import { UserButton } from "@clerk/clerk-react";
-import { NavLink, useMatch } from "react-router-dom";
+import { Link, NavLink, useMatch } from "react-router-dom";
 import { Download } from "lucide-react";
-import { NAV_ITEMS } from "@app/navigation";
+import { DEFAULT_ROUTE, NAV_ITEMS } from "@app/navigation";
 import { useDataExport } from "@app/useDataExport";
 import { cn } from "@lib/utils";
-import logo from "../assets/logo.png";
+
+/** The serif wordmark, also the way home. */
+export function Wordmark({ className }: { className?: string }) {
+  return (
+    <Link
+      to={DEFAULT_ROUTE}
+      className={cn(
+        "font-serif text-[1.625rem] font-medium leading-none text-foreground sm:text-[1.75rem]",
+        className,
+      )}
+    >
+      Prometheus
+    </Link>
+  );
+}
 
 /**
  * Top bar plus, below `lg`, a bottom tab bar: the labelled tabs don't fit
- * next to the logo on a phone, and the bottom of the screen is where thumbs are.
+ * next to the wordmark on a phone, and the bottom of the screen is where thumbs are.
  */
 function Header() {
   const downloadBackup = useDataExport();
@@ -18,16 +32,12 @@ function Header() {
   return (
     <>
       {/* Top padding clears the iPhone status bar in standalone mode. */}
-      <header className="sticky top-0 z-40 w-full border-b border-border bg-navbar/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <img
-            src={logo}
-            alt="Prometheus"
-            className="w-32 shrink-0 object-contain sm:w-40"
-          />
+      <header className="sticky top-0 z-40 w-full bg-navbar/85 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-5 sm:px-8 lg:h-20">
+          <Wordmark className="shrink-0" />
           <nav
             aria-label="Main"
-            className="hidden flex-1 justify-center gap-1 lg:flex"
+            className="hidden items-center gap-0.5 rounded-full border border-border bg-card p-1 lg:flex"
           >
             {NAV_ITEMS.map((item) => (
               <NavLink
@@ -35,19 +45,18 @@ function Header() {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-colors",
+                    "flex h-9 items-center rounded-full px-4 text-[13px] transition-colors",
                     isActive
-                      ? "bg-rating text-rating-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                      ? "bg-primary font-semibold text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )
                 }
               >
-                <item.icon className="h-4 w-4" strokeWidth={2} />
                 {item.label}
               </NavLink>
             ))}
           </nav>
-          <div className="shrink-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-border bg-card">
             <UserButton>
               <UserButton.MenuItems>
                 <UserButton.Action
@@ -64,7 +73,7 @@ function Header() {
       <nav
         aria-label="Main"
         className={cn(
-          "fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-navbar/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden",
+          "fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-navbar/90 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden",
           immersive && "hidden",
         )}
       >
@@ -74,15 +83,24 @@ function Header() {
             to={item.to}
             className={({ isActive }) =>
               cn(
-                "flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium transition-colors",
-                isActive
-                  ? "text-rating"
-                  : "text-muted-foreground hover:text-foreground",
+                "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors",
+                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
               )
             }
           >
-            <item.icon className="h-5 w-5" strokeWidth={2} />
-            {item.label}
+            {({ isActive }) => (
+              <>
+                <span
+                  className={cn(
+                    "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
+                    isActive ? "bg-raised" : "group-hover:bg-secondary",
+                  )}
+                >
+                  <item.icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.2 : 1.8} />
+                </span>
+                <span className="truncate">{item.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

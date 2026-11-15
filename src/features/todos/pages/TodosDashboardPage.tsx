@@ -48,6 +48,11 @@ interface SectionData {
   olderDone: Todo[];
 }
 
+/** Keeps rows without a drag grip aligned with the sortable rows above them. */
+function HandleSpacer() {
+  return <span aria-hidden className="-ml-1.5 mr-0.5 w-5 shrink-0" />;
+}
+
 function ProgressBar({ done, total }: { done: number; total: number }) {
   if (total === 0) return null;
   return (
@@ -152,10 +157,12 @@ function TodosDashboardPage() {
 
   return (
     <>
-      <div className="mb-6 flex items-start justify-between gap-3">
+      <div className="mb-10 flex flex-wrap items-end justify-between gap-4 pt-2 sm:pt-6">
         <div>
-          <h2 className="page-title">Todos</h2>
-          {!loading && summary && <p className="mt-1 text-sm text-muted-foreground">{summary}</p>}
+          <h1 className="page-title">Todos</h1>
+          {!loading && summary && (
+            <p className="mt-3 font-serif text-lg text-soft sm:text-xl">{summary}</p>
+          )}
         </div>
         <Button onClick={() => setModal({ type: "new" })} title="New task (N)">
           <Plus className="h-4 w-4" />
@@ -167,9 +174,9 @@ function TodosDashboardPage() {
         <div className="space-y-6">
           {SECTIONS.map(({ key }) => (
             <div key={key} className="space-y-2">
-              <div className="h-5 w-28 animate-pulse rounded-md bg-card" />
-              <div className="h-12 animate-pulse rounded-xl bg-card" />
-              <div className="h-12 animate-pulse rounded-xl bg-card opacity-60" />
+              <div className="h-7 w-32 animate-pulse rounded-full bg-card" />
+              <div className="h-14 animate-pulse rounded-2xl bg-card" />
+              <div className="h-14 animate-pulse rounded-2xl bg-card opacity-60" />
             </div>
           ))}
         </div>
@@ -180,8 +187,8 @@ function TodosDashboardPage() {
           action={{ label: "Create your first task", onClick: () => setModal({ type: "new" }) }}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_300px]">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-14">
+          <div className="space-y-12">
             {SECTIONS.map(({ key, title, quickAdd }) => {
               const data = sections[key];
               const isCollapsed = collapsed.includes(key);
@@ -194,18 +201,18 @@ function TodosDashboardPage() {
                     type="button"
                     onClick={() => toggleCollapsed(key)}
                     aria-expanded={!isCollapsed}
-                    className="mb-2 flex w-full items-center gap-2 rounded-md px-1 py-1 text-left"
+                    className="mb-3 flex w-full items-center gap-3 rounded-xl py-1 text-left"
                   >
+                    <h2 className="section-title">{title}</h2>
+                    <span className="text-[13px] tabular-nums text-muted-foreground">
+                      {data.open.length || ""}
+                    </span>
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 text-muted-foreground transition-transform",
                         isCollapsed && "-rotate-90",
                       )}
                     />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">
-                      {title}
-                    </h3>
-                    <span className="text-xs text-muted-foreground">{data.open.length || ""}</span>
                     {sectionOverdue > 0 && (
                       <span className="rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
                         {sectionOverdue} overdue
@@ -217,7 +224,7 @@ function TodosDashboardPage() {
                   </button>
 
                   {!isCollapsed && (
-                    <div className="space-y-1.5">
+                    <div className="border-b border-border">
                       <SortableTodoList
                         todos={data.open}
                         onReorder={reorderTodos}
@@ -226,25 +233,33 @@ function TodosDashboardPage() {
                       <QuickAddInput recurrenceType={key} label={quickAdd} onCreate={createTodo} />
 
                       {data.done.length > 0 && (
-                        <div className="space-y-1.5 pt-1 opacity-70">
+                        <div className="opacity-75">
                           {data.done.map((todo) => (
-                            <TodoItem key={todo._id} todo={todo} {...itemHandlers} />
+                            <div key={todo._id} className="border-t border-border py-0.5">
+                              <div className="-mx-3">
+                                <TodoItem todo={todo} {...itemHandlers} handle={<HandleSpacer />} />
+                              </div>
+                            </div>
                           ))}
                         </div>
                       )}
                       {data.olderDone.length > 0 && (
                         <>
                           {showOlder && (
-                            <div className="space-y-1.5 opacity-60">
+                            <div className="opacity-60">
                               {data.olderDone.map((todo) => (
-                                <TodoItem key={todo._id} todo={todo} {...itemHandlers} />
+                                <div key={todo._id} className="border-t border-border py-0.5">
+                                  <div className="-mx-3">
+                                    <TodoItem todo={todo} {...itemHandlers} handle={<HandleSpacer />} />
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           )}
                           <button
                             type="button"
                             onClick={() => setShowOlder((on) => !on)}
-                            className="px-1 text-xs text-muted-foreground hover:text-foreground"
+                            className="block border-t border-border py-3 text-[13px] text-muted-foreground hover:text-foreground"
                           >
                             {showOlder
                               ? "Hide older completed tasks"
@@ -259,25 +274,23 @@ function TodosDashboardPage() {
             })}
           </div>
 
-          <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
-            <div className="rounded-xl border border-border bg-card p-4">
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Streaks
-              </h3>
+          <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
+            <div className="panel p-6">
+              <h2 className="eyebrow mb-4">Streaks</h2>
               {topStreaks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No running streaks. Tick a habit to start one.
                 </p>
               ) : (
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {topStreaks.map((todo) => (
                     <li key={todo._id}>
                       <button
                         type="button"
                         onClick={() => setModal({ type: "history", task: todo })}
-                        className="flex w-full items-center justify-between gap-2 text-left text-sm hover:text-foreground"
+                        className="flex w-full items-center justify-between gap-3 text-left hover:text-foreground"
                       >
-                        <span className="truncate text-foreground">{todo.text}</span>
+                        <span className="truncate font-serif text-lg text-foreground">{todo.text}</span>
                         <span className="flex shrink-0 items-center gap-1 text-xs tabular-nums text-streak">
                           <Flame className="h-3.5 w-3.5" />
                           {todo.streak?.current}
@@ -291,16 +304,14 @@ function TodosDashboardPage() {
             </div>
 
             {pausedTodos.length > 0 && (
-              <div className="rounded-xl border border-border bg-card">
+              <div className="panel">
                 <button
                   type="button"
                   onClick={() => setPausedOpen((open) => !open)}
                   aria-expanded={pausedOpen}
-                  className="flex w-full items-center gap-2 p-4 text-left"
+                  className="flex w-full items-center gap-2 p-6 text-left"
                 >
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Paused
-                  </h3>
+                  <h2 className="eyebrow">Paused</h2>
                   <span className="text-xs text-muted-foreground">{pausedTodos.length}</span>
                   <ChevronDown
                     className={cn(
@@ -310,11 +321,11 @@ function TodosDashboardPage() {
                   />
                 </button>
                 {pausedOpen && (
-                  <ul className="space-y-1 px-4 pb-4">
+                  <ul className="space-y-2 px-6 pb-6">
                     {pausedTodos.map((todo) => (
                       <li key={todo._id} className="flex items-center justify-between gap-2 py-1">
                         <span className="min-w-0">
-                          <span className="block truncate text-sm text-foreground">{todo.text}</span>
+                          <span className="block truncate font-serif text-lg text-foreground">{todo.text}</span>
                           <span className="text-xs capitalize text-muted-foreground">
                             {todo.recurrenceType}
                             {todo.streak && todo.streak.best > 0 && ` · best ${todo.streak.best}`}

@@ -1,80 +1,112 @@
 import { Link } from "react-router-dom";
-import { Dumbbell, Flame, Play } from "lucide-react";
+import { ArrowRight, Flame } from "lucide-react";
 import { relativeDate } from "@lib/date/relative";
+import { nextRoutine } from "../workout-format";
 import { useStartSession, useWorkoutSummary } from "../hooks/useWorkouts";
 
-/** The Today page's workout block: resume, or this week plus one-tap starts. */
+const CARD = "rounded-3xl bg-rating p-6 text-rating-foreground sm:p-7";
+const INK_BUTTON =
+  "inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-rating-foreground px-6 text-sm font-semibold text-rating transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rating-foreground focus-visible:ring-offset-2 focus-visible:ring-offset-rating disabled:opacity-60";
+
+/** The Today page's workout block: resume a live session, or start the next routine. */
 function WorkoutsTodayCard() {
   const { summary, loading } = useWorkoutSummary();
   const { startSession, starting } = useStartSession();
 
-  if (loading) return <div className="h-24 animate-pulse rounded-xl bg-card" />;
+  if (loading) return <div className="h-40 animate-pulse rounded-3xl bg-card" />;
   if (!summary) return null;
 
   if (summary.active) {
     return (
-      <Link
-        to={`/workouts/session/${summary.active._id}`}
-        className="flex items-center gap-3 rounded-xl border border-rating/50 bg-rating/10 p-3 transition-colors hover:bg-rating/15"
-      >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rating text-rating-foreground">
-          <Dumbbell className="h-5 w-5" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-xs text-muted-foreground">Workout in progress</span>
-          <span className="block truncate font-medium text-foreground">{summary.active.name}</span>
-        </span>
-        <span className="text-sm font-medium text-rating">Resume</span>
-      </Link>
+      <section aria-label="Workout in progress" className={CARD}>
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em]">In progress</p>
+            <p className="mt-2 truncate font-serif text-[2.5rem] leading-none">{summary.active.name}</p>
+            <p className="mt-2 text-[13px]">Started {relativeDate(summary.active.startedAt).toLowerCase()}</p>
+          </div>
+          <Link to={`/workouts/session/${summary.active._id}`} className={INK_BUTTON}>
+            Resume
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
     );
   }
 
   const { thisWeek, streak, lastSession, routines } = summary;
+  const next = nextRoutine(summary);
+  const others = routines.filter((routine) => routine._id !== next?._id);
+
+  if (!next) {
+    return (
+      <section aria-label="Training" className="panel flex flex-wrap items-center justify-between gap-4 p-6">
+        <div>
+          <p className="eyebrow">Training</p>
+          <p className="mt-2 font-serif text-2xl">No routine yet</p>
+        </div>
+        <Link
+          to="/workouts"
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-border px-5 text-sm font-medium hover:bg-secondary"
+        >
+          Set one up
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </section>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground">
-            {thisWeek === 0
-              ? "No workout yet this week"
-              : `${thisWeek} workout${thisWeek === 1 ? "" : "s"} this week`}
-          </p>
-          <p className="truncate text-xs text-muted-foreground">
+    <section aria-label="Up next" className={CARD}>
+      <div className="flex flex-wrap items-end justify-between gap-5">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em]">Up next</p>
+          <p className="mt-2 truncate font-serif text-[2.5rem] leading-none">{next.name}</p>
+          <p className="mt-2 text-[13px]">
+            {next.exerciseCount} exercise{next.exerciseCount === 1 ? "" : "s"}
             {lastSession
-              ? `Last: ${lastSession.name} · ${relativeDate(lastSession.startedAt)}`
-              : "Nothing logged yet"}
+              ? ` · Last: ${lastSession.name}, ${relativeDate(lastSession.startedAt).toLowerCase()}`
+              : ""}
           </p>
         </div>
-        {streak.current > 1 && (
-          <span className="flex items-center gap-1 text-sm font-semibold text-streak">
-            <Flame className="h-4 w-4" />
-            {streak.current} wk
+        <button
+          type="button"
+          disabled={starting}
+          onClick={() => startSession(next._id)}
+          className={INK_BUTTON}
+        >
+          Begin session
+        </button>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-rating-foreground/15 pt-4 text-[13px]">
+        <span>
+          {thisWeek} this week
+          {streak.current > 1 && (
+            <span className="ml-2 inline-flex items-center gap-1">
+              <Flame className="h-3.5 w-3.5" />
+              {streak.current} week streak
+            </span>
+          )}
+        </span>
+        {others.length > 0 && (
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-auto">
+            <span className="opacity-80">or start</span>
+            {others.map((routine) => (
+              <button
+                key={routine._id}
+                type="button"
+                disabled={starting}
+                onClick={() => startSession(routine._id)}
+                className="font-semibold underline decoration-rating-foreground/40 underline-offset-4 hover:decoration-rating-foreground disabled:opacity-60"
+              >
+                {routine.name}
+              </button>
+            ))}
           </span>
         )}
       </div>
-
-      {routines.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {routines.map((routine) => (
-            <button
-              key={routine._id}
-              type="button"
-              disabled={starting}
-              onClick={() => startSession(routine._id)}
-              className="flex h-10 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:border-rating/50 disabled:opacity-50"
-            >
-              <Play className="h-3.5 w-3.5 fill-current text-rating" />
-              {routine.name}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <Link to="/workouts" className="block px-1 text-xs text-muted-foreground hover:text-foreground">
-          Set up a routine →
-        </Link>
-      )}
-    </div>
+    </section>
   );
 }
 
