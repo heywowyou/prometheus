@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Check, ImageIcon, Pause, Play, Plus } from "lucide-react";
+import { Check, ImageIcon, NotebookPen, Pause, Play, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@clerk/clerk-react";
 import { cn } from "@lib/utils";
@@ -230,7 +230,7 @@ function TodayPage() {
 
   const inProgress = logs.filter((log) => log.status === "in_progress");
   const recentNotes = notes
-    .slice()
+    .filter((note) => !note.dailyDate)
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
     .slice(0, RECENT_NOTES);
 
@@ -413,14 +413,23 @@ function TodayPage() {
       <Section
         title="Lately written"
         aside={
-          <button
-            type="button"
-            onClick={() => void openNewNote()}
-            className="flex shrink-0 items-center gap-1 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            New note
-          </button>
+          <div className="flex shrink-0 items-center gap-4">
+            <Link
+              to="/notes/daily/today"
+              className="flex items-center gap-1 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <NotebookPen className="h-3.5 w-3.5" />
+              Today's note
+            </Link>
+            <button
+              type="button"
+              onClick={() => void openNewNote()}
+              className="flex items-center gap-1 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              New
+            </button>
+          </div>
         }
       >
         {notesLoading ? (

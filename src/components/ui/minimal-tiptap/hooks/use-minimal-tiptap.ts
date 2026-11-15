@@ -1,6 +1,6 @@
 import * as React from "react"
 import type { Editor } from "@tiptap/react"
-import type { Content, UseEditorOptions } from "@tiptap/react"
+import type { AnyExtension, Content, UseEditorOptions } from "@tiptap/react"
 import { StarterKit } from "@tiptap/starter-kit"
 import { useEditor } from "@tiptap/react"
 import { Typography } from "@tiptap/extension-typography"
@@ -33,6 +33,8 @@ export interface UseMinimalTiptapEditorProps extends UseEditorOptions {
   onUpdate?: (content: Content) => void
   onBlur?: (content: Content) => void
   uploader?: (file: File) => Promise<string>
+  /** Added after the built-in extensions. Keep the array stable: it is read once. */
+  extraExtensions?: AnyExtension[]
 }
 
 async function fakeuploader(file: File): Promise<string> {
@@ -61,13 +63,13 @@ async function storeImage(
   }
 }
 
-const createExtensions = ({
+export const createExtensions = ({
   placeholder,
   uploader,
 }: {
   placeholder: string
   uploader?: (file: File) => Promise<string>
-}) => [
+}): AnyExtension[] => [
   StarterKit.configure({
     blockquote: { HTMLAttributes: { class: "block-node" } },
     // bold
@@ -219,6 +221,7 @@ export const useMinimalTiptapEditor = ({
   onUpdate,
   onBlur,
   uploader,
+  extraExtensions,
   ...props
 }: UseMinimalTiptapEditorProps) => {
   const throttledSetValue = useThrottle(
@@ -247,7 +250,7 @@ export const useMinimalTiptapEditor = ({
 
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: createExtensions({ placeholder, uploader }),
+    extensions: [...createExtensions({ placeholder, uploader }), ...(extraExtensions ?? [])],
     editorProps: {
       attributes: {
         autocomplete: "off",

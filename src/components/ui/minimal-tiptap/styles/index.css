@@ -193,20 +193,20 @@
   @apply list-none pl-0;
 }
 
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li {
   @apply flex items-start gap-2;
 }
 
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"]:not(:last-child) {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li:not(:last-child) {
   @apply mb-1;
 }
 
 /* Hide the native checkbox and render via label pseudo-elements so we can use CSS variables */
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > label {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li > label {
   @apply relative mt-1 flex flex-shrink-0 cursor-pointer select-none;
 }
 
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > label > input[type="checkbox"] {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li > label > input[type="checkbox"] {
   @apply absolute opacity-0;
   width: 0;
   height: 0;
@@ -214,31 +214,31 @@
 }
 
 /* Checkbox box */
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > label::before {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li > label::before {
   content: '';
-  @apply inline-block size-4 flex-shrink-0 rounded-sm border border-border bg-transparent;
+  @apply inline-block size-4 flex-shrink-0 rounded-full border border-muted-foreground/60 bg-transparent;
   transition: background-color 0.1s, border-color 0.1s;
 }
 
 /* Checked state: fill with accent */
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"][data-checked="true"] > label::before {
-  background-color: hsl(var(--accent));
-  border-color: hsl(var(--accent));
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > label::before {
+  background-color: var(--rating);
+  border-color: var(--rating);
 }
 
 /* Checkmark via rotated border — uses accent-foreground, no data URL needed */
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"][data-checked="true"] > label::after {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li[data-checked="true"] > label::after {
   content: '';
   @apply absolute;
   left: 0.3rem;
   top: 50%;
   width: 0.28rem;
   height: 0.52rem;
-  border-right: 2px solid hsl(var(--accent-foreground));
-  border-bottom: 2px solid hsl(var(--accent-foreground));
+  border-right: 2px solid var(--rating-foreground);
+  border-bottom: 2px solid var(--rating-foreground);
   transform: translateY(-65%) rotate(45deg);
 }
 
-.minimal-tiptap-editor .ProseMirror li[data-type="taskItem"] > div {
+.minimal-tiptap-editor .ProseMirror ul[data-type="taskList"] > li > div {
   @apply flex-1;
 }

@@ -34,6 +34,10 @@ export const queryKeys = {
       ] as const,
     tags: () => ["notes", "tags"] as const,
     detail: (id: string) => ["notes", "detail", id] as const,
+    index: () => ["notes", "index"] as const,
+    backlinks: (id: string) => ["notes", "backlinks", id] as const,
+    versions: (id: string) => ["notes", "versions", id] as const,
+    version: (id: string, versionId: string) => ["notes", "versions", id, versionId] as const,
   },
   workouts: {
     all: ["workouts"] as const,

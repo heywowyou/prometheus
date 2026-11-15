@@ -1,0 +1,226 @@
+/* Notes editor: document typography and the blocks the notes app adds. */
+
+.note-editor .ProseMirror {
+  @apply text-[1.0625rem] leading-[1.75] text-foreground;
+}
+
+.note-editor.is-serif .ProseMirror {
+  @apply font-serif text-[1.25rem] leading-[1.7];
+}
+
+.note-editor .ProseMirror h1,
+.note-editor .ProseMirror h2,
+.note-editor .ProseMirror h3 {
+  @apply font-serif font-medium tracking-normal;
+}
+
+.note-editor .ProseMirror h1 {
+  @apply mb-3 mt-10 text-[2rem] leading-tight;
+}
+
+.note-editor .ProseMirror h2 {
+  @apply mb-2.5 mt-8 text-[1.625rem] leading-tight;
+}
+
+.note-editor .ProseMirror h3 {
+  @apply mb-2 mt-6 text-[1.3125rem] leading-snug;
+}
+
+/* Notion-style hint on the empty line under the cursor. */
+.note-editor .ProseMirror-focused p.is-empty::before,
+.note-editor .ProseMirror > p.is-editor-empty::before {
+  content: attr(data-placeholder);
+  @apply pointer-events-none float-left h-0 text-muted-foreground/60;
+}
+
+.note-editor .ProseMirror-focused h1.is-empty::before,
+.note-editor .ProseMirror-focused h2.is-empty::before,
+.note-editor .ProseMirror-focused h3.is-empty::before {
+  content: "Heading";
+  @apply pointer-events-none float-left h-0 text-muted-foreground/50;
+}
+
+.note-editor .ProseMirror blockquote::before {
+  background-color: var(--rating);
+  opacity: 0.6;
+}
+
+.note-editor .ProseMirror blockquote {
+  @apply font-serif text-[1.1875rem] italic text-soft;
+}
+
+/* Links to other pages */
+.note-editor .note-link,
+.note-render .note-link {
+  @apply cursor-pointer rounded-md px-0.5 font-medium text-foreground underline decoration-muted-foreground/50 decoration-1 underline-offset-[5px] transition-colors hover:bg-secondary hover:decoration-rating;
+}
+
+.note-editor .note-link-icon,
+.note-render .note-link-icon {
+  @apply mr-1 inline-block text-[0.9em] no-underline text-muted-foreground;
+}
+
+.note-editor .note-link-missing {
+  @apply cursor-default text-muted-foreground line-through;
+}
+
+.note-editor .note-link.is-selected {
+  @apply bg-raised;
+}
+
+/* Live cards for tasks, media and routines */
+.note-editor .item-mention {
+  @apply inline-block align-baseline;
+}
+
+.note-editor .mention-card {
+  @apply relative -top-px inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-card py-0.5 pl-1 pr-2 align-middle font-sans text-[0.875rem] leading-6 text-foreground;
+}
+
+.note-editor .mention-card.is-done .mention-title {
+  @apply text-muted-foreground line-through;
+}
+
+.note-editor .mention-card.is-missing {
+  @apply pl-2.5 text-muted-foreground line-through;
+}
+
+.note-editor .mention-thumb {
+  @apply flex h-5 w-4 shrink-0 items-center justify-center overflow-hidden rounded-[3px] bg-secondary text-muted-foreground;
+}
+
+.note-editor .mention-thumb img {
+  @apply h-full w-full object-cover;
+}
+
+.note-editor .mention-title {
+  @apply min-w-0 truncate text-left hover:underline;
+}
+
+.note-editor .mention-icon {
+  @apply ml-1 shrink-0 text-muted-foreground;
+}
+
+.note-editor .mention-badge {
+  @apply shrink-0 rounded-full border px-1.5 text-[0.6875rem] leading-4;
+}
+
+.note-editor .mention-check {
+  @apply flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] border-muted-foreground text-foreground;
+}
+
+.note-editor .mention-card.is-done .mention-check {
+  @apply border-raised bg-raised;
+}
+
+.note-editor .mention-action {
+  @apply ml-0.5 inline-flex items-center gap-1 rounded-full bg-rating px-2 text-[0.75rem] font-semibold leading-5 text-rating-foreground;
+}
+
+/* Callouts */
+.note-editor .callout,
+.note-render .callout {
+  @apply my-2 flex gap-3 rounded-2xl border border-border bg-card px-4 py-3;
+}
+
+.note-editor .callout-emoji,
+.note-render .callout-emoji {
+  @apply flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-lg text-lg leading-none;
+}
+
+.note-editor button.callout-emoji:hover {
+  @apply bg-secondary;
+}
+
+.note-editor .callout-content,
+.note-render .callout-content {
+  @apply min-w-0 flex-1;
+}
+
+/* Toggles */
+.note-editor .details,
+.note-render .details {
+  @apply my-1 flex gap-1;
+}
+
+.note-editor .details > button {
+  @apply mt-[0.3rem] flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-transform hover:bg-secondary;
+}
+
+.note-editor .details > button::before {
+  content: "▸";
+  @apply text-base leading-none;
+}
+
+.note-editor .details.is-open > button {
+  @apply rotate-90;
+}
+
+.note-editor .details > div {
+  @apply min-w-0 flex-1;
+}
+
+.note-editor .details summary {
+  @apply list-none font-medium;
+}
+
+.note-editor .details summary::-webkit-details-marker {
+  display: none;
+}
+
+.note-editor .details:not(.is-open) > div > [data-type="detailsContent"] {
+  display: none;
+}
+
+/* Tables */
+.note-editor .ProseMirror table,
+.note-render table {
+  @apply my-3 w-full table-fixed border-collapse overflow-hidden text-[0.9375rem];
+}
+
+.note-editor .ProseMirror td,
+.note-editor .ProseMirror th,
+.note-render td,
+.note-render th {
+  @apply relative border border-border px-3 py-2 align-top;
+}
+
+.note-editor .ProseMirror th,
+.note-render th {
+  @apply bg-card text-left font-medium;
+}
+
+.note-editor .ProseMirror td p,
+.note-editor .ProseMirror th p {
+  @apply mb-0;
+}
+
+.note-editor .ProseMirror .selectedCell::after {
+  content: "";
+  @apply pointer-events-none absolute inset-0 bg-rating/15;
+}
+
+.note-editor .ProseMirror .tableWrapper {
+  @apply overflow-x-auto;
+}
+
+/* Drag handle (lives on document.body, positioned beside the hovered block) */
+.note-drag-handle {
+  @apply fixed z-30 flex h-6 w-[22px] cursor-grab items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-secondary hover:text-foreground active:cursor-grabbing;
+  fill: currentColor;
+}
+
+@media (hover: none) {
+  .note-drag-handle {
+    display: none;
+  }
+}
+
+.note-editor .ProseMirror-selectednode:not(.note-link):not(.item-mention) {
+  @apply rounded-lg outline outline-2 outline-offset-2 outline-rating/50;
+}
+
+/* Focus mode: only the page. */
+.focus-mode [data-app-chrome] {
+  display: none !important;
+}

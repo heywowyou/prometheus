@@ -58,6 +58,26 @@ export const noteToMarkdown = async (title: string, html: string): Promise<strin
     filter: "u",
     replacement: (content) => content,
   });
+  // Page links become Obsidian-style [[wiki links]]; @-mentions keep their label.
+  service.addRule("noteLink", {
+    filter: (node) => node.nodeName === "A" && node.hasAttribute("data-note-id"),
+    replacement: (content) => `[[${content.trim() || "Untitled"}]]`,
+  });
+  service.addRule("itemMention", {
+    filter: (node) => node.nodeName === "SPAN" && node.hasAttribute("data-mention-kind"),
+    replacement: (content) => `@${content.trim()}`,
+  });
+  // Callouts as Obsidian callouts: "> [!note] 💡" then the body, quoted.
+  service.addRule("callout", {
+    filter: (node) => node.nodeName === "DIV" && node.getAttribute("data-type") === "callout",
+    replacement: (_content, node) => {
+      const element = node as HTMLElement;
+      const emoji = element.getAttribute("data-emoji") ?? "";
+      const inner = element.querySelector(".callout-content")?.innerHTML ?? "";
+      const body = service.turndown(inner).trim().replace(/\n/g, "\n> ");
+      return `\n\n> [!note] ${emoji}\n> ${body}\n\n`;
+    },
+  });
 
   const body = service.turndown(html).trim();
   return `# ${title.trim() || "Untitled"}\n\n${body}\n`;

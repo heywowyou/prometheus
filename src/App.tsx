@@ -27,6 +27,10 @@ const NotesDashboardPage = lazy(
 const NoteEditorPage = lazy(
   () => import("@features/notes/pages/NoteEditorPage"),
 );
+const NotesLayout = lazy(() => import("@features/notes/pages/NotesLayout"));
+const NotesHomePage = lazy(() => import("@features/notes/pages/NotesHomePage"));
+const DailyNoteRoute = lazy(() => import("@features/notes/pages/DailyNoteRoute"));
+const GraphPage = lazy(() => import("@features/notes/pages/GraphPage"));
 const WorkoutsLayout = lazy(
   () => import("@features/workouts/pages/WorkoutsLayout"),
 );
@@ -75,8 +79,14 @@ function App() {
               ))}
             </Route>
 
-            <Route path="/notes" element={<NotesDashboardPage />} />
-            <Route path="/notes/:id" element={<NoteEditorPage />} />
+            {/* Notes: a sidebar of pages around the home, editor, journal and graph. */}
+            <Route path="/notes" element={<NotesLayout />}>
+              <Route index element={<NotesHomePage />} />
+              <Route path="all" element={<NotesDashboardPage />} />
+              <Route path="graph" element={<GraphPage />} />
+              <Route path="daily/:date" element={<DailyNoteRoute />} />
+              <Route path=":id" element={<NoteEditorPage />} />
+            </Route>
 
             <Route
               path="/calendar"

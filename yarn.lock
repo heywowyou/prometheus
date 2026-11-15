@@ -878,181 +878,198 @@
   dependencies:
     "@tanstack/query-core" "5.107.1"
 
-"@tiptap/core@^3.20.4", "@tiptap/core@^3.21.0", "@tiptap/core@3.33.0":
+"@tiptap/core@3.33.0":
   version "3.33.0"
   resolved "https://registry.npmjs.org/@tiptap/core/-/core-3.33.0.tgz"
   integrity sha512-sZjBCwK9+h0kbc/CZvkepX6RTJ2jOfeWY1aId9O3YnG0CAiOs/4DbqFmpcmv5BQAGPA6gC96gqdafa/9Dpg0tw==
 
-"@tiptap/extension-blockquote@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-blockquote/-/extension-blockquote-3.20.4.tgz"
-  integrity sha512-9sskyyhYj2oKat//lyZVXCp9YrPt4oJAZnGHYWXS0xlskjsLElrfKKlM4vpbhGss3VrhQRoEGqWLnIaJYPF1zw==
+"@tiptap/extension-blockquote@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-blockquote/-/extension-blockquote-3.33.0.tgz"
+  integrity sha512-ZF7hkmkTboGrYbRaSjOP0Ip6qbbV+SDioxNFbRddiFRaEYUpXwoMzJ0o4Pu4AjFPu9pVOECKFbFbTS6wn9/GcA==
 
-"@tiptap/extension-bold@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-bold/-/extension-bold-3.20.4.tgz"
-  integrity sha512-Md7/mNAeJCY+VLJc8JRGI+8XkVPKiOGB1NgqQPdh3aYtxXQDChQOZoJEQl6TuudDxZ85bLZB67NjZlx3jo8/0g==
+"@tiptap/extension-bold@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-bold/-/extension-bold-3.33.0.tgz"
+  integrity sha512-+0OEiDdURzq6OODNvyXw8v48BgnpwgWkwszMYZosO4O3bNNCfJhpxvY5fcJe6nXNKHNbB8E+pcru7hEC0BYcmw==
 
-"@tiptap/extension-bubble-menu@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-bubble-menu/-/extension-bubble-menu-3.20.4.tgz"
-  integrity sha512-EXywPlI8wjPcAb8ozymgVhjtMjFrnhtoyNTy8ZcObdpUi5CdO9j892Y7aPbKe5hLhlDpvJk7rMfir4FFKEmfng==
+"@tiptap/extension-bubble-menu@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-bubble-menu/-/extension-bubble-menu-3.33.0.tgz"
+  integrity sha512-dNo/iJvq0AYaihgcDMQnGcw9VslUU0jEYH8S5uIYnebBsxPMu+DFa3my0xHWBO9IRb0NWAok1NbLMVdq1gNB0Q==
   dependencies:
     "@floating-ui/dom" "^1.0.0"
 
-"@tiptap/extension-bullet-list@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-bullet-list/-/extension-bullet-list-3.20.4.tgz"
-  integrity sha512-1RTGrur1EKoxfnLZ3M6xeNj8GITAz74jH2DHGcjLsd2Xr7Q7BozGaIq6GkkvKguMwbI1zCOxTHFCpUETXAIQQA==
+"@tiptap/extension-bullet-list@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-bullet-list/-/extension-bullet-list-3.33.0.tgz"
+  integrity sha512-vlz35IDemXRiZfseteH1DhG1kkFwkLCTM89LR3zypUO/7WyFlEacZbEziDjaUDR9PHWYxSPf40gXG2U37MnvYA==
 
-"@tiptap/extension-code-block-lowlight@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-code-block-lowlight/-/extension-code-block-lowlight-3.20.4.tgz"
-  integrity sha512-YE+OxuvQx3oXGzSkhRyQzCGXOWrVntdTUQgRfOu5Ky+ZtScPWCVsTwUP8SBGBQjqp3sbbBehZznipbUIpWWJDA==
+"@tiptap/extension-code-block-lowlight@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-code-block-lowlight/-/extension-code-block-lowlight-3.33.0.tgz"
+  integrity sha512-kZrnxT8akKN/FrBeDvqwi9VEcjRr/CkJ82DmiaU1WwULO9Q5vmKCMXnz+xadZ26eVsF5hQG50bCgtRWnJgPREw==
 
-"@tiptap/extension-code-block@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-code-block/-/extension-code-block-3.20.4.tgz"
-  integrity sha512-Zlw3FrXTy01+o1yISeX/LC+iJeHA+ym602bMXGmtA6lyl7QSOSO7WExweJ6xeJGhbCjldwT5al6fkRAs8iGJZg==
+"@tiptap/extension-code-block@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-code-block/-/extension-code-block-3.33.0.tgz"
+  integrity sha512-jw8craxTauiB+8M2x3omA/N1yylTjB3+fPNGJ9TfuUenNcWrfVxegBM2C8VbWpMl6zbq/NAeTzM/AKCcfvxybw==
 
-"@tiptap/extension-code@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-code/-/extension-code-3.20.4.tgz"
-  integrity sha512-7j8Hi964bH1SZ9oLdZC1fkqWz27mliSDV7M8lmL/M14+Qw42D/VOAKS4Aw9OCFtHMlTsjLR6qsoVxL8Lpkt6NA==
+"@tiptap/extension-code@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-code/-/extension-code-3.33.0.tgz"
+  integrity sha512-mQKNwyptGvn2z9HADR/HzVljnmbyXnReIrIpxOmE0H3eAa0Nn9ZZlUMRBZExWOiGsHDJ+mfUHiMTbrTTv+2SAA==
 
-"@tiptap/extension-color@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-color/-/extension-color-3.20.4.tgz"
-  integrity sha512-+OT9wWEJnqoWmzfqPYt0oWm8LZcH+D44Z3jA2TNzBj4tLGQ2YPxN2SyS12AlRi7MuguVT7utFy7qDXrfir8eUA==
+"@tiptap/extension-color@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-color/-/extension-color-3.33.0.tgz"
+  integrity sha512-invk8Oq8jezIk9nbeYQCd3fC9HzYY07cxT8yeCEcZmDahN4hdquZAT9adv0eUFL4yvtUMWmMA443cRwREO6dnA==
 
-"@tiptap/extension-document@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-document/-/extension-document-3.20.4.tgz"
-  integrity sha512-zF1CIFVLt8MfSpWWnPwtGyxPOsT0xYM2qJKcXf2yZcTG37wDKmUi6heG53vGigIavbQlLaAFvs+1mNdOu2x/0A==
+"@tiptap/extension-details@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-details/-/extension-details-3.33.0.tgz"
+  integrity sha512-A4PUnLGgLEq2jFYWucztcBlZePq2uPBSgn3Rl2kcikv5bwTBn1jwR4aUOY250bPbSpdMDm9WTmKxJXO6EA6f0A==
 
-"@tiptap/extension-dropcursor@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-dropcursor/-/extension-dropcursor-3.20.4.tgz"
-  integrity sha512-TgMwvZ8myXYdmd6bUV7qkpZXv7ZUiSmX/8eo+iPEzYo2CnDLAGvDKgC50nfq/g87SDvfBgPuAiBfFvsMQQWaTw==
+"@tiptap/extension-document@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-document/-/extension-document-3.33.0.tgz"
+  integrity sha512-XVe6qsjISJbstbzT8QYAL6s4GN9AA1trAcKAIH/xhxXlaTGwl7RADqHxoTG0KQUbME7NfCQpKhxIDJWSXdnlgw==
 
-"@tiptap/extension-floating-menu@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-floating-menu/-/extension-floating-menu-3.20.4.tgz"
-  integrity sha512-AaPTFhoO8DBIElJyd/RTVJjkctvJuL+GHURX0npbtTxXq5HXbebVwf2ARNR7jMd/GThsmBaNJiGxZg4A2oeDqQ==
+"@tiptap/extension-dropcursor@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-dropcursor/-/extension-dropcursor-3.33.0.tgz"
+  integrity sha512-ZtnjSMKxNYNRO6vpkOE+PGtwXUZIe0JA3k9Kbpgz+/U3lHBm9eaKWVGcZKsEz3VAUnZfmbNhtO4H6yGLMWCK+Q==
 
-"@tiptap/extension-gapcursor@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-gapcursor/-/extension-gapcursor-3.20.4.tgz"
-  integrity sha512-JJ6f1iQ1e0s4kISgq55U3UYGwWV/N9f0PYMtB6e3L+SBQjXnywaLK0g6vfN6IvTCC2vdIuqeSOX8VlSO97sJLw==
+"@tiptap/extension-floating-menu@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-floating-menu/-/extension-floating-menu-3.33.0.tgz"
+  integrity sha512-q4dwewi5cQT3btIpJPgF5csaLBIOPeywUqN3wc0Dwb6c8dCUTphNHmWeHbCj7wcMoQQXwEHHTfe+Xn2LwH41Hg==
 
-"@tiptap/extension-hard-break@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-hard-break/-/extension-hard-break-3.20.4.tgz"
-  integrity sha512-gJbq58d8zB1gzyqVEopowej5CpW4/Fpg6oGJvlZxaCukqd0gJRWGC89K+jE62YA1Td4sfcKrekKvN7jm2y/ZUg==
+"@tiptap/extension-gapcursor@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-gapcursor/-/extension-gapcursor-3.33.0.tgz"
+  integrity sha512-TdnfSJrUTSVXTCa7Q2rIqJjtyMcgKGU95wnU8febfK6aysEbE5FO1dfKo5Qn52Xl0On4FhV0T02wAH1mDfzg4A==
 
-"@tiptap/extension-heading@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-heading/-/extension-heading-3.20.4.tgz"
-  integrity sha512-xsnkmTGggJc5P2iCwS1lv8KFG31xC/GNPJKoi/3UH67j/lKDhA3AdtshsLeyv2FKtTtYDb8oV0IqzHB1MM6a7w==
+"@tiptap/extension-hard-break@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-hard-break/-/extension-hard-break-3.33.0.tgz"
+  integrity sha512-Qs53CY6mHTu2mWT7+kWDlearnvjzR0QyS4oj20lePdTLEMlFBZjBtX4EqUvDACifSiLPv1p9sI5o6sKUgKqPLQ==
 
-"@tiptap/extension-highlight@^3.21.0":
-  version "3.21.0"
-  resolved "https://registry.npmjs.org/@tiptap/extension-highlight/-/extension-highlight-3.21.0.tgz"
-  integrity sha512-3f/bVgfm2dJZxalh07TThDxcTaeXJ+dpYyRY9trnFeHbhyYQXSy6yzkNhNcYB4Ua5jxpKQv4b9Q448QVh+KNzA==
+"@tiptap/extension-heading@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-heading/-/extension-heading-3.33.0.tgz"
+  integrity sha512-CH+Mbb7iVE41rUtgHBUTrmTbA1/xqe5sQa2wJ6Q0Z6AzU3gJ71rH/O3k4EZi8On93TsanBAz8Xsf+gq1ZjwBpQ==
 
-"@tiptap/extension-horizontal-rule@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-horizontal-rule/-/extension-horizontal-rule-3.20.4.tgz"
-  integrity sha512-y6joCi49haAA0bo3EGUY+dWUMHH1GPUc84hxrBY/0pMs+Bn+kQ1+DQJErZDTWGJrlHPWU/yekBZT72SNdp0DNA==
+"@tiptap/extension-highlight@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-highlight/-/extension-highlight-3.33.0.tgz"
+  integrity sha512-BJTjovEklwZRPcoq18gJWWyu9ti4cLtxzYYVU6XblJ2yYGD80376/BUhAACYMLDpJb7WqMo3/WISvlw0whkXxw==
 
-"@tiptap/extension-image@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-image/-/extension-image-3.20.4.tgz"
-  integrity sha512-57w2TevHQljTh6Xiry9duIm7NNOQAUSTwtwRn4GGLoKwHR8qXTxzp513ASrFOgR2kgs2TP471Au6RHf947P+jg==
+"@tiptap/extension-horizontal-rule@^3.33.0", "@tiptap/extension-horizontal-rule@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-horizontal-rule/-/extension-horizontal-rule-3.33.0.tgz"
+  integrity sha512-cTzOdaRmApl6gjFmSnv0BgUtwOhW0LJT/gO40ez8dPQvgqaVyX6tCogD9tDbF9b4KR9f+UhwuoeM2OPB55gjqQ==
 
-"@tiptap/extension-italic@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-italic/-/extension-italic-3.20.4.tgz"
-  integrity sha512-4ZqiWr7cmqPFux8tj1ZLiYytyWf343IvQemNX6AvVWvscrJcrfj3YX4Le2BA0RW3A3M6RpLQXXozuF8vxYFDeQ==
+"@tiptap/extension-image@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-image/-/extension-image-3.33.0.tgz"
+  integrity sha512-2z/IbVMxbJNtpiajGLis1mOTw+tCet4GbT/VCKITIA7Kn5jorhJFtZicoIJMufAQAGl/Bgw5ChFSTFheIeFLTA==
 
-"@tiptap/extension-link@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-link/-/extension-link-3.20.4.tgz"
-  integrity sha512-JNDSkWrVdb8NSvbQXwHWvK5tCMbTWwOHFOweknQZ1JPK4dei9FJVofYQaHyW4bJBdcCjds3NZSnXE8DM9iAWmg==
+"@tiptap/extension-italic@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-italic/-/extension-italic-3.33.0.tgz"
+  integrity sha512-XrQEJ8R6gZwX/jqLOHK3I/2YzmDvtQYtWQaIerHm2jqa+cF3bM4cV0gXGX7nRgXOFj80DaXsMl+p1aq1yUWFxA==
+
+"@tiptap/extension-link@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-link/-/extension-link-3.33.0.tgz"
+  integrity sha512-t9Q0S8k3wP5BzbAYDDKAE0DcXkEZSsNeKJvgHdUx8V38iltMsitu5Ih9WANh39+8SBqsdMUxb8QlvIXqhSsBJA==
   dependencies:
-    linkifyjs "^4.3.2"
+    linkifyjs "^4.3.3"
 
-"@tiptap/extension-list-item@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-list-item/-/extension-list-item-3.20.4.tgz"
-  integrity sha512-QoTc5RACXaZF+vIIBBxjGO7D0oWFUDgBKJCpvUZ0CoGGKosnfe4a9I5THFyLj4201cf0oUqgf1oZhTqETGxlVw==
+"@tiptap/extension-list-item@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-list-item/-/extension-list-item-3.33.0.tgz"
+  integrity sha512-APOrrOCtm47fAdjNuX/ndaOIhizknWdHQ4jZRFNTNpvqqFgAafaSCfEWhUSw+hHM7JQYjQLt4OoLrWvcuorzvg==
 
-"@tiptap/extension-list-keymap@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-list-keymap/-/extension-list-keymap-3.20.4.tgz"
-  integrity sha512-RIqXM649+8IP7p/KVfaGlJiwjCylm1m6OPlaoM3K8O7oEOGRQzNeexexECCD2jsXRxew4E+vBNMD2orXqJmu8A==
+"@tiptap/extension-list-keymap@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-list-keymap/-/extension-list-keymap-3.33.0.tgz"
+  integrity sha512-rfaGute4N9CRQNgrxTfzKP9B6LZT8p498SxoA/ZpeI5tC7Y/rp9kJqctwsH6D+3mF0URa0wB2j5rP7LYHtGrZw==
 
-"@tiptap/extension-list@^3.20.4", "@tiptap/extension-list@^3.21.0":
+"@tiptap/extension-list@3.33.0":
   version "3.33.0"
   resolved "https://registry.npmjs.org/@tiptap/extension-list/-/extension-list-3.33.0.tgz"
   integrity sha512-TwGCdIGw8VgR/lPhJkXBr069HVEhA3fB/HVVy0CUPLwcNsJ5C4oI0Fz1DMVbSChIA59EQs4p5zySGE1IAXNJRA==
 
-"@tiptap/extension-ordered-list@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-ordered-list/-/extension-ordered-list-3.20.4.tgz"
-  integrity sha512-3budNL8BgBon3TcXZ4hjT0YpFvx1Ka3uSIECKDxHgES+OQcR+6cagxSb60gFEccf3Dr0PIwcVTY6g14lC1qKRQ==
+"@tiptap/extension-ordered-list@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-ordered-list/-/extension-ordered-list-3.33.0.tgz"
+  integrity sha512-hnXtal2M1Gd/toDKXbyGHsrYo84GwDVuIJosaopeFHvVixlDPiXPOwZaU8RfSIrGDmg96Y0H6gfYOGCXh6+ojQ==
 
-"@tiptap/extension-paragraph@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-paragraph/-/extension-paragraph-3.20.4.tgz"
-  integrity sha512-lm6fOScWuZAF/Sfp97igUwFd3L1QHIVLAWP5NVdh0DTLrEIt4rMBmsww+yOpMQRhvz2uTgMbMXynrimhzi/QVw==
+"@tiptap/extension-paragraph@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-paragraph/-/extension-paragraph-3.33.0.tgz"
+  integrity sha512-HeJWe0KmQmVakTim6ZHB4BP/0TS2A2DctnpG8Oe4nrVqyjB5tSNKYRJiO9sbQ6MdEipGIXOG6qENczbEy0ixPQ==
 
-"@tiptap/extension-strike@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-strike/-/extension-strike-3.20.4.tgz"
-  integrity sha512-It1Px9uDGTsVqyyg6cy7DigLoenljpQwqdI0jssM7QclZrHnsrye9fZxBBiiuCzzV1305MxKgHvratkHwqmVNA==
+"@tiptap/extension-strike@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-strike/-/extension-strike-3.33.0.tgz"
+  integrity sha512-JZq1Us21tA6UscEeOC/U1RUIDD+t4H7KkXmkA8fuQOHNkMTnsYZAu4/7iFJz9geHmGeoq+mHCrh/gOrWt3jdew==
 
-"@tiptap/extension-task-item@^3.21.0":
-  version "3.21.0"
-  resolved "https://registry.npmjs.org/@tiptap/extension-task-item/-/extension-task-item-3.21.0.tgz"
-  integrity sha512-Rt7g61pcmgTHTy8mU2MDi4+FERKLAvoejJqmrCKf1CJUGzwWMsyRlKvS7FykpzfSrDiVlE7uSFCUkd/avgV0HQ==
+"@tiptap/extension-table-of-contents@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-table-of-contents/-/extension-table-of-contents-3.33.0.tgz"
+  integrity sha512-7XKe1xZSU9jDhvVGonJoWje+J45wCQKggzL7IOZ7KxIi1zZ8S+huYmWOS7tudvhxan7VZjwxLoAsoO8SDplScw==
+  dependencies:
+    uuid "^14.0.0"
 
-"@tiptap/extension-task-list@^3.21.0":
-  version "3.21.0"
-  resolved "https://registry.npmjs.org/@tiptap/extension-task-list/-/extension-task-list-3.21.0.tgz"
-  integrity sha512-uH2h4Z2JmafFH5TfWYmKbfO7+jt3mgF59ESj+Qc9Szd1j9JJvLOH6anrIxqsyi50jz0QCl/lPv38PKr/ugvjtQ==
+"@tiptap/extension-table@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-table/-/extension-table-3.33.0.tgz"
+  integrity sha512-3eWe626pd1HGeLB+iMylZbg1Nx9og/XwlHAkJoGEmgsyqKh+BASqS87GCN1158XhtMVAR85cuEO4Luhm1VyR1w==
 
-"@tiptap/extension-text-align@^3.21.0":
-  version "3.21.0"
-  resolved "https://registry.npmjs.org/@tiptap/extension-text-align/-/extension-text-align-3.21.0.tgz"
-  integrity sha512-XaoUaq45nai9LLoUStumMItHhhCnmXirPR8mTjEDKZ2QD0Kg/YHEr6guJYc6qKB7YA+Wa1EgBIrZOv1+d2Pdag==
+"@tiptap/extension-task-item@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-task-item/-/extension-task-item-3.33.0.tgz"
+  integrity sha512-ST1FDOb42enV2BZ9LqajHHX7ZgGpkux8qdol67P4uOdpfqj86DGfM4ZyfJbNwN2QZPy3akn35d/im5NhcU99oA==
 
-"@tiptap/extension-text-style@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-text-style/-/extension-text-style-3.20.4.tgz"
-  integrity sha512-PvW0Ja7ahWpo4bRuR8YCCVv4PH8lXjzhzlBAa4bMbsumOg+GbhX8Su7fwqd+IIPrHqfPXz9HTBMApSfzP6/08A==
+"@tiptap/extension-task-list@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-task-list/-/extension-task-list-3.33.0.tgz"
+  integrity sha512-U4yfwwAR1mwFwPKGZkdy0ayuBnRhkyjR9l/BE5m6eo8LR51DImU4tcoczunsO39E9i38KpBnCMgjnmWFaANvVg==
 
-"@tiptap/extension-text@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-text/-/extension-text-3.20.4.tgz"
-  integrity sha512-jchJcBZixDEO2J66Zx5dchsI2mA6IYsROqF8P1poxL4ienH7RVQRCTsBNnSfIeOtREKKWeOU/tEs5fcpvvGwIQ==
+"@tiptap/extension-text-align@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-text-align/-/extension-text-align-3.33.0.tgz"
+  integrity sha512-MPmwptPJqRIVHBhRSfKo+xbsc3B6m4Jjwm/lTmrU6xkx0ZbdABKeejD4k0MlgfQdWK6g2MNr/Ve0+HoZUPbKRQ==
 
-"@tiptap/extension-typography@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-typography/-/extension-typography-3.20.4.tgz"
-  integrity sha512-78dlLJViuZehM2P5p9H3HRN6GMARvFQFkdnJrJsC6b6J7SN10ruytCMM7xnUnHlZElz19LU/0/+LDtMrOA814w==
+"@tiptap/extension-text-style@^3.33.0", "@tiptap/extension-text-style@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-text-style/-/extension-text-style-3.33.0.tgz"
+  integrity sha512-p5HWYFoJ7HCiPmVy5ooZnMXWexVXyaRRmwjb4nzopeNPz8lRqJgx2kmhrwGvQwnb3SSguAjQn7YoWmapNKlXUA==
 
-"@tiptap/extension-underline@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extension-underline/-/extension-underline-3.20.4.tgz"
-  integrity sha512-0OjMc3FDujX16G+jhvqcY/mLot8SrNtDu8ggUwNLAfiI/QIvMVgk7giFD71DATC/4Nb8i/iwAEegTD8MxBIXCg==
+"@tiptap/extension-text@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-text/-/extension-text-3.33.0.tgz"
+  integrity sha512-R9qVza+udPT+LezNkTkfLctN/9EFD/zFLUA6Lly9ehXZbfH9SLh149qdLdLBl9KMSgYhkFXcySSIoAULCKPRdg==
 
-"@tiptap/extensions@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/extensions/-/extensions-3.20.4.tgz"
-  integrity sha512-8p6hVT65DjuQjtEdlH6ewX9SOJHlVQAOee3sWIJQmeJNRnZNvqPIBLleebUqDiljNTpxBv6s6QWkSTKgf3btwg==
+"@tiptap/extension-typography@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-typography/-/extension-typography-3.33.0.tgz"
+  integrity sha512-5FighZv/MZFGQHPQn6ZXHgsOsEVkgLalhmyRQTPif3ariGlZ7nGoyAp5cBEGW6XbB2ZsZ7RZEgkE+wxsqWVzYg==
 
-"@tiptap/pm@^3.20.4", "@tiptap/pm@3.33.0":
+"@tiptap/extension-underline@^3.33.0", "@tiptap/extension-underline@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extension-underline/-/extension-underline-3.33.0.tgz"
+  integrity sha512-6pvLaSRdxUgNpSOCOvraryg1S4hRKSawMQz6wD6EKIRZ/nn4aw2FHYvfnHCsIg2aw+ngEcOCr0b+t77yhVpAXg==
+
+"@tiptap/extensions@^3.33.0", "@tiptap/extensions@3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/extensions/-/extensions-3.33.0.tgz"
+  integrity sha512-6oxOfh2asvNbR+5FtOYEAFcPwPcUQDiNHvhj4lzJqOLi948sjd7NLVnzxJPIFlwC4Sa4TpdunnPu9toOQThiwg==
+
+"@tiptap/pm@^3.33.0", "@tiptap/pm@3.33.0":
   version "3.33.0"
   resolved "https://registry.npmjs.org/@tiptap/pm/-/pm-3.33.0.tgz"
   integrity sha512-NKTaRMMoh6wXXL527o/dVC05olV8WCI19fRGVmV2okYjIBriGe0+sW/+neNSUVeQj3YtwKLnkPm7i++XygOwCw==
@@ -1071,47 +1088,52 @@
     prosemirror-transform "^1.12.2"
     prosemirror-view "^1.42.6"
 
-"@tiptap/react@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/react/-/react-3.20.4.tgz"
-  integrity sha512-1B8iWsHWwb5TeyVaUs8BRPzwWo4PsLQcl03urHaz0zTJ8DauopqvxzV3+lem1OkzRHn7wnrapDvwmIGoROCaQw==
+"@tiptap/react@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/react/-/react-3.33.0.tgz"
+  integrity sha512-DMFWpw4JMwKzZJuYGwdeP0DSa5Ok2hv3hvcTsQQD6W+7Hph/kllde5n+N6flcphfiI/6mt/DrfppiDL+7snQKQ==
   dependencies:
     "@types/use-sync-external-store" "^0.0.6"
     fast-equals "^5.3.3"
     use-sync-external-store "^1.4.0"
   optionalDependencies:
-    "@tiptap/extension-bubble-menu" "^3.20.4"
-    "@tiptap/extension-floating-menu" "^3.20.4"
+    "@tiptap/extension-bubble-menu" "3.33.0"
+    "@tiptap/extension-floating-menu" "3.33.0"
 
-"@tiptap/starter-kit@^3.20.4":
-  version "3.20.4"
-  resolved "https://registry.npmjs.org/@tiptap/starter-kit/-/starter-kit-3.20.4.tgz"
-  integrity sha512-WcyK6hsTl8eBsQhQ+d9Sq8fYZKOYdL+D45MyH3hz583elXqJlW3h3JPFYb0o87gddGxn8Mm57OA/gA1zEdeDMw==
+"@tiptap/starter-kit@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/starter-kit/-/starter-kit-3.33.0.tgz"
+  integrity sha512-mWtpkOFr1XSTrU8yaF/AdCB8RA/5Y9igV4C2CFHWEwn3C+ZdFqqhQIEgxFN540KBBDjyVU0S2dy5UGi4puIAMA==
   dependencies:
-    "@tiptap/core" "^3.20.4"
-    "@tiptap/extension-blockquote" "^3.20.4"
-    "@tiptap/extension-bold" "^3.20.4"
-    "@tiptap/extension-bullet-list" "^3.20.4"
-    "@tiptap/extension-code" "^3.20.4"
-    "@tiptap/extension-code-block" "^3.20.4"
-    "@tiptap/extension-document" "^3.20.4"
-    "@tiptap/extension-dropcursor" "^3.20.4"
-    "@tiptap/extension-gapcursor" "^3.20.4"
-    "@tiptap/extension-hard-break" "^3.20.4"
-    "@tiptap/extension-heading" "^3.20.4"
-    "@tiptap/extension-horizontal-rule" "^3.20.4"
-    "@tiptap/extension-italic" "^3.20.4"
-    "@tiptap/extension-link" "^3.20.4"
-    "@tiptap/extension-list" "^3.20.4"
-    "@tiptap/extension-list-item" "^3.20.4"
-    "@tiptap/extension-list-keymap" "^3.20.4"
-    "@tiptap/extension-ordered-list" "^3.20.4"
-    "@tiptap/extension-paragraph" "^3.20.4"
-    "@tiptap/extension-strike" "^3.20.4"
-    "@tiptap/extension-text" "^3.20.4"
-    "@tiptap/extension-underline" "^3.20.4"
-    "@tiptap/extensions" "^3.20.4"
-    "@tiptap/pm" "^3.20.4"
+    "@tiptap/core" "3.33.0"
+    "@tiptap/extension-blockquote" "3.33.0"
+    "@tiptap/extension-bold" "3.33.0"
+    "@tiptap/extension-bullet-list" "3.33.0"
+    "@tiptap/extension-code" "3.33.0"
+    "@tiptap/extension-code-block" "3.33.0"
+    "@tiptap/extension-document" "3.33.0"
+    "@tiptap/extension-dropcursor" "3.33.0"
+    "@tiptap/extension-gapcursor" "3.33.0"
+    "@tiptap/extension-hard-break" "3.33.0"
+    "@tiptap/extension-heading" "3.33.0"
+    "@tiptap/extension-horizontal-rule" "3.33.0"
+    "@tiptap/extension-italic" "3.33.0"
+    "@tiptap/extension-link" "3.33.0"
+    "@tiptap/extension-list" "3.33.0"
+    "@tiptap/extension-list-item" "3.33.0"
+    "@tiptap/extension-list-keymap" "3.33.0"
+    "@tiptap/extension-ordered-list" "3.33.0"
+    "@tiptap/extension-paragraph" "3.33.0"
+    "@tiptap/extension-strike" "3.33.0"
+    "@tiptap/extension-text" "3.33.0"
+    "@tiptap/extension-underline" "3.33.0"
+    "@tiptap/extensions" "3.33.0"
+    "@tiptap/pm" "3.33.0"
+
+"@tiptap/suggestion@^3.33.0":
+  version "3.33.0"
+  resolved "https://registry.npmjs.org/@tiptap/suggestion/-/suggestion-3.33.0.tgz"
+  integrity sha512-g5IU3rC4whIJHWk+6kxGk9v2QB2iFm+3vdI7h44tRHw1Ik/rVYexOABMPU/w3zuh+7VSNGYoUT7PsTJa7eGYKA==
 
 "@types/babel__core@^7.20.5":
   version "7.20.5"
@@ -1145,6 +1167,11 @@
   integrity sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==
   dependencies:
     "@babel/types" "^7.28.2"
+
+"@types/d3-force@^3.0.10":
+  version "3.0.10"
+  resolved "https://registry.npmjs.org/@types/d3-force/-/d3-force-3.0.10.tgz"
+  integrity sha512-ZYeSaCF3p73RdOKcjj+swRlZfnYpK1EbaDiYICEEp5Q6sUiqFaFQ9qgoshp5CzIyyb/yD09kD9o2zEltCexlgw==
 
 "@types/estree@^1.0.10", "@types/estree@^1.0.6":
   version "1.0.10"
@@ -1569,6 +1596,30 @@ csstype@3.1.3:
   version "3.1.3"
   resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.3.tgz"
   integrity sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==
+
+"d3-dispatch@1 - 3":
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/d3-dispatch/-/d3-dispatch-3.0.2.tgz"
+  integrity sha512-sAzH4Y4nsLo8eSqw5jKiZt+LU2wZmL/qS+OkxQGjhwazB/D7TY34R/QK1eshfGr7cZEKymKZ/Haem7m+lu98Sg==
+
+d3-force@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/d3-force/-/d3-force-3.0.1.tgz"
+  integrity sha512-kAaaHLFebBYwgi5cYBXAI8vKrQFMCD2MEswj2QuPKKbdU1wYLc8WXtS7O8F/b6POCIe3gJjY6hkDstHi1yMETQ==
+  dependencies:
+    d3-dispatch "1 - 3"
+    d3-quadtree "1 - 3"
+    d3-timer "1 - 3"
+
+"d3-quadtree@1 - 3":
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/d3-quadtree/-/d3-quadtree-3.0.2.tgz"
+  integrity sha512-9Lu9mqJKRbIk0d6mKDjpvPURaPdwHVK5CYbcdd0/4vBgz4ldz/7TIOse3kNERsByGNfld58KEco507AztJWyTQ==
+
+"d3-timer@1 - 3":
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/d3-timer/-/d3-timer-3.0.2.tgz"
+  integrity sha512-1Il1aliroVSErrv5aulRBxAY+7+DnaoLIWGd1C6SsBTWDeobWiP/V69vwb8vT6abR1kKwaNe1196pmaQ1fK90A==
 
 debug@^4.1.0, debug@^4.3.1, debug@^4.3.2, debug@^4.4.3, debug@4:
   version "4.4.3"
@@ -2161,10 +2212,10 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.npmjs.org/lines-and-columns/-/lines-and-columns-1.2.4.tgz"
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
 
-linkifyjs@^4.3.2:
-  version "4.3.2"
-  resolved "https://registry.npmjs.org/linkifyjs/-/linkifyjs-4.3.2.tgz"
-  integrity sha512-NT1CJtq3hHIreOianA8aSXn6Cw0JzYOuDQbOrSPe7gqFnCpKP++MQe3ODgO3oh2GJFORkAAdqredOa60z63GbA==
+linkifyjs@^4.3.3:
+  version "4.4.0"
+  resolved "https://registry.npmjs.org/linkifyjs/-/linkifyjs-4.4.0.tgz"
+  integrity sha512-InTexvtbai+2c+dEVGcc6O6P2DMVIiwD9a/i4zFroazOIYLOS6FSVmAJ7kFeumnCMx6/gQqNAkbUvgMubV4+MA==
 
 locate-path@^6.0.0:
   version "6.0.0"
@@ -2952,6 +3003,11 @@ util-deprecate@^1.0.2:
   version "1.0.2"
   resolved "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz"
   integrity sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==
+
+uuid@^14.0.0:
+  version "14.0.3"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-14.0.3.tgz"
+  integrity sha512-Sc5u1VVln93y1Xnz4R+CunOZc7R9LUcTmhj7Rc7Eg3HVcf7rVn2FOoa812fe0W8p3jD7xeoGSYbfqCGGH2B6xw==
 
 "vite@^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0", vite@^7.2.4:
   version "7.3.8"
