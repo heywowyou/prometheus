@@ -5,7 +5,15 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@lib/utils"
 
-const Popover = PopoverPrimitive.Root
+/**
+ * Modal by default: the open popover takes the scroll lock, so its own lists
+ * scroll with a trackpad or wheel even when it opens from inside a dialog
+ * (whose lock would otherwise swallow those events). Pass modal={false} for
+ * popovers that must leave the page interactive.
+ */
+const Popover = ({ modal = true, ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) => (
+  <PopoverPrimitive.Root modal={modal} {...props} />
+)
 
 const PopoverTrigger = PopoverPrimitive.Trigger
 

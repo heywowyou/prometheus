@@ -3,7 +3,7 @@ import { DynamicIcon, iconNames, type IconName } from "lucide-react/dynamic";
 import { Search, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
 import { cn } from "@lib/utils";
-import { CURATED_ICONS, ICON_GROUPS } from "./icon-set";
+import { CURATED_ICONS, ICON_ALIASES, ICON_GROUPS } from "./icon-set";
 import { iconNameOf } from "./icon-names";
 
 /**
@@ -45,10 +45,19 @@ const MAX_RESULTS = 96;
 const searchIcons = (query: string): string[] => {
   const words = query.toLowerCase().trim().split(/[\s-]+/).filter(Boolean);
   if (words.length === 0) return [];
-  const matches = iconNames.filter((name) => words.every((word) => name.includes(word)));
-  // Exact and prefix matches first, then the rest alphabetically.
-  const rank = (name: string) => (name === words.join("-") ? 0 : name.startsWith(words[0] ?? "") ? 1 : 2);
-  return [...matches].sort((a, b) => rank(a) - rank(b) || a.length - b.length).slice(0, MAX_RESULTS);
+  // Old alias names still match ("help" finds circle-question-mark), but each
+  // drawing is listed once, under its current name. Best rank wins.
+  const target = words.join("-");
+  const rank = (name: string) => (name === target ? 0 : name.startsWith(words[0] ?? "") ? 1 : 2);
+  const best = new Map<string, number>();
+  for (const name of iconNames) {
+    if (!words.every((word) => name.includes(word))) continue;
+    const canonical = ICON_ALIASES[name] ?? name;
+    best.set(canonical, Math.min(best.get(canonical) ?? 3, rank(name)));
+  }
+  return [...best.keys()]
+    .sort((a, b) => best.get(a)! - best.get(b)! || a.length - b.length || a.localeCompare(b))
+    .slice(0, MAX_RESULTS);
 };
 
 /** A popover to pick a Lucide icon: curated groups, or search all of them. */
