@@ -241,6 +241,7 @@ function PaletteBody({ initialQuery, close }: { initialQuery: string; close: () 
       })),
       { key: "go-inbox", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Inbox", run: go("/todos/inbox") },
       { key: "go-upcoming", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Upcoming", run: go("/todos/upcoming") },
+      { key: "go-repeating", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Repeating tasks", run: go("/todos/repeating") },
       { key: "go-logbook", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Completed tasks", run: go("/todos/completed") },
       { key: "go-daily", group: "Go to", icon: <NotebookPen className="h-4 w-4 text-muted-foreground" />, title: "Today's note", run: go("/notes/daily/today") },
       { key: "go-graph", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Notes graph", run: go("/notes/graph") },

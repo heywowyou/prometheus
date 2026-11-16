@@ -11,6 +11,7 @@ import {
   Layers,
   Plus,
   Star,
+  Repeat,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,6 +23,7 @@ import { cn } from "@lib/utils";
 import { usePushNotifications } from "@lib/push/usePushNotifications";
 import type { useTaskData } from "../hooks/useTaskData";
 import ProgressPie from "./tasks/ProgressPie";
+import { isTask } from "../types/todo-types";
 
 type TaskData = ReturnType<typeof useTaskData>;
 
@@ -131,6 +133,7 @@ export default function TodosSidebar({
   const todayOpen = [...index.todayList, ...index.evening].filter((todo) => !todo.completed).length;
   const inboxOpen = index.inbox.filter((todo) => !todo.completed).length;
   const looseProjects = projects.filter((project) => !project.areaId);
+  const repeatingCount = data.todos.filter((todo) => isTask(todo) && todo.repeat && !todo.completed).length;
 
   const projectRow = (project: (typeof projects)[number]) => {
     const progress = index.projectProgress(project._id);
@@ -186,6 +189,13 @@ export default function TodosSidebar({
         {index.someday.length > 0 && (
           <Row to="/todos/someday" icon={<Archive className="h-4 w-4 text-muted-foreground" />} label="Someday" onNavigate={onNavigate} />
         )}
+        <Row
+          to="/todos/repeating"
+          icon={<Repeat className="h-4 w-4 text-info" />}
+          label="Repeating"
+          count={repeatingCount || undefined}
+          onNavigate={onNavigate}
+        />
         <Row to="/todos/completed" icon={<BookCheck className="h-4 w-4 text-rating" />} label="Completed" onNavigate={onNavigate} />
       </nav>
 

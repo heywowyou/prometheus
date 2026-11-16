@@ -22,6 +22,7 @@ const TodoListPages = {
   Upcoming: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.UpcomingPage }))),
   Anytime: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.AnytimePage }))),
   Someday: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.SomedayPage }))),
+  Repeating: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.RepeatingPage }))),
   Logbook: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.LogbookPage }))),
   Project: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.ProjectPage }))),
   Area: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.AreaPage }))),
@@ -84,6 +85,7 @@ function App() {
               <Route path="upcoming" element={<TodoListPages.Upcoming />} />
               <Route path="anytime" element={<TodoListPages.Anytime />} />
               <Route path="someday" element={<TodoListPages.Someday />} />
+              <Route path="repeating" element={<TodoListPages.Repeating />} />
               <Route path="completed" element={<TodoListPages.Logbook />} />
               <Route path="logbook" element={<Navigate to="/todos/completed" replace />} />
               <Route path="habits" element={<Navigate to="/habits" replace />} />

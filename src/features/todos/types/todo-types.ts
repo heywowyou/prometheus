@@ -162,3 +162,6 @@ export interface LogbookPage {
 
 /** A task, as opposed to a habit (a recurring todo). */
 export const isTask = (todo: Todo): boolean => todo.recurrenceType === "none";
+
+/** The done copy a repeating task leaves behind each time. Shown only in the Tasks tab. */
+export const isRepeatRecord = (todo: Todo): boolean => Boolean(todo.repeatOf);

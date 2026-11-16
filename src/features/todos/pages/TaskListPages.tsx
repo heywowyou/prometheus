@@ -1,9 +1,10 @@
 import { Fragment } from "react";
 import { Link } from "react-router-dom";
-import { Archive, Box, CalendarDays, Inbox, Layers, Moon, Sprout, Star } from "lucide-react";
+import { Archive, Box, CalendarDays, Inbox, Layers, Moon, Repeat, Sprout, Star } from "lucide-react";
 import { toDayKey } from "../due";
 import { useRowContext } from "../hooks/useTaskActions";
 import { shiftDayKey, upcomingHeader } from "../task-views";
+import { describeRepeat } from "../task-parse";
 import { useTodosData } from "../todos-outlet";
 import { isTask, type Todo } from "../types/todo-types";
 import ListHeader from "../components/tasks/ListHeader";
@@ -258,6 +259,61 @@ export function SomedayPage() {
         <TaskList todos={data.index.someday} context={context} onReorder={data.reorderTodos} />
       )}
       <CompletedSection data={data} />
+    </>
+  );
+}
+
+const UNIT_ORDER = { day: 0, week: 1, month: 2, year: 3 } as const;
+
+/**
+ * Every repeating task in one place, grouped by how often it comes back,
+ * soonest first. Open one to change its schedule, rename or delete it.
+ */
+export function RepeatingPage() {
+  const data = useTodosData();
+  const context = useRowContext(data, { showWhen: true, showList: true });
+  const repeating = data.todos
+    .filter((todo) => isTask(todo) && todo.repeat && !todo.completed)
+    .sort((a, b) => (a.when ?? "9999").localeCompare(b.when ?? "9999") || a.text.localeCompare(b.text));
+  const groups = new Map<string, { order: number; tasks: Todo[] }>();
+  for (const todo of repeating) {
+    const rule = todo.repeat as NonNullable<Todo["repeat"]>;
+    const label = describeRepeat(rule);
+    const group = groups.get(label) ?? { order: UNIT_ORDER[rule.unit] * 1000 + rule.every, tasks: [] };
+    group.tasks.push(todo);
+    groups.set(label, group);
+  }
+  const ordered = [...groups.entries()].sort((a, b) => a[1].order - b[1].order || a[0].localeCompare(b[0]));
+
+  return (
+    <>
+      <ListHeader
+        icon={<Repeat className="h-6 w-6 text-info" />}
+        title="Repeating"
+        subtitle="Tasks that come back on a schedule. Open one to change when it repeats, or to stop it."
+      />
+      {data.loading ? (
+        <Loading />
+      ) : repeating.length === 0 ? (
+        <Empty>Nothing repeats yet. Open a task and set Repeat, or type “every month” when adding one.</Empty>
+      ) : (
+        ordered.map(([label, group]) => (
+          <section key={label} className="mb-8">
+            <h2 className="mb-1 flex items-baseline justify-between gap-3 border-b border-border pb-2">
+              <span className="text-sm font-medium text-foreground">{label}</span>
+              <span className="text-xs tabular-nums text-muted-foreground">{group.tasks.length}</span>
+            </h2>
+            <TaskList todos={group.tasks} context={context} />
+          </section>
+        ))
+      )}
+      <p className="mt-6 text-xs text-muted-foreground">
+        Daily routines without a fixed day live in{" "}
+        <Link to="/habits" className="underline hover:text-foreground">
+          Habits
+        </Link>
+        .
+      </p>
     </>
   );
 }

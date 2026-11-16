@@ -18,7 +18,7 @@ import { formatTime } from "@features/calendar/calendar-dates";
 import { toDayKey } from "@features/todos/due";
 import { compareSectionTodos, isOverdue } from "@features/todos/due";
 import FocusTimer from "@features/focus/components/FocusTimer";
-import { timerElapsedMs, type TimerAction, type Todo } from "@features/todos/types/todo-types";
+import { isRepeatRecord, timerElapsedMs, type TimerAction, type Todo } from "@features/todos/types/todo-types";
 import { useMediaLogs } from "@features/media/hooks/useMediaLogs";
 import { configForType } from "@features/media/media-config";
 import { resolveCoverUrl } from "@features/media/types/media-types";
@@ -267,7 +267,8 @@ function TodayPage() {
 
   // The to-do Today list: overdue first, done ones (ticked today) last.
   const due = useMemo(() => {
-    const tasks = [...data.index.todayList, ...data.index.evening];
+    // A repeating task done today has already moved on; its done record stays in Tasks.
+    const tasks = [...data.index.todayList, ...data.index.evening].filter((todo) => !isRepeatRecord(todo));
     const rank = (todo: Todo) => (todo.completed ? 2 : isOverdue(todo, now) ? 0 : 1);
     return tasks.sort((a, b) => rank(a) - rank(b));
   }, [data.index, now]);

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { isSpanning, spanBars } from "./calendar-items";
+import { isSpanning, spanDays } from "./calendar-items";
+import { toInputs } from "./calendar-inputs";
+import { task } from "../../test/fixtures";
 import type { CalendarOccurrence } from "./types/calendar-types";
-
-const week = ["2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22"];
 
 const event = (id: string, extra: Partial<CalendarOccurrence>): CalendarOccurrence => ({
   _id: id,
@@ -26,32 +26,55 @@ describe("isSpanning", () => {
     expect(isSpanning(event("b", { allDay: false, start: "2026-11-20T18:00:00", end: "2026-11-22T12:00:00" }))).toBe(true);
     expect(isSpanning(event("c", { allDay: false, start: "2026-11-20T18:00:00", end: "2026-11-20T20:00:00" }))).toBe(false);
   });
+
+  it("does not count the day a timed event ends at midnight", () => {
+    expect(spanDays(event("d", { allDay: false, start: "2026-11-20T00:00:00", end: "2026-11-22T00:00:00" }))).toEqual([
+      "2026-11-20",
+      "2026-11-21",
+    ]);
+  });
 });
 
-describe("spanBars", () => {
-  it("draws one bar per event across its days", () => {
-    const { bars, lanes } = spanBars(week, [event("trip", { startDay: "2026-11-16", endDay: "2026-11-22" })]);
-    expect(lanes).toBe(1);
-    expect(bars[0]).toMatchObject({ startCol: 0, endCol: 6, lane: 0, continuesBefore: false, continuesAfter: false });
+describe("toInputs", () => {
+  it("gives all-day events FullCalendar's exclusive end", () => {
+    const [input] = toInputs([event("trip", { startDay: "2026-11-16", endDay: "2026-11-22" })], []);
+    expect(input).toMatchObject({ allDay: true, start: "2026-11-16", end: "2026-11-23" });
   });
 
-  it("stacks overlapping events and reuses free lanes", () => {
-    const { bars, lanes } = spanBars(week, [
-      event("long", { startDay: "2026-11-16", endDay: "2026-11-22" }),
-      event("tue", { startDay: "2026-11-17", endDay: "2026-11-17" }),
-      event("thu", { startDay: "2026-11-19", endDay: "2026-11-19" }),
+  it("shows a weekend-long timed event as a bar on top", () => {
+    const [input] = toInputs(
+      [event("weekend", { allDay: false, start: "2026-11-20T18:00:00", end: "2026-11-22T20:00:00" })],
+      [],
+    );
+    expect(input).toMatchObject({ allDay: true, start: "2026-11-20", end: "2026-11-23", durationEditable: false });
+  });
+
+  it("puts tasks on their day, at their time, and on their deadline", () => {
+    const inputs = toInputs(
+      [],
+      [
+        task("a", "Call bank", { when: "2026-11-18" }),
+        task("b", "Dentist forms", { when: "2026-11-18", time: "09:30" }),
+        task("c", "Invoice", { when: "2026-11-17", dueDate: "2026-11-20" }),
+      ],
+    );
+    expect(inputs.find((input) => input.id === "task-a")).toMatchObject({ allDay: true, start: "2026-11-18" });
+    expect(inputs.find((input) => input.id === "task-b")).toMatchObject({
+      allDay: false,
+      start: "2026-11-18T09:30:00",
+      end: "2026-11-18T10:00:00",
+    });
+    expect(inputs.find((input) => input.id === "due-c")).toMatchObject({ allDay: true, start: "2026-11-20", editable: false });
+  });
+});
+
+describe("calendarTasks", () => {
+  it("leaves out the done records of repeating tasks", async () => {
+    const { calendarTasks } = await import("./calendar-items");
+    const shown = calendarTasks([
+      task("live", "Urssaf", { when: "2026-12-01", repeat: { every: 1, unit: "month", weekdays: [], mode: "fixed" } }),
+      task("record", "Urssaf", { when: "2026-11-16", completed: true, repeatOf: "live" }),
     ]);
-    expect(lanes).toBe(2);
-    expect(bars.find((bar) => bar.occurrence._id === "tue")?.lane).toBe(1);
-    expect(bars.find((bar) => bar.occurrence._id === "thu")?.lane).toBe(1);
-  });
-
-  it("clips events that run past the week", () => {
-    const { bars } = spanBars(week, [event("conf", { startDay: "2026-11-21", endDay: "2026-11-25" })]);
-    expect(bars[0]).toMatchObject({ startCol: 5, endCol: 6, continuesBefore: false, continuesAfter: true });
-  });
-
-  it("ignores events outside the days shown", () => {
-    expect(spanBars(week, [event("old", { startDay: "2026-11-01", endDay: "2026-11-02" })]).bars).toHaveLength(0);
+    expect(shown.map((todo) => todo._id)).toEqual(["live"]);
   });
 });

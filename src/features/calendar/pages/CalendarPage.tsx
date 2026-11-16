@@ -7,15 +7,14 @@ import { cn } from "@lib/utils";
 import { useTaskData } from "@features/todos/hooks/useTaskData";
 import { useRowContext } from "@features/todos/hooks/useTaskActions";
 import { isDay } from "@features/todos/task-views";
-import { addDaysKey, addMonthsKey, atMinutes, hhmm, monthGrid, parseDay, weekDays } from "../calendar-dates";
-import { calendarTasks, todayKey } from "../calendar-items";
+import { addDaysKey, addMonthsKey, hhmm, monthGrid, parseDay, weekDays } from "../calendar-dates";
+import { calendarTasks, todayKey, type CalendarHandlers } from "../calendar-items";
 import { useEventActions, useEvents } from "../hooks/useCalendar";
 import type { CalendarOccurrence, CalendarView, EventPayload } from "../types/calendar-types";
 import EventDialog, { type EventDraft } from "../components/EventDialog";
-import MonthView from "../components/MonthView";
 import TaskDialog from "../components/TaskDialog";
 import TaskTray from "../components/TaskTray";
-import TimeGrid, { type GridHandlers } from "../components/TimeGrid";
+import CalendarGrid from "../components/CalendarView";
 
 const VIEWS: Array<{ value: CalendarView; label: string; key: string }> = [
   { value: "month", label: "Month", key: "m" },
@@ -95,29 +94,21 @@ export default function CalendarPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
-  const handlers: GridHandlers = {
+  const handlers: CalendarHandlers = {
     onCreate: setDraft,
     onOpenEvent: setOpenOccurrence,
     onOpenTask: (todo) => setOpenTaskId(todo._id),
     onToggleTask: (todo) => data.toggleTodo(todo._id),
-    onMoveEvent: (occurrence, day, start, end) => {
-      if (occurrence.allDay) {
-        const span = Math.round(
-          (parseDay(occurrence.endDay as string).getTime() - parseDay(occurrence.startDay as string).getTime()) / 86_400_000,
-        );
-        void eventActions.updateEvent(occurrence, { startDay: day, endDay: addDaysKey(day, span) });
-        return;
-      }
-      void eventActions.updateEvent(occurrence, {
-        start: atMinutes(day, start).toISOString(),
-        end: atMinutes(day, end).toISOString(),
-      });
-    },
-    onScheduleTask: (todoId, day, minutes) => {
-      void data
-        .updateTodo(todoId, { when: day, evening: false, time: minutes === null ? null : hhmm(minutes) })
-        .catch(() => undefined);
-    },
+    onChangeEvent: (occurrence, change) =>
+      eventActions.updateEvent(
+        occurrence,
+        change.allDay
+          ? { allDay: true, startDay: change.startDay, endDay: change.endDay }
+          : { allDay: false, start: change.start.toISOString(), end: change.end.toISOString() },
+      ),
+    onScheduleTask: (todoId, day, minutes) =>
+      data.updateTodo(todoId, { when: day, evening: false, time: minutes === null ? null : hhmm(minutes) }),
+    onOpenDay: (day) => go({ view: "day", date: day }),
   };
 
   const saveEvent = (payload: EventPayload) =>
@@ -221,17 +212,7 @@ export default function CalendarPage() {
 
         <div className="flex gap-4">
           <div className="min-w-0 flex-1">
-            {view === "month" ? (
-              <MonthView
-                cursor={cursor}
-                events={events}
-                todos={tasks}
-                handlers={handlers}
-                onOpenDay={(day) => go({ view: "day", date: day })}
-              />
-            ) : (
-              <TimeGrid days={days} events={events} todos={tasks} handlers={handlers} />
-            )}
+            <CalendarGrid view={view} cursor={cursor} events={events} todos={tasks} handlers={handlers} />
           </div>
           {!phone && (
             <div className="hidden w-60 shrink-0 xl:block">

@@ -268,24 +268,3 @@ export const usePausedTodos = () => {
     refetch: query.refetch,
   };
 };
-
-/** A recurring todo's completion calendar and streak, for the history dialog. */
-export const useTodoHistory = (id: string | null, days: number) => {
-  const api = useTodosApi();
-  const query = useQuery({
-    queryKey: queryKeys.todos.history(id ?? "", days),
-    queryFn: () => api.fetchHistory(id as string, days),
-    enabled: id !== null,
-  });
-  return { history: query.data ?? null, loading: query.isPending };
-};
-
-/** Every habit's completion days over the last `days`, for the Habits page. */
-export const useHabitCompletions = (days: number) => {
-  const api = useTodosApi();
-  const query = useQuery({
-    queryKey: queryKeys.todos.habitCompletions(days),
-    queryFn: () => api.fetchHabitCompletions(days),
-  });
-  return { data: query.data ?? null, loading: query.isPending };
-};
