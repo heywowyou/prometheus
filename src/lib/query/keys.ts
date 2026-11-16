@@ -13,6 +13,8 @@ export const queryKeys = {
     /** Prefix matching one todo's history at any window size. */
     historyOf: (id: string) => ["todos", "history", id] as const,
     history: (id: string, days: number) => ["todos", "history", id, days] as const,
+    lists: () => ["todos", "lists"] as const,
+    logbook: () => ["todos", "logbook"] as const,
   },
   media: {
     all: ["media"] as const,

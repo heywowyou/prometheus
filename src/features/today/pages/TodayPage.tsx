@@ -8,6 +8,8 @@ import { relativeDate } from "@lib/date/relative";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
 import { useTodos } from "@features/todos/hooks/useTodos";
+import { useTodoLists } from "@features/todos/hooks/useTodoLists";
+import { buildTaskIndex } from "@features/todos/task-views";
 import TodoItem from "@features/todos/components/TodoItem";
 import { compareOpenTodos, isOverdue } from "@features/todos/due";
 import { timerElapsedMs, type TimerAction, type Todo } from "@features/todos/types/todo-types";
@@ -92,7 +94,7 @@ function NowCard({
     if (!run || elapsed < goalMs || completedRunRef.current === run) return;
     completedRunRef.current = run;
     onToggle(todo._id);
-    toast.success(`${todo.text} — time's up`);
+    toast.success(`${todo.text}: time's up`);
   }, [elapsed, goalMs, onToggle, todo._id, todo.text, todo.timer?.startedAt]);
 
   return (
@@ -217,15 +219,17 @@ function TodayPage() {
   const dailyDone = daily.filter((todo) => todo.completed).length;
   const running = todos.find(isRunning) ?? null;
 
-  // Overdue first, then anything with a date, then the week's and month's
-  // chores, then undated one-offs.
+  // The to-do Today list (overdue first), then the week's and month's habits.
+  const { projects, areas } = useTodoLists();
   const due = useMemo(() => {
-    const rank = (todo: Todo) =>
-      isOverdue(todo, now) ? 0 : todo.dueDate ? 1 : todo.recurrenceType !== "none" ? 2 : 3;
-    return todos
-      .filter((todo) => !todo.completed && todo.recurrenceType !== "daily")
-      .sort((a, b) => rank(a) - rank(b) || compareOpenTodos(a, b));
-  }, [todos, now]);
+    const index = buildTaskIndex(todos, projects, areas, now);
+    const tasks = [...index.todayList, ...index.evening].filter((todo) => !todo.completed);
+    const rank = (todo: Todo) => (isOverdue(todo, now) ? 0 : 1);
+    const habits = todos.filter(
+      (todo) => !todo.completed && (todo.recurrenceType === "weekly" || todo.recurrenceType === "monthly"),
+    );
+    return [...tasks.sort((a, b) => rank(a) - rank(b)), ...habits.sort(compareOpenTodos)];
+  }, [todos, projects, areas, now]);
   const overdue = due.filter((todo) => isOverdue(todo, now)).length;
 
   const inProgress = logs.filter((log) => log.status === "in_progress");
@@ -327,7 +331,7 @@ function TodayPage() {
         </Section>
       )}
 
-      <Section title="To do" aside={<AsideLink to="/todos">All tasks</AsideLink>}>
+      <Section title="To do" aside={<AsideLink to="/todos/today">All tasks</AsideLink>}>
         {todosLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -349,7 +353,7 @@ function TodayPage() {
             </div>
             {due.length > TODO_LIMIT && (
               <Link
-                to="/todos"
+                to="/todos/today"
                 className="mt-3 inline-block text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {due.length - TODO_LIMIT} more in Todos →

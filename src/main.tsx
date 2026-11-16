@@ -23,6 +23,13 @@ if (!rootElement) {
 
 const queryClient = createQueryClient();
 
+// Keeps the reminder worker registered once notifications were turned on.
+if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  });
+}
+
 createRoot(rootElement).render(
   <StrictMode>
     <ClerkProvider

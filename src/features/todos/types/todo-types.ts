@@ -21,6 +21,24 @@ export interface TodoTimer {
   startedAt?: string | null;
 }
 
+export const REPEAT_UNITS = ["day", "week", "month", "year"] as const;
+export type RepeatUnit = (typeof REPEAT_UNITS)[number];
+
+export interface RepeatRule {
+  every: number;
+  unit: RepeatUnit;
+  /** Weekly only: 0 = Sunday … 6 = Saturday; empty = same weekday. */
+  weekdays: number[];
+  /** `fixed`: on schedule; `afterCompletion`: counted from the day it's done. */
+  mode: "fixed" | "afterCompletion";
+}
+
+export interface ChecklistItem {
+  _id?: string;
+  text: string;
+  done: boolean;
+}
+
 export interface Todo {
   _id: string;
   text: string;
@@ -48,6 +66,26 @@ export interface Todo {
   pausedAt?: string | null;
   /** Set when a recurring task's previous completion belongs to an elapsed cycle. */
   dueAgainSince?: string | null;
+
+  /* Tasks (recurrenceType "none"); habits are the recurring ones. */
+  notes?: string;
+  checklist?: ChecklistItem[];
+  areaId?: string | null;
+  projectId?: string | null;
+  headingId?: string | null;
+  tags?: string[];
+  important?: boolean;
+  /** `YYYY-MM-DD`, `someday`, or unset (Inbox, or Anytime inside a list). */
+  when?: string | null;
+  /** In This Evening on the `when` day. */
+  evening?: boolean;
+  /** `HH:mm`; a reminder fires then on the `when` day. */
+  time?: string | null;
+  reminderAt?: string | null;
+  repeat?: RepeatRule | null;
+  completedAt?: string | null;
+  /** On a done copy of a repeating task: the task it came from. */
+  repeatOf?: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -75,3 +113,42 @@ export const timerElapsedMs = (todo: Todo, now: number): number => {
   const running = todo.timer.startedAt ? now - new Date(todo.timer.startedAt).getTime() : 0;
   return todo.timer.elapsedMs + Math.max(0, running);
 };
+
+export interface TodoArea {
+  _id: string;
+  title: string;
+  order: number;
+}
+
+export interface TodoHeading {
+  _id: string;
+  title: string;
+}
+
+export interface TodoProject {
+  _id: string;
+  title: string;
+  notes: string;
+  areaId?: string | null;
+  order: number;
+  headings: TodoHeading[];
+  /** `someday` parks the project. */
+  when?: string | null;
+  /** Deadline, `YYYY-MM-DD`. */
+  dueDate?: string | null;
+  completedAt?: string | null;
+  createdAt?: string;
+}
+
+export interface TodoLists {
+  areas: TodoArea[];
+  projects: TodoProject[];
+}
+
+export interface LogbookPage {
+  tasks: Todo[];
+  projects: TodoProject[];
+}
+
+/** A task, as opposed to a habit (a recurring todo). */
+export const isTask = (todo: Todo): boolean => todo.recurrenceType === "none";

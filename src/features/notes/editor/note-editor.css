@@ -224,3 +224,13 @@
 .focus-mode [data-app-chrome] {
   display: none !important;
 }
+
+/* Task notes: the same editor, smaller and quieter. */
+.note-editor.task-notes .ProseMirror {
+  @apply min-h-[1.5rem] text-[0.9375rem] leading-[1.6] text-soft;
+}
+
+.note-editor.task-notes .ProseMirror > p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply pointer-events-none float-left h-0 text-muted-foreground/60;
+}

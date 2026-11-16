@@ -36,7 +36,7 @@ interface TaskFormValues {
   dueDate: string;
 }
 
-const initialValues = (task: Todo | null): TaskFormValues =>
+const initialValues = (task: Todo | null, defaultRecurrence: RecurrenceType = "none"): TaskFormValues =>
   task
     ? {
         text: task.text,
@@ -47,7 +47,7 @@ const initialValues = (task: Todo | null): TaskFormValues =>
       }
     : {
         text: "",
-        recurrenceType: "none",
+        recurrenceType: defaultRecurrence,
         interactionType: "checkbox",
         durationGoal: "",
         dueDate: "",
@@ -73,14 +73,16 @@ interface TaskModalProps {
   /** Pass a task to edit it; omit to create a new one. */
   task?: Todo | null;
   onSubmit: (values: TaskSubmitValues) => Promise<unknown>;
+  /** Recurrence preselected for a new task. */
+  defaultRecurrence?: RecurrenceType;
 }
 
 type BodyProps = Omit<TaskModalProps, "isOpen">;
 
 /** Mounted only while open, so its state is seeded from props on mount. */
-function TaskModalBody({ onClose, task = null, onSubmit }: BodyProps) {
+function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: BodyProps) {
   const isEdit = task !== null;
-  const [values, setValues] = useState<TaskFormValues>(() => initialValues(task));
+  const [values, setValues] = useState<TaskFormValues>(() => initialValues(task, defaultRecurrence));
   const [submitting, setSubmitting] = useState(false);
 
   const set = <K extends keyof TaskFormValues>(key: K, value: TaskFormValues[K]) =>

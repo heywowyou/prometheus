@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { CheckSquare, ChevronDown, Flame, PlayCircle, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { ChevronDown, Flame, PlayCircle, Plus } from "lucide-react";
 import { Button } from "@components/ui/button";
 import EmptyState from "@components/feedback/EmptyState";
 import { useLocalStorage } from "@lib/hooks/useLocalStorage";
@@ -11,7 +13,7 @@ import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import TodoHistoryDialog from "../components/TodoHistoryDialog";
 import QuickAddInput from "../components/QuickAddInput";
 import SortableTodoList from "../components/SortableTodoList";
-import { compareSectionTodos, daysUntil, isOverdue } from "../due";
+import { compareSectionTodos, isOverdue } from "../due";
 import type { RecurrenceType, Todo } from "../types/todo-types";
 
 type ModalState =
@@ -22,7 +24,6 @@ type ModalState =
   | { type: "history"; task: Todo };
 
 const SECTIONS: Array<{ key: RecurrenceType; title: string; quickAdd: string }> = [
-  { key: "none", title: "To do", quickAdd: "one-time" },
   { key: "daily", title: "Daily", quickAdd: "daily" },
   { key: "weekly", title: "This week", quickAdd: "weekly" },
   { key: "monthly", title: "This month", quickAdd: "monthly" },
@@ -33,10 +34,6 @@ const RECENT_DONE_DAYS = 7;
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
-
-const isTyping = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
 
 const byLastCompleted = (a: Todo, b: Todo) =>
   new Date(b.lastCompletedAt ?? 0).getTime() - new Date(a.lastCompletedAt ?? 0).getTime();
@@ -68,9 +65,12 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   );
 }
 
-function TodosDashboardPage() {
+/** Habits: daily, weekly and monthly routines with streaks and timers. Tasks live in the lists. */
+function HabitsPage() {
+  const navigate = useNavigate();
   const {
-    todos,
+    todos: allTodos,
+    convertTodo,
     loading,
     createTodo,
     updateTodo,
@@ -81,6 +81,7 @@ function TodosDashboardPage() {
     deleteTodo,
   } = useTodos();
   const { pausedTodos, resumeTodo } = usePausedTodos();
+  const todos = useMemo(() => allTodos.filter((todo) => todo.recurrenceType !== "none"), [allTodos]);
 
   const [modal, setModal] = useState<ModalState>({ type: "none" });
   const [collapsed, setCollapsed] = useLocalStorage<string[]>("todo-collapsed", [], isStringArray);
@@ -88,17 +89,6 @@ function TodosDashboardPage() {
   const [pausedOpen, setPausedOpen] = useState(false);
   const [now] = useState(() => new Date());
 
-  // "n" anywhere on the page opens a new task.
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "n" || event.ctrlKey || event.metaKey || event.altKey) return;
-      if (isTyping(event.target) || document.querySelector("[role=dialog]")) return;
-      event.preventDefault();
-      setModal({ type: "new" });
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
 
   const sections = useMemo(() => {
     const cutoff = now.getTime() - RECENT_DONE_DAYS * 86_400_000;
@@ -117,10 +107,6 @@ function TodosDashboardPage() {
     return result;
   }, [todos, now]);
 
-  const overdue = todos.filter((todo) => isOverdue(todo, now)).length;
-  const dueToday = todos.filter(
-    (todo) => !todo.completed && todo.dueDate && daysUntil(todo.dueDate, now) === 0,
-  ).length;
   const daily = sections.daily;
   const topStreaks = todos
     .filter((todo) => (todo.streak?.current ?? 0) > 0)
@@ -140,6 +126,16 @@ function TodosDashboardPage() {
     onDelete: (task: Todo) => setModal({ type: "delete", task }),
     onHistory: (task: Todo) => setModal({ type: "history", task }),
     onPause: pauseTodo,
+    onConvert: (task: Todo) => {
+      void convertTodo(task._id, "task").then((converted) =>
+        toast(`“${task.text}” now repeats as a task`, {
+          action: {
+            label: "Open",
+            onClick: () => navigate(converted.when && converted.when <= new Date().toISOString().slice(0, 10) ? "/todos/today" : "/todos/upcoming"),
+          },
+        }),
+      );
+    },
   };
 
   const submitNew = (values: TaskSubmitValues) =>
@@ -149,8 +145,6 @@ function TodosDashboardPage() {
     daily.open.length + daily.done.length > 0
       ? `${daily.done.length} of ${daily.open.length + daily.done.length} daily habits done`
       : null,
-    dueToday ? `${dueToday} due today` : null,
-    overdue ? `${overdue} overdue` : null,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -159,14 +153,17 @@ function TodosDashboardPage() {
     <>
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4 pt-2 sm:pt-6">
         <div>
-          <h1 className="page-title">Todos</h1>
+          <h1 className="flex items-center gap-3 page-title">
+            <Flame className="h-8 w-8 text-streak" />
+            Habits
+          </h1>
           {!loading && summary && (
             <p className="mt-3 font-serif text-lg text-soft sm:text-xl">{summary}</p>
           )}
         </div>
-        <Button onClick={() => setModal({ type: "new" })} title="New task (N)">
+        <Button onClick={() => setModal({ type: "new" })} title="New habit">
           <Plus className="h-4 w-4" />
-          New task
+          New habit
         </Button>
       </div>
 
@@ -182,9 +179,9 @@ function TodosDashboardPage() {
         </div>
       ) : todos.length === 0 && pausedTodos.length === 0 ? (
         <EmptyState
-          icon={CheckSquare}
-          message="Your workspace is empty."
-          action={{ label: "Create your first task", onClick: () => setModal({ type: "new" }) }}
+          icon={Flame}
+          message="No habits yet."
+          action={{ label: "Create a habit", onClick: () => setModal({ type: "new" }) }}
         />
       ) : (
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-14">
@@ -349,7 +346,12 @@ function TodosDashboardPage() {
         </div>
       )}
 
-      <TaskModal isOpen={modal.type === "new"} onClose={() => setModal({ type: "none" })} onSubmit={submitNew} />
+      <TaskModal
+        isOpen={modal.type === "new"}
+        onClose={() => setModal({ type: "none" })}
+        onSubmit={submitNew}
+        defaultRecurrence="daily"
+      />
       <TaskModal
         isOpen={modal.type === "edit"}
         onClose={() => setModal({ type: "none" })}
@@ -375,4 +377,4 @@ function TodosDashboardPage() {
   );
 }
 
-export default TodosDashboardPage;
+export default HabitsPage;

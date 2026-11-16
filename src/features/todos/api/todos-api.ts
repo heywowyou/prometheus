@@ -1,28 +1,59 @@
 import { useCallback, useMemo } from "react";
 import { useApiClient } from "@lib/api/api-client";
 import type {
+  ChecklistItem,
   InteractionType,
+  LogbookPage,
   RecurrenceType,
+  RepeatRule,
   TimerAction,
   Todo,
+  TodoArea,
   TodoHistory,
+  TodoLists,
+  TodoProject,
 } from "../types/todo-types";
 
 const TODOS_PATH = "/todos";
 
-export interface CreateTodoPayload {
+/** Task-only fields; `null` clears. */
+export interface TaskFieldsPayload {
+  notes?: string;
+  checklist?: ChecklistItem[];
+  areaId?: string | null;
+  projectId?: string | null;
+  headingId?: string | null;
+  tags?: string[];
+  important?: boolean;
+  when?: string | null;
+  evening?: boolean;
+  time?: string | null;
+  repeat?: RepeatRule | null;
+}
+
+export interface CreateTodoPayload extends TaskFieldsPayload {
   text: string;
   recurrenceType: RecurrenceType;
   interactionType: InteractionType;
   durationGoal: number;
-  /** One-time tasks only, `YYYY-MM-DD`. */
+  /** Tasks only: the deadline, `YYYY-MM-DD`. */
   dueDate?: string;
 }
 
-/** `dueDate: null` clears the due date. */
+/** `dueDate: null` clears the deadline. */
 export type UpdateTodoPayload = Partial<Omit<CreateTodoPayload, "dueDate">> & {
   dueDate?: string | null;
 };
+
+export interface ProjectPayload {
+  title?: string;
+  notes?: string;
+  areaId?: string | null;
+  headings?: Array<{ _id?: string; title: string }>;
+  when?: string | null;
+  dueDate?: string | null;
+  completed?: boolean;
+}
 
 export const useTodosApi = () => {
   const client = useApiClient();
@@ -113,8 +144,94 @@ export const useTodosApi = () => {
     [client],
   );
 
+  const convertTodo = useCallback(
+    async (id: string, to: "habit" | "task"): Promise<Todo> => {
+      const { data } = await client.patch<Todo>(`${TODOS_PATH}/${id}/convert`, { to });
+      return data;
+    },
+    [client],
+  );
+
+  const fetchLogbook = useCallback(
+    async (before?: string): Promise<LogbookPage> => {
+      const { data } = await client.get<LogbookPage>(`${TODOS_PATH}/logbook`, {
+        params: before ? { before, limit: 60 } : { limit: 60 },
+      });
+      return data;
+    },
+    [client],
+  );
+
+  const fetchLists = useCallback(async (): Promise<TodoLists> => {
+    const { data } = await client.get<TodoLists>(`${TODOS_PATH}/lists`);
+    return data;
+  }, [client]);
+
+  const createArea = useCallback(
+    async (title: string): Promise<TodoArea> => {
+      const { data } = await client.post<TodoArea>(`${TODOS_PATH}/areas`, { title });
+      return data;
+    },
+    [client],
+  );
+
+  const updateArea = useCallback(
+    async (id: string, payload: { title: string }): Promise<TodoArea> => {
+      const { data } = await client.patch<TodoArea>(`${TODOS_PATH}/areas/${id}`, payload);
+      return data;
+    },
+    [client],
+  );
+
+  const deleteArea = useCallback(
+    async (id: string): Promise<void> => {
+      await client.delete(`${TODOS_PATH}/areas/${id}`);
+    },
+    [client],
+  );
+
+  const createProject = useCallback(
+    async (payload: ProjectPayload): Promise<TodoProject> => {
+      const { data } = await client.post<TodoProject>(`${TODOS_PATH}/projects`, payload);
+      return data;
+    },
+    [client],
+  );
+
+  const updateProject = useCallback(
+    async (id: string, payload: ProjectPayload): Promise<TodoProject> => {
+      const { data } = await client.patch<TodoProject>(`${TODOS_PATH}/projects/${id}`, payload);
+      return data;
+    },
+    [client],
+  );
+
+  const deleteProject = useCallback(
+    async (id: string): Promise<void> => {
+      await client.delete(`${TODOS_PATH}/projects/${id}`);
+    },
+    [client],
+  );
+
+  const reorderLists = useCallback(
+    async (kind: "area" | "project", ids: string[]): Promise<void> => {
+      await client.patch(`${TODOS_PATH}/lists/reorder`, { kind, ids });
+    },
+    [client],
+  );
+
   return useMemo(
     () => ({
+      convertTodo,
+      fetchLogbook,
+      fetchLists,
+      createArea,
+      updateArea,
+      deleteArea,
+      createProject,
+      updateProject,
+      deleteProject,
+      reorderLists,
       fetchTodos,
       createTodo,
       updateTodo,
@@ -127,6 +244,16 @@ export const useTodosApi = () => {
       deleteTodo,
     }),
     [
+      convertTodo,
+      fetchLogbook,
+      fetchLists,
+      createArea,
+      updateArea,
+      deleteArea,
+      createProject,
+      updateProject,
+      deleteProject,
+      reorderLists,
       reorderTodos,
       fetchTodos,
       createTodo,

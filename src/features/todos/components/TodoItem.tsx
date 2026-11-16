@@ -59,6 +59,8 @@ interface TodoItemProps {
   onEdit?: (todo: Todo) => void;
   onPause?: (id: string) => void;
   onHistory?: (todo: Todo) => void;
+  /** Habits: turn into a repeating task (history kept). */
+  onConvert?: (todo: Todo) => void;
   /** A drag handle, rendered at the row's left edge when the list is sortable. */
   handle?: ReactNode;
 }
@@ -72,6 +74,7 @@ function TodoItem({
   onEdit,
   onPause,
   onHistory,
+  onConvert,
   handle,
 }: TodoItemProps) {
   const isRecurring = todo.recurrenceType !== "none";
@@ -97,7 +100,7 @@ function TodoItem({
     if (!running || !run || elapsed < goalMs || completedRunRef.current === run) return;
     completedRunRef.current = run;
     onToggle(todo._id);
-    toast.success(`${todo.text} — time's up`);
+    toast.success(`${todo.text}: time's up`);
   }, [running, elapsed, goalMs, onToggle, todo._id, todo.text, todo.timer?.startedAt]);
 
   const startOrPause = () => {
@@ -322,6 +325,12 @@ function TodoItem({
               <DropdownMenuItem onClick={() => onPause(todo._id)}>
                 <PauseCircle className="mr-2 h-3.5 w-3.5" />
                 Pause
+              </DropdownMenuItem>
+            )}
+            {isRecurring && onConvert && (
+              <DropdownMenuItem onClick={() => onConvert(todo)}>
+                <Repeat2 className="mr-2 h-3.5 w-3.5" />
+                Turn into a repeating task
               </DropdownMenuItem>
             )}
             {onDelete && (

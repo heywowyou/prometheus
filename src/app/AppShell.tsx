@@ -13,8 +13,8 @@ import PageLoader from "@components/feedback/PageLoader";
  */
 function AppShell() {
   const { pathname } = useLocation();
-  // Notes has a page sidebar and an outline column, so it gets more width.
-  const wide = pathname.startsWith("/notes");
+  // Notes and to-dos have a sidebar of lists, so they get more width.
+  const wide = pathname.startsWith("/notes") || pathname.startsWith("/todos");
 
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">

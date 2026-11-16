@@ -15,9 +15,18 @@ import { DEFAULT_ROUTE } from "@app/navigation";
 // Route-level code splitting. The notes editor in particular pulls in Tiptap
 // and its highlighting bundle, which no other route needs.
 const TodayPage = lazy(() => import("@features/today/pages/TodayPage"));
-const TodosDashboardPage = lazy(
-  () => import("@features/todos/pages/TodosDashboardPage"),
-);
+const TodosLayout = lazy(() => import("@features/todos/pages/TodosLayout"));
+const HabitsPage = lazy(() => import("@features/todos/pages/HabitsPage"));
+const TodoListPages = {
+  Inbox: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.InboxPage }))),
+  Today: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.TodayListPage }))),
+  Upcoming: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.UpcomingPage }))),
+  Anytime: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.AnytimePage }))),
+  Someday: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.SomedayPage }))),
+  Logbook: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.LogbookPage }))),
+  Project: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.ProjectPage }))),
+  Area: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.AreaPage }))),
+};
 const MediaDashboardPage = lazy(
   () => import("@features/media/pages/MediaDashboardPage"),
 );
@@ -67,7 +76,19 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
             <Route path="/today" element={<TodayPage />} />
-            <Route path="/todos" element={<TodosDashboardPage />} />
+            {/* To-dos: Things-style lists in a sidebar, plus Habits. */}
+            <Route path="/todos" element={<TodosLayout />}>
+              <Route index element={<Navigate to="today" replace />} />
+              <Route path="inbox" element={<TodoListPages.Inbox />} />
+              <Route path="today" element={<TodoListPages.Today />} />
+              <Route path="upcoming" element={<TodoListPages.Upcoming />} />
+              <Route path="anytime" element={<TodoListPages.Anytime />} />
+              <Route path="someday" element={<TodoListPages.Someday />} />
+              <Route path="logbook" element={<TodoListPages.Logbook />} />
+              <Route path="habits" element={<HabitsPage />} />
+              <Route path="projects/:id" element={<TodoListPages.Project />} />
+              <Route path="areas/:id" element={<TodoListPages.Area />} />
+            </Route>
 
             <Route path="/media" element={<MediaDashboardPage />}>
               <Route index element={<Navigate to={DEFAULT_MEDIA_SLUG} replace />} />
