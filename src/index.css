@@ -59,15 +59,18 @@
     /* Navbar surface */
     --navbar: #0f1217;
 
-    /* Status colours */
+    /* Status colours. Warm hues are kept for what is urgent or destructive:
+       warning (offline, unsaved) and destructive (overdue, delete). Everything
+       else stays in the cool, calm range below. */
     --success: #8fcba8;
     --warning: #e6c27a;
     --info: #9db4d6;
-    /* Calendar event color */
-    --violet: #b9a7dc;
+    /* Light blue: Today, due today, flags and other gentle highlights */
+    --highlight: #9fcdee;
 
-    /* Streak flame on recurring todos */
-    --streak: #e8a87c;
+    /* Extra calendar event colors */
+    --teal: #7fc4bd;
+    --stone: #aab3c0;
 
     /* Scrim behind dialogs and over cover images */
     --overlay: #000000;

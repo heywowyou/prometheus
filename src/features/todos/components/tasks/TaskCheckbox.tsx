@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@lib/utils";
 
-/** Things' rounded square: amber ring when due today, red when overdue. */
+/** Things' rounded square: light blue ring when due today, red when overdue. */
 export default function TaskCheckbox({
   checked,
   tone = "default",
@@ -32,7 +32,7 @@ export default function TaskCheckbox({
           : tone === "overdue"
             ? "border-destructive/80 hover:bg-destructive/10"
             : tone === "due"
-              ? "border-warning/80 hover:bg-warning/10"
+              ? "border-highlight/80 hover:bg-highlight/10"
               : "border-muted-foreground/70 hover:border-foreground",
         className,
       )}

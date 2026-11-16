@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Flame } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -29,13 +28,11 @@ function DeleteConfirmModalBody({
 }) {
   const [confirming, setConfirming] = useState(false);
   const hasHistory = task.recurrenceType !== "none" && task.completionCount > 0;
-  const streak = task.streak?.current ?? 0;
 
   return (
     <>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-destructive">
-          {hasHistory && <Flame className="h-4 w-4" />}
           {confirming ? "Confirm permanently" : "Confirm deletion"}
         </DialogTitle>
       </DialogHeader>
@@ -60,18 +57,10 @@ function DeleteConfirmModalBody({
           <p className="py-2 text-sm text-foreground">
             {hasHistory ? (
               <>
-                You are about to delete the recurring task{" "}
+                You are about to delete the habit{" "}
                 <strong>&ldquo;{task.text}&rdquo;</strong>, along with its{" "}
                 <strong className="text-destructive">{task.completionCount}</strong>{" "}
-                recorded completions
-                {streak > 0 && (
-                  <>
-                    {" "}
-                    and its current streak of{" "}
-                    <strong className="text-destructive">{streak}</strong>
-                  </>
-                )}
-                . Pausing it keeps all of that.
+                recorded completions. Pausing it keeps them.
               </>
             ) : (
               <>

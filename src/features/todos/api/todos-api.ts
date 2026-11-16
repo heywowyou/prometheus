@@ -38,12 +38,17 @@ export interface CreateTodoPayload extends TaskFieldsPayload {
   durationGoal: number;
   /** Tasks only: the deadline, `YYYY-MM-DD`. */
   dueDate?: string;
+  /** Daily habits: days a week to aim for (1-6), null for every day. */
+  perWeek?: number | null;
 }
 
 /** `dueDate: null` clears the deadline. */
 export type UpdateTodoPayload = Partial<Omit<CreateTodoPayload, "dueDate">> & {
   dueDate?: string | null;
 };
+
+/** Narrows the completed list to one project or one area. */
+export type LogbookScope = { projectId?: string; areaId?: string };
 
 /** Completion days per habit, and all habits' completions per day. */
 export interface HabitCompletions {
@@ -94,6 +99,15 @@ export const useTodosApi = () => {
   const toggleTodo = useCallback(
     async (id: string): Promise<Todo> => {
       const { data } = await client.patch<Todo>(`${TODOS_PATH}/${id}/toggle`);
+      return data;
+    },
+    [client],
+  );
+
+  /** Skips a habit's current cycle (a rest day), or takes the skip back. */
+  const skipTodo = useCallback(
+    async (id: string): Promise<Todo> => {
+      const { data } = await client.patch<Todo>(`${TODOS_PATH}/${id}/skip`);
       return data;
     },
     [client],
@@ -158,10 +172,11 @@ export const useTodosApi = () => {
     [client],
   );
 
+  /** Done tasks, newest first; optionally only one project's or area's. */
   const fetchLogbook = useCallback(
-    async (before?: string): Promise<LogbookPage> => {
+    async (before?: string, scope: LogbookScope = {}): Promise<LogbookPage> => {
       const { data } = await client.get<LogbookPage>(`${TODOS_PATH}/logbook`, {
-        params: before ? { before, limit: 60 } : { limit: 60 },
+        params: { limit: 60, ...(before ? { before } : {}), ...scope },
       });
       return data;
     },
@@ -251,6 +266,7 @@ export const useTodosApi = () => {
       createTodo,
       updateTodo,
       toggleTodo,
+      skipTodo,
       reorderTodos,
       updateTimer,
       fetchHistory,
@@ -275,6 +291,7 @@ export const useTodosApi = () => {
       createTodo,
       updateTodo,
       toggleTodo,
+      skipTodo,
       updateTimer,
       fetchHistory,
       pauseTodo,

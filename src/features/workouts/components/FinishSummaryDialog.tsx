@@ -56,12 +56,12 @@ function FinishSummaryDialog({ result, onClose }: FinishSummaryDialogProps) {
 
         {result && result.prs.length > 0 && (
           <div className="space-y-2">
-            <p className="flex items-center gap-1.5 text-sm font-semibold text-warning">
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-rating">
               <Trophy className="h-4 w-4" /> New personal records
             </p>
             <ul className="space-y-1.5">
               {result.prs.map((pr) => (
-                <li key={pr.exerciseId} className="rounded-2xl border border-warning/40 bg-warning/10 px-4 py-2.5">
+                <li key={pr.exerciseId} className="rounded-2xl border border-rating/40 bg-rating/10 px-4 py-2.5">
                   <p className="text-sm font-medium text-foreground">{pr.exerciseName}</p>
                   <p className="text-xs text-muted-foreground">
                     {pr.types.map((type) => PR_LABELS[type]).join(" · ")}

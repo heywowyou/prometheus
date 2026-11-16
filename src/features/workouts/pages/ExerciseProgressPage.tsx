@@ -130,7 +130,7 @@ function ProgressView({ progress }: { progress: ExerciseProgress }) {
       {records.length > 0 && (
         <section>
           <h3 className="section-title mb-3 flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-warning" /> Records
+            <Trophy className="h-5 w-5 text-rating" /> Records
           </h3>
           <div className="grid grid-cols-2 gap-2">
             {records.map((type) => (

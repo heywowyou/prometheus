@@ -108,6 +108,10 @@ export const useTodos = () => {
         ...todo,
         completed: !todo.completed,
         completedAt: todo.completed ? null : new Date().toISOString(),
+        ...(todo.completed ? {} : { skipped: false }),
+        ...(typeof todo.thisWeek === "number"
+          ? { thisWeek: Math.max(0, todo.thisWeek + (todo.completed ? -1 : 1)) }
+          : {}),
       })),
     onError: (_error, _id, context) => restore(context),
     onSuccess: (updated, id) => {
@@ -123,6 +127,19 @@ export const useTodos = () => {
         void queryClient.invalidateQueries({ queryKey: listKey });
         toast(`Done. Next: ${updated.when ? dayLabel(updated.when) : "soon"}`);
       }
+    },
+  });
+
+  const skipTodo = useMutation({
+    mutationFn: (id: string) => api.skipTodo(id),
+    onMutate: (id) => patchOptimistically(id, (todo) => ({ ...todo, skipped: !todo.skipped })),
+    onError: (_error, _id, context) => {
+      restore(context);
+      toast.error("Couldn't skip that habit");
+    },
+    onSuccess: (updated) => {
+      writeToCache(updated);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.todos.historyOf(updated._id) });
     },
   });
 
@@ -212,6 +229,7 @@ export const useTodos = () => {
     updateTodo: (id: string, payload: UpdateTodoPayload) =>
       updateTodo.mutateAsync({ id, payload }),
     toggleTodo: (id: string) => toggleTodo.mutate(id),
+    skipTodo: (id: string) => skipTodo.mutate(id),
     convertTodo: (id: string, to: "habit" | "task") => convertTodo.mutateAsync({ id, to }),
     duplicateTodo,
     reorderTodos: (ids: string[]) => reorder.mutate(ids),

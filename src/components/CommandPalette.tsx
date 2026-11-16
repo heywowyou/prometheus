@@ -9,7 +9,7 @@ import {
   CornerDownLeft,
   Dumbbell,
   FilePlus2,
-  Flame,
+  Sprout,
   NotebookPen,
   Play,
   Plus,
@@ -170,9 +170,9 @@ function PaletteBody({ initialQuery, close }: { initialQuery: string; close: () 
       out.push({
         key: `habit-${habit._id}`,
         group: "Habits",
-        icon: <Flame className="h-4 w-4 text-streak" />,
+        icon: <Sprout className="h-4 w-4 text-rating" />,
         title: habit.text,
-        subtitle: habit.streak?.current ? `${habit.streak.current} in a row` : habit.recurrenceType,
+        subtitle: habit.recurrenceType,
         run: go("/habits"),
       });
     }
@@ -241,7 +241,7 @@ function PaletteBody({ initialQuery, close }: { initialQuery: string; close: () 
       })),
       { key: "go-inbox", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Inbox", run: go("/todos/inbox") },
       { key: "go-upcoming", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Upcoming", run: go("/todos/upcoming") },
-      { key: "go-logbook", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Logbook", run: go("/todos/logbook") },
+      { key: "go-logbook", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Completed tasks", run: go("/todos/completed") },
       { key: "go-daily", group: "Go to", icon: <NotebookPen className="h-4 w-4 text-muted-foreground" />, title: "Today's note", run: go("/notes/daily/today") },
       { key: "go-graph", group: "Go to", icon: <ArrowRight className="h-4 w-4 text-muted-foreground" />, title: "Notes graph", run: go("/notes/graph") },
       { key: "go-week", group: "Go to", icon: <CalendarDays className="h-4 w-4 text-muted-foreground" />, title: "This week in the calendar", run: go("/calendar?view=week") },

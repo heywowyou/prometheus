@@ -1,7 +1,7 @@
 import {
   Sun,
   CheckSquare,
-  Flame,
+  Sprout,
   Clapperboard,
   NotebookText,
   CalendarDays,
@@ -20,7 +20,7 @@ export interface NavItem {
 export const NAV_ITEMS: readonly NavItem[] = [
   { to: "/today", label: "Today", icon: Sun },
   { to: "/todos", label: "Tasks", icon: CheckSquare },
-  { to: "/habits", label: "Habits", icon: Flame },
+  { to: "/habits", label: "Habits", icon: Sprout },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/notes", label: "Notes", icon: NotebookText },
   { to: "/media", label: "Media", icon: Clapperboard },
@@ -36,7 +36,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 export const PHONE_TABS: readonly NavItem[] = [
   { to: "/today", label: "Today", icon: Sun },
   { to: "/todos", label: "Tasks", icon: CheckSquare },
-  { to: "/habits", label: "Habits", icon: Flame },
+  { to: "/habits", label: "Habits", icon: Sprout },
   { to: "/notes", label: "Notes", icon: NotebookText },
 ];
 

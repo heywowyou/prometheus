@@ -126,7 +126,7 @@ export default function TaskRow({
             todo.evening ? (
               <Moon className="h-3.5 w-3.5 shrink-0 text-info" aria-label="This Evening" />
             ) : (
-              <Star className="h-3.5 w-3.5 shrink-0 fill-warning text-warning" aria-label="Today" />
+              <Star className="h-3.5 w-3.5 shrink-0 fill-highlight text-highlight" aria-label="Today" />
             )
           ) : null}
           {context.showWhen && isDay(todo.when) && !startsToday && (
@@ -141,7 +141,7 @@ export default function TaskRow({
               !todo.text.trim() && "italic text-muted-foreground",
             )}
           >
-            {todo.important && !todo.completed && <span className="mr-1 font-semibold text-warning">!</span>}
+            {todo.important && !todo.completed && <span className="mr-1 font-semibold text-highlight">!</span>}
             {todo.text.trim() || "New task"}
           </span>
           <span className="flex shrink-0 items-center gap-1.5 text-muted-foreground">
@@ -179,7 +179,7 @@ export default function TaskRow({
               deadline !== null && deadline < 0
                 ? "text-destructive"
                 : deadline === 0
-                  ? "text-warning"
+                  ? "text-highlight"
                   : "text-muted-foreground",
             )}
           >

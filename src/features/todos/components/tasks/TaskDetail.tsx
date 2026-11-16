@@ -76,7 +76,7 @@ function Chip({
       className={cn(
         "inline-flex h-7 items-center gap-1 rounded-full border border-border bg-secondary/60 pl-2.5 text-xs",
         onClear ? "pr-1" : "pr-2.5",
-        tone === "danger" ? "text-destructive" : tone === "warning" ? "text-warning" : "text-soft",
+        tone === "danger" ? "text-destructive" : tone === "warning" ? "text-highlight" : "text-soft",
       )}
     >
       <button type="button" className="flex items-center gap-1.5" {...rest}>
@@ -293,7 +293,7 @@ export default function TaskDetail({
                     ) : todo.evening ? (
                       <Moon className="h-3.5 w-3.5 text-info" />
                     ) : daysUntil(todo.when as string, today) <= 0 ? (
-                      <Star className="h-3.5 w-3.5 fill-warning text-warning" />
+                      <Star className="h-3.5 w-3.5 fill-highlight text-highlight" />
                     ) : (
                       <Layers className="h-3.5 w-3.5" />
                     )
@@ -418,7 +418,7 @@ export default function TaskDetail({
               label={todo.important ? "Not important" : "Important"}
               onClick={() => set({ important: !todo.important })}
             >
-              <span className={cn("text-base leading-none", todo.important ? "text-warning" : "")}>!</span>
+              <span className={cn("text-base leading-none", todo.important ? "text-highlight" : "")}>!</span>
             </IconAction>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

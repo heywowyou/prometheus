@@ -38,6 +38,7 @@ import TaskList from "../components/tasks/TaskList";
 import ProgressPie from "../components/tasks/ProgressPie";
 import { DeadlinePicker } from "../components/tasks/TaskPickers";
 import TaskRow from "../components/tasks/TaskRow";
+import CompletedSection from "../components/tasks/CompletedSection";
 import type { Todo } from "../types/todo-types";
 
 const TaskNotes = lazy(() => import("../components/tasks/TaskNotes"));
@@ -90,7 +91,7 @@ export function LogbookPage() {
 
   return (
     <>
-      <ListHeader icon={<BookCheck className="h-6 w-6 text-rating" />} title="Logbook" subtitle="Everything you've finished." />
+      <ListHeader icon={<BookCheck className="h-6 w-6 text-rating" />} title="Completed" subtitle="Everything you've finished, newest first. Tick a task again to reopen it." />
       {logbook.projects.length > 0 && (
         <section className="mb-6">
           <h2 className="mb-1 border-b border-border pb-1.5 text-sm text-muted-foreground">Projects</h2>
@@ -163,7 +164,7 @@ export function ProjectPage() {
   if (!project) {
     return data.loading ? null : (
       <p className="py-10 text-center text-muted-foreground">
-        This project is done or gone. <Link to="/todos/logbook" className="underline">Logbook</Link>
+        This project is done or gone. <Link to="/todos/completed" className="underline">Completed</Link>
       </p>
     );
   }
@@ -333,6 +334,8 @@ export function ProjectPage() {
         </p>
       )}
 
+      <CompletedSection data={data} scope={{ projectId: project._id }} />
+
       <ConfirmDialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
@@ -447,6 +450,7 @@ export function AreaPage() {
 
       <NewTaskInput defaults={{ areaId: area._id }} projects={data.projects} areas={data.areas} onCreate={data.createTodo} />
       <TaskList todos={tasks} context={context} onReorder={data.reorderTodos} />
+      <CompletedSection data={data} scope={{ areaId: area._id }} />
 
       <ConfirmDialog
         open={confirmDelete}

@@ -1,21 +1,20 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ChevronDown, Flame, PlayCircle, Plus } from "lucide-react";
+import { ChevronDown, PlayCircle, Plus, Sprout } from "lucide-react";
 import { Button } from "@components/ui/button";
 import EmptyState from "@components/feedback/EmptyState";
 import { useLocalStorage } from "@lib/hooks/useLocalStorage";
 import { cn } from "@lib/utils";
+import FocusTimer from "@features/focus/components/FocusTimer";
 import { useHabitCompletions, usePausedTodos, useTodos } from "../hooks/useTodos";
-import { recentCycles } from "../habit-dots";
-import { Heatmap } from "@components/ui/heatmap";
-import TodoItem from "../components/TodoItem";
+import { describeCycle, recentCycles, type Cycle } from "../habit-dots";
 import TaskModal, { type TaskSubmitValues } from "../components/TaskModal";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import TodoHistoryDialog from "../components/TodoHistoryDialog";
 import QuickAddInput from "../components/QuickAddInput";
 import SortableTodoList from "../components/SortableTodoList";
-import { compareSectionTodos, isOverdue } from "../due";
+import { compareSectionTodos, toDayKey } from "../due";
 import type { RecurrenceType, Todo } from "../types/todo-types";
 
 type ModalState =
@@ -25,34 +24,35 @@ type ModalState =
   | { type: "delete"; task: Todo }
   | { type: "history"; task: Todo };
 
-const SECTIONS: Array<{ key: RecurrenceType; title: string; quickAdd: string }> = [
+type HabitCadence = Exclude<RecurrenceType, "none">;
+
+const SECTIONS: Array<{ key: HabitCadence; title: string; quickAdd: string }> = [
   { key: "daily", title: "Daily", quickAdd: "daily" },
   { key: "weekly", title: "This week", quickAdd: "weekly" },
   { key: "monthly", title: "This month", quickAdd: "monthly" },
 ];
 
-/** Columns of the consistency heatmap; fits the side panel. */
-const CONSISTENCY_WEEKS = 16;
-
-/** How long a finished one-time task stays visible in its section. */
-const RECENT_DONE_DAYS = 7;
+/** Enough history for six weeks or six months of dots. */
+const HISTORY_DAYS = 190;
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
 
-const byLastCompleted = (a: Todo, b: Todo) =>
-  new Date(b.lastCompletedAt ?? 0).getTime() - new Date(a.lastCompletedAt ?? 0).getTime();
+const DOT_STYLES: Record<Cycle["state"], string> = {
+  done: "bg-rating",
+  skipped: "border border-dashed border-muted-foreground/70",
+  open: "bg-secondary",
+  future: "border border-border",
+};
 
-interface SectionData {
-  open: Todo[];
-  done: Todo[];
-  /** One-time tasks finished more than a week ago. */
-  olderDone: Todo[];
-}
-
-/** Keeps rows without a drag grip aligned with the sortable rows above them. */
-function HandleSpacer() {
-  return <span aria-hidden className="-ml-1.5 mr-0.5 w-5 shrink-0" />;
+function CycleDots({ cycles }: { cycles: Cycle[] }) {
+  return (
+    <span className="hidden items-center gap-[3px] sm:flex" aria-label="Recent history">
+      {cycles.map((cycle) => (
+        <span key={cycle.key} title={describeCycle(cycle)} className={cn("h-2 w-2 rounded-full", DOT_STYLES[cycle.state])} />
+      ))}
+    </span>
+  );
 }
 
 function ProgressBar({ done, total }: { done: number; total: number }) {
@@ -61,16 +61,30 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
     <span className="flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
       {done}/{total}
       <span className="h-1.5 w-14 overflow-hidden rounded-full bg-secondary">
-        <span
-          className={cn("block h-full rounded-full", done === total ? "bg-success" : "bg-rating")}
-          style={{ width: `${(done / total) * 100}%` }}
-        />
+        <span className="block h-full rounded-full bg-rating" style={{ width: `${(done / total) * 100}%` }} />
       </span>
     </span>
   );
 }
 
-/** Habits: daily, weekly and monthly routines with streaks and timers. Tasks live in the lists. */
+/**
+ * Whether a habit is expected today, for the day's tally: every-day habits
+ * are; a few-days-a-week habit only counts once it's done, so rest days never
+ * read as misses. Skipped habits are out of the tally.
+ */
+const countsToday = (todo: Todo) => !todo.skipped && (!todo.perWeek || todo.completed);
+
+/** This week's check-ins (Monday to today), across habits, from completion days. */
+const weekCheckIns = (habits: Array<{ days: string[] }>, now: Date) => {
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const from = toDayKey(monday);
+  return habits.reduce((sum, habit) => sum + habit.days.filter((day) => day >= from).length, 0);
+};
+
+/**
+ * Habits: daily, weekly and monthly routines, in your own order. No streaks to
+ * protect: rest days are skips, and the week starts fresh every Monday.
+ */
 function HabitsPage() {
   const navigate = useNavigate();
   const {
@@ -80,6 +94,7 @@ function HabitsPage() {
     createTodo,
     updateTodo,
     toggleTodo,
+    skipTodo,
     reorderTodos,
     timerAction,
     pauseTodo,
@@ -87,7 +102,7 @@ function HabitsPage() {
   } = useTodos();
   const { pausedTodos, resumeTodo } = usePausedTodos();
   const todos = useMemo(() => allTodos.filter((todo) => todo.recurrenceType !== "none"), [allTodos]);
-  const { data: completions, loading: completionsLoading } = useHabitCompletions(CONSISTENCY_WEEKS * 7 + 7);
+  const { data: completions } = useHabitCompletions(HISTORY_DAYS);
   const daysByHabit = useMemo(
     () => new Map((completions?.habits ?? []).map((habit) => [habit.todoId, new Set(habit.days)])),
     [completions],
@@ -95,33 +110,25 @@ function HabitsPage() {
 
   const [modal, setModal] = useState<ModalState>({ type: "none" });
   const [collapsed, setCollapsed] = useLocalStorage<string[]>("todo-collapsed", [], isStringArray);
-  const [showOlder, setShowOlder] = useState(false);
   const [pausedOpen, setPausedOpen] = useState(false);
-  const [now] = useState(() => new Date());
+  const now = useMemo(() => new Date(), []);
 
-
+  // One list per section in the user's order; done and skipped habits stay in place.
   const sections = useMemo(() => {
-    const cutoff = now.getTime() - RECENT_DONE_DAYS * 86_400_000;
-    const result = {} as Record<RecurrenceType, SectionData>;
+    const result = {} as Record<HabitCadence, Todo[]>;
     for (const { key } of SECTIONS) {
-      const items = todos.filter((todo) => todo.recurrenceType === key);
-      const done = items.filter((todo) => todo.completed).sort(byLastCompleted);
-      const isOld = (todo: Todo) =>
-        key === "none" && new Date(todo.lastCompletedAt ?? 0).getTime() < cutoff;
-      result[key] = {
-        open: items.filter((todo) => !todo.completed).sort(compareSectionTodos),
-        done: done.filter((todo) => !isOld(todo)),
-        olderDone: done.filter(isOld),
-      };
+      result[key] = todos.filter((todo) => todo.recurrenceType === key).sort(compareSectionTodos);
     }
     return result;
-  }, [todos, now]);
+  }, [todos]);
 
-  const daily = sections.daily;
-  const topStreaks = todos
-    .filter((todo) => (todo.streak?.current ?? 0) > 0)
-    .sort((a, b) => (b.streak?.current ?? 0) - (a.streak?.current ?? 0))
-    .slice(0, 5);
+  const habitIds = new Set(todos.map((todo) => todo._id));
+  const checkIns = weekCheckIns(
+    (completions?.habits ?? []).filter((habit) => habitIds.has(habit.todoId)),
+    now,
+  );
+  const restDays = todos.filter((todo) => todo.skipped).length;
+  const flexible = todos.filter((todo) => todo.recurrenceType === "daily" && todo.perWeek);
 
   const toggleCollapsed = (key: string) =>
     setCollapsed(collapsed.includes(key) ? collapsed.filter((k) => k !== key) : [...collapsed, key]);
@@ -129,6 +136,7 @@ function HabitsPage() {
   const itemHandlers = {
     onToggle: toggleTodo,
     onTimer: timerAction,
+    onSkip: skipTodo,
     onRename: (id: string, text: string) => {
       void updateTodo(id, { text }).catch(() => undefined);
     },
@@ -136,55 +144,43 @@ function HabitsPage() {
     onDelete: (task: Todo) => setModal({ type: "delete", task }),
     onHistory: (task: Todo) => setModal({ type: "history", task }),
     onPause: pauseTodo,
-    renderTrailing: (task: Todo) => {
-      if (task.recurrenceType === "none") return null;
-      const cycles = recentCycles(task.recurrenceType, daysByHabit.get(task._id) ?? new Set());
-      return (
-        <span className="hidden items-center gap-[3px] sm:flex" aria-label="Recent history">
-          {cycles.map((cycle) => (
-            <span
-              key={cycle.key}
-              title={`${cycle.label}: ${cycle.done ? "done" : "missed"}`}
-              className={cn("h-2 w-2 rounded-full", cycle.done ? "bg-rating" : "bg-secondary")}
-            />
-          ))}
-        </span>
-      );
-    },
+    renderTrailing: (task: Todo) =>
+      task.recurrenceType === "none" ? null : (
+        <CycleDots cycles={recentCycles(task.recurrenceType, daysByHabit.get(task._id) ?? new Set(), task.skips)} />
+      ),
     onConvert: (task: Todo) => {
       void convertTodo(task._id, "task").then((converted) =>
         toast(`“${task.text}” now repeats as a task`, {
           action: {
             label: "Open",
-            onClick: () => navigate(converted.when && converted.when <= new Date().toISOString().slice(0, 10) ? "/todos/today" : "/todos/upcoming"),
+            onClick: () =>
+              navigate(converted.when && converted.when <= toDayKey(new Date()) ? "/todos/today" : "/todos/upcoming"),
           },
         }),
       );
     },
   };
 
-  const submitNew = (values: TaskSubmitValues) =>
-    createTodo({ ...values, dueDate: values.dueDate ?? undefined });
+  const submitNew = (values: TaskSubmitValues) => createTodo({ ...values, dueDate: undefined });
 
-  const summary = [
-    daily.open.length + daily.done.length > 0
-      ? `${daily.done.length} of ${daily.open.length + daily.done.length} daily habits done`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const daily = sections.daily.filter(countsToday);
+  const dailyDone = daily.filter((todo) => todo.completed).length;
+  const summary =
+    daily.length > 0
+      ? dailyDone === daily.length
+        ? "Everything for today is done."
+        : `${dailyDone} of ${daily.length} done today`
+      : null;
 
   return (
     <>
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4 pt-2 sm:pt-6">
         <div>
           <h1 className="flex items-center gap-3 page-title">
-            <Flame className="h-8 w-8 text-streak" />
+            <Sprout className="h-8 w-8 text-rating" />
             Habits
           </h1>
-          {!loading && summary && (
-            <p className="mt-3 font-serif text-lg text-soft sm:text-xl">{summary}</p>
-          )}
+          {!loading && summary && <p className="mt-3 font-serif text-lg text-soft sm:text-xl">{summary}</p>}
         </div>
         <Button onClick={() => setModal({ type: "new" })} title="New habit">
           <Plus className="h-4 w-4" />
@@ -204,18 +200,18 @@ function HabitsPage() {
         </div>
       ) : todos.length === 0 && pausedTodos.length === 0 ? (
         <EmptyState
-          icon={Flame}
+          icon={Sprout}
           message="No habits yet."
           action={{ label: "Create a habit", onClick: () => setModal({ type: "new" }) }}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-14">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
           <div className="space-y-12">
             {SECTIONS.map(({ key, title, quickAdd }) => {
-              const data = sections[key];
+              const items = sections[key];
               const isCollapsed = collapsed.includes(key);
-              const total = data.open.length + data.done.length;
-              const sectionOverdue = data.open.filter((todo) => isOverdue(todo, now)).length;
+              const tallied = items.filter(countsToday);
+              const done = tallied.filter((todo) => todo.completed).length;
 
               return (
                 <section key={key}>
@@ -226,116 +222,63 @@ function HabitsPage() {
                     className="mb-3 flex w-full items-center gap-3 rounded-xl py-1 text-left"
                   >
                     <h2 className="section-title">{title}</h2>
-                    {/* Sections with a progress bar already show done/total. */}
-                    {key === "none" && (
-                      <span className="text-[13px] tabular-nums text-muted-foreground">
-                        {data.open.length || ""}
-                      </span>
-                    )}
                     <ChevronDown
-                      className={cn(
-                        "h-4 w-4 text-muted-foreground transition-transform",
-                        isCollapsed && "-rotate-90",
-                      )}
+                      className={cn("h-4 w-4 text-muted-foreground transition-transform", isCollapsed && "-rotate-90")}
                     />
-                    {sectionOverdue > 0 && (
-                      <span className="rounded-full bg-destructive/15 px-1.5 py-0.5 text-[10px] font-medium text-destructive">
-                        {sectionOverdue} overdue
-                      </span>
-                    )}
                     <span className="ml-auto">
-                      {key !== "none" && <ProgressBar done={data.done.length} total={total} />}
+                      <ProgressBar done={done} total={tallied.length} />
                     </span>
                   </button>
 
                   {!isCollapsed && (
                     <div className="border-b border-border">
-                      <SortableTodoList
-                        todos={data.open}
-                        onReorder={reorderTodos}
-                        {...itemHandlers}
-                      />
+                      <SortableTodoList todos={items} onReorder={reorderTodos} {...itemHandlers} />
                       <QuickAddInput recurrenceType={key} label={quickAdd} onCreate={createTodo} />
-
-                      {data.done.length > 0 && (
-                        <div className="opacity-75">
-                          {data.done.map((todo) => (
-                            <div key={todo._id} className="border-t border-border py-0.5">
-                              <div className="-mx-3">
-                                <TodoItem todo={todo} {...itemHandlers} handle={<HandleSpacer />} />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {data.olderDone.length > 0 && (
-                        <>
-                          {showOlder && (
-                            <div className="opacity-60">
-                              {data.olderDone.map((todo) => (
-                                <div key={todo._id} className="border-t border-border py-0.5">
-                                  <div className="-mx-3">
-                                    <TodoItem todo={todo} {...itemHandlers} handle={<HandleSpacer />} />
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setShowOlder((on) => !on)}
-                            className="block border-t border-border py-3 text-[13px] text-muted-foreground hover:text-foreground"
-                          >
-                            {showOlder
-                              ? "Hide older completed tasks"
-                              : `Show ${data.olderDone.length} completed over ${RECENT_DONE_DAYS} days ago`}
-                          </button>
-                        </>
-                      )}
                     </div>
                   )}
                 </section>
               );
             })}
+            <p className="text-xs text-muted-foreground">
+              Drag the grip to reorder. To rest a day, open a habit's menu and choose Skip: it won't count as missed.
+            </p>
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
             <div className="panel p-6">
-              <h2 className="eyebrow mb-4">Consistency</h2>
-              <Heatmap
-                days={completions?.totals}
-                weeks={CONSISTENCY_WEEKS}
-                loading={completionsLoading}
-                describe={(count) => (count ? `${count} habit${count === 1 ? "" : "s"} done` : "nothing done")}
-              />
-            </div>
-            <div className="panel p-6">
-              <h2 className="eyebrow mb-4">Streaks</h2>
-              {topStreaks.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No running streaks. Tick a habit to start one.
-                </p>
-              ) : (
-                <ul className="space-y-3">
-                  {topStreaks.map((todo) => (
-                    <li key={todo._id}>
-                      <button
-                        type="button"
-                        onClick={() => setModal({ type: "history", task: todo })}
-                        className="flex w-full items-center justify-between gap-3 text-left hover:text-foreground"
-                      >
+              <h2 className="eyebrow mb-3">This week</h2>
+              <p className="font-serif text-4xl leading-none tabular-nums text-foreground">{checkIns}</p>
+              <p className="mt-2 text-sm text-soft">
+                {checkIns === 1 ? "check-in so far" : "check-ins so far"}
+                {restDays > 0 ? ` · ${restDays} resting today` : ""}
+              </p>
+              {flexible.length > 0 && (
+                <ul className="mt-5 space-y-2.5 border-t border-border pt-4">
+                  {flexible.map((todo) => {
+                    const target = todo.perWeek ?? 7;
+                    const count = Math.min(todo.thisWeek ?? 0, target);
+                    return (
+                      <li key={todo._id} className="flex items-center justify-between gap-3">
                         <span className="truncate font-serif text-lg text-foreground">{todo.text}</span>
-                        <span className="flex shrink-0 items-center gap-1 text-xs tabular-nums text-streak">
-                          <Flame className="h-3.5 w-3.5" />
-                          {todo.streak?.current}
-                          <span className="text-muted-foreground">/ {todo.streak?.best}</span>
+                        <span className="flex shrink-0 items-center gap-2 text-xs tabular-nums text-muted-foreground">
+                          <span className="flex gap-[3px]">
+                            {Array.from({ length: target }, (_, index) => (
+                              <span
+                                key={index}
+                                className={cn("h-2 w-2 rounded-full", index < count ? "bg-rating" : "bg-secondary")}
+                              />
+                            ))}
+                          </span>
+                          {count}/{target}
                         </span>
-                      </button>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
+
+            <FocusTimer />
 
             {pausedTodos.length > 0 && (
               <div className="panel">
@@ -348,10 +291,7 @@ function HabitsPage() {
                   <h2 className="eyebrow">Paused</h2>
                   <span className="text-xs text-muted-foreground">{pausedTodos.length}</span>
                   <ChevronDown
-                    className={cn(
-                      "ml-auto h-4 w-4 text-muted-foreground transition-transform",
-                      !pausedOpen && "-rotate-90",
-                    )}
+                    className={cn("ml-auto h-4 w-4 text-muted-foreground transition-transform", !pausedOpen && "-rotate-90")}
                   />
                 </button>
                 {pausedOpen && (
@@ -360,10 +300,7 @@ function HabitsPage() {
                       <li key={todo._id} className="flex items-center justify-between gap-2 py-1">
                         <span className="min-w-0">
                           <span className="block truncate font-serif text-lg text-foreground">{todo.text}</span>
-                          <span className="text-xs capitalize text-muted-foreground">
-                            {todo.recurrenceType}
-                            {todo.streak && todo.streak.best > 0 && ` · best ${todo.streak.best}`}
-                          </span>
+                          <span className="text-xs capitalize text-muted-foreground">{todo.recurrenceType}</span>
                         </span>
                         <button
                           type="button"
@@ -394,7 +331,9 @@ function HabitsPage() {
         onClose={() => setModal({ type: "none" })}
         task={modal.type === "edit" ? modal.task : null}
         onSubmit={(values) =>
-          modal.type === "edit" ? updateTodo(modal.task._id, values) : Promise.resolve()
+          modal.type === "edit"
+            ? updateTodo(modal.task._id, { ...values, dueDate: undefined })
+            : Promise.resolve()
         }
       />
       <DeleteConfirmModal
@@ -406,10 +345,7 @@ function HabitsPage() {
           setModal({ type: "none" });
         }}
       />
-      <TodoHistoryDialog
-        todo={modal.type === "history" ? modal.task : null}
-        onClose={() => setModal({ type: "none" })}
-      />
+      <TodoHistoryDialog todo={modal.type === "history" ? modal.task : null} onClose={() => setModal({ type: "none" })} />
     </>
   );
 }

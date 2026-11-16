@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, ImageIcon, NotebookPen, Pause, Play, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@clerk/clerk-react";
@@ -16,7 +16,8 @@ import { useEvents } from "@features/calendar/hooks/useCalendar";
 import { COLOR_VARS } from "@features/calendar/types/calendar-types";
 import { formatTime } from "@features/calendar/calendar-dates";
 import { toDayKey } from "@features/todos/due";
-import { compareOpenTodos, isOverdue } from "@features/todos/due";
+import { compareSectionTodos, isOverdue } from "@features/todos/due";
+import FocusTimer from "@features/focus/components/FocusTimer";
 import { timerElapsedMs, type TimerAction, type Todo } from "@features/todos/types/todo-types";
 import { useMediaLogs } from "@features/media/hooks/useMediaLogs";
 import { configForType } from "@features/media/media-config";
@@ -129,6 +130,19 @@ function NowCard({
   );
 }
 
+/** The time, beside the date. Its own component so only it re-renders every second. */
+function Clock() {
+  const now = new Date(useNow(true, 1_000));
+  return (
+    <time
+      dateTime={now.toISOString()}
+      className="font-sans text-sm normal-case tracking-normal tabular-nums text-soft"
+    >
+      {now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
+    </time>
+  );
+}
+
 /** One daily habit as a tappable pill. */
 function HabitPill({
   todo,
@@ -142,7 +156,8 @@ function HabitPill({
   const running = isRunning(todo);
   const now = useNow(running);
   const isTimer = todo.interactionType === "timer";
-  const streak = todo.streak?.current ?? 0;
+  const skipped = Boolean(todo.skipped) && !todo.completed;
+  const weekly = todo.perWeek && todo.recurrenceType === "daily" ? todo.perWeek : null;
 
   const activate = () => {
     if (isTimer && !todo.completed) onTimer(todo._id, running ? "pause" : "start");
@@ -151,6 +166,8 @@ function HabitPill({
 
   const label = todo.completed
     ? `${todo.text}, done. Tap to undo`
+    : skipped
+      ? `${todo.text}, resting today. Tap to mark done`
     : isTimer
       ? `${running ? "Pause" : "Start"} ${todo.text}`
       : `Mark ${todo.text} done`;
@@ -165,7 +182,9 @@ function HabitPill({
         "flex h-11 max-w-full items-center gap-2 rounded-full border px-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         todo.completed
           ? "border-raised bg-raised text-soft"
-          : running
+          : skipped
+            ? "border-dashed border-border text-muted-foreground"
+            : running
             ? "border-rating/60 bg-rating/10 text-foreground"
             : "border-border bg-card text-foreground hover:border-muted-foreground/60",
       )}
@@ -190,8 +209,12 @@ function HabitPill({
             ? `${formatClock(todo.timer?.elapsedMs ?? 0)} / ${todo.durationGoal}m`
             : `${todo.durationGoal}m`}
         </span>
-      ) : streak > 0 ? (
-        <span className={todo.completed ? "" : "text-muted-foreground"}>· {streak}</span>
+      ) : skipped ? (
+        <span className="text-xs">rest</span>
+      ) : weekly ? (
+        <span className="text-xs tabular-nums text-muted-foreground">
+          {Math.min(todo.thisWeek ?? 0, weekly)}/{weekly}
+        </span>
       ) : null}
     </button>
   );
@@ -204,6 +227,11 @@ function HabitPill({
  */
 function TodayPage() {
   const navigate = useNavigate();
+  const { hash } = useLocation();
+  // The header's timer pill links to #focus.
+  useEffect(() => {
+    if (hash === "#focus") document.getElementById("focus")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [hash]);
   const { user } = useUser();
   // Ticks every 30 s, so the date, greeting and lists roll over at midnight.
   const liveNow = useNow(true, 30_000);
@@ -219,20 +247,20 @@ function TodayPage() {
   const todayKeyValue = toDayKey(now);
   const { events: agenda, loading: agendaLoading } = useEvents(todayKeyValue, todayKeyValue);
 
+  // Habits keep the order set on the Habits page.
   const daily = useMemo(
-    () =>
-      todos
-        .filter((todo) => todo.recurrenceType === "daily")
-        .sort((a, b) => Number(a.completed) - Number(b.completed) || compareOpenTodos(a, b)),
+    () => todos.filter((todo) => todo.recurrenceType === "daily").sort(compareSectionTodos),
     [todos],
   );
-  const dailyDone = daily.filter((todo) => todo.completed).length;
+  // The day's tally: rest days and flexible habits not done today don't count against it.
+  const tallied = daily.filter((todo) => !todo.skipped && (!todo.perWeek || todo.completed));
+  const dailyDone = tallied.filter((todo) => todo.completed).length;
   // The week's and month's habits sit with the daily ones, not in the task list.
   const periodic = useMemo(
     () =>
       todos
         .filter((todo) => todo.recurrenceType === "weekly" || todo.recurrenceType === "monthly")
-        .sort((a, b) => Number(a.completed) - Number(b.completed) || compareOpenTodos(a, b)),
+        .sort((a, b) => a.recurrenceType.localeCompare(b.recurrenceType) * -1 || compareSectionTodos(a, b)),
     [todos],
   );
   const running = todos.find(isRunning) ?? null;
@@ -263,8 +291,8 @@ function TodayPage() {
       );
     }
     const parts: string[] = [];
-    const habitsLeft = daily.length - dailyDone;
-    if (daily.length > 0) {
+    const habitsLeft = tallied.length - dailyDone;
+    if (tallied.length > 0) {
       parts.push(
         habitsLeft === 0
           ? "every habit is done"
@@ -279,7 +307,7 @@ function TodayPage() {
     }
     if (parts.length > 0) sentences.push(`${capitalize(listJoin(parts))}.`);
     return sentences.join(" ") || "A blank page. Add a habit or a task to get going.";
-  }, [todosLoading, running, liveNow, daily.length, dailyDone, overdue, workouts]);
+  }, [todosLoading, running, liveNow, tallied.length, dailyDone, overdue, workouts]);
 
   const openNewNote = async () => {
     try {
@@ -293,8 +321,9 @@ function TodayPage() {
   return (
     <div className="mx-auto flex max-w-[760px] flex-col gap-12 sm:gap-14">
       <header className="pt-2 sm:pt-6">
-        <p className="eyebrow">
-          {now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
+        <p className="eyebrow flex flex-wrap items-baseline gap-x-3">
+          <span>{now.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}</span>
+          <Clock />
         </p>
         <h1 className="mt-4 font-serif text-[2.75rem] font-normal leading-[1.02] sm:text-[4.25rem]">
           {greeting(now.getHours())}
@@ -323,9 +352,9 @@ function TodayPage() {
           aside={
             !todosLoading && (
               <span className="flex items-center gap-4">
-                {daily.length > 0 && (
+                {tallied.length > 0 && (
                   <span className="text-[13px] tabular-nums text-muted-foreground">
-                    {dailyDone} of {daily.length}
+                    {dailyDone} of {tallied.length}
                   </span>
                 )}
                 <AsideLink to="/habits">All habits</AsideLink>
@@ -362,6 +391,10 @@ function TodayPage() {
           )}
         </Section>
       )}
+
+      <div id="focus" className="scroll-mt-28">
+        <FocusTimer />
+      </div>
 
       {!agendaLoading && agenda.length > 0 && (
         <Section title="Agenda" aside={<AsideLink to="/calendar?view=day">Calendar</AsideLink>}>

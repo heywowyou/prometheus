@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Flame } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { relativeDate } from "@lib/date/relative";
 import { nextRoutine } from "../workout-format";
 import { useStartSession, useWorkoutSummary } from "../hooks/useWorkouts";
@@ -34,7 +34,7 @@ function WorkoutsTodayCard() {
     );
   }
 
-  const { thisWeek, streak, lastSession, routines } = summary;
+  const { thisWeek, lastSession, routines } = summary;
   const next = nextRoutine(summary);
   const others = routines.filter((routine) => routine._id !== next?._id);
 
@@ -80,15 +80,7 @@ function WorkoutsTodayCard() {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-rating-foreground/15 pt-4 text-[13px]">
-        <span>
-          {thisWeek} this week
-          {streak.current > 1 && (
-            <span className="ml-2 inline-flex items-center gap-1">
-              <Flame className="h-3.5 w-3.5" />
-              {streak.current} week streak
-            </span>
-          )}
-        </span>
+        <span>{thisWeek} this week</span>
         {others.length > 0 && (
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:ml-auto">
             <span className="opacity-80">or start</span>

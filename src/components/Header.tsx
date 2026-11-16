@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/u
 import { DEFAULT_ROUTE, MORE_ITEMS, NAV_ITEMS, PHONE_TABS } from "@app/navigation";
 import { useCommandPalette } from "@app/command-palette";
 import { cn } from "@lib/utils";
+import FocusPill from "@features/focus/components/FocusPill";
 
 /** The serif wordmark, also the way home. */
 export function Wordmark({ className }: { className?: string }) {
@@ -142,6 +143,7 @@ function Header({ wide = false }: { wide?: boolean }) {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <FocusPill />
             <SearchButton />
             <ProfileLink />
           </div>

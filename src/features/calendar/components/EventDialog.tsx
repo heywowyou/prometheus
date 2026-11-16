@@ -7,6 +7,7 @@ import { cn } from "@lib/utils";
 import { toDayKey } from "@features/todos/due";
 import { addDaysKey, hhmm, minutesFromHhmm, minutesOfDay, parseDay } from "../calendar-dates";
 import {
+  COLOR_NAMES,
   COLOR_VARS,
   EVENT_COLORS,
   REMIND_OPTIONS,
@@ -369,7 +370,8 @@ function EventForm({
             type="button"
             role="radio"
             aria-checked={form.color === color}
-            aria-label={color}
+            aria-label={COLOR_NAMES[color]}
+            title={COLOR_NAMES[color]}
             onClick={() => set({ color })}
             className={cn(
               "h-6 w-6 rounded-full border-2 transition-transform",

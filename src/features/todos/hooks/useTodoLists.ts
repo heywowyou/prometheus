@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryKeys } from "@lib/query/keys";
-import { useTodosApi, type ProjectPayload } from "../api/todos-api";
+import { useTodosApi, type LogbookScope, type ProjectPayload } from "../api/todos-api";
 import type { TodoArea, TodoLists, TodoProject } from "../types/todo-types";
 
 const EMPTY: TodoLists = { areas: [], projects: [] };
@@ -126,11 +126,12 @@ export const useTodoLists = () => {
 };
 
 /** Done tasks and projects, newest first, a page at a time. */
-export const useLogbook = () => {
+export const useLogbook = (scope: LogbookScope = {}, enabled = true) => {
   const api = useTodosApi();
   const query = useInfiniteQuery({
-    queryKey: queryKeys.todos.logbook(),
-    queryFn: ({ pageParam }) => api.fetchLogbook(pageParam),
+    queryKey: [...queryKeys.todos.logbook(), scope],
+    queryFn: ({ pageParam }) => api.fetchLogbook(pageParam, scope),
+    enabled,
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => {
       const last = page.tasks.at(-1);

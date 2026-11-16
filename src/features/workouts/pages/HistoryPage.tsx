@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { CalendarCheck, Flame, History, Trophy } from "lucide-react";
+import { CalendarCheck, CalendarDays, CalendarRange, History } from "lucide-react";
 import { Button } from "@components/ui/button";
 import EmptyState from "@components/feedback/EmptyState";
-import { Heatmap, heatmapDays } from "@components/ui/heatmap";
+import { Heatmap, dayKey, heatmapDays } from "@components/ui/heatmap";
 import { formatDuration } from "@lib/date/duration";
 import { useSessionHistory, useWorkoutHistory } from "../hooks/useWorkouts";
 import { formatSessionDate, formatVolume } from "../workout-format";
@@ -44,25 +44,21 @@ function SessionRow({ session }: { session: WorkoutSession }) {
   );
 }
 
-/** `/workouts/history`: training calendar, weekly streak, past workouts. */
+/** `/workouts/history`: training calendar, counts, past workouts. */
 function HistoryPage() {
   const { history, loading: historyLoading } = useWorkoutHistory(heatmapDays(WEEKS));
   const { sessions, loading, hasMore, loadMore, loadingMore } = useSessionHistory();
 
+  // What was done, never what was missed: no streaks to protect.
+  const now = new Date();
+  const monday = dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)));
+  const firstOfMonth = dayKey(new Date(now.getFullYear(), now.getMonth(), 1));
+  const since = (from: string) =>
+    (history?.days ?? []).reduce((sum, day) => (day.date >= from ? sum + day.count : sum), 0);
   const stats = [
-    {
-      icon: Flame,
-      label: "Week streak",
-      short: "Streak",
-      value: history ? plural(history.streak.current, "week") : "–",
-    },
-    {
-      icon: Trophy,
-      label: "Best streak",
-      short: "Best",
-      value: history ? plural(history.streak.best, "week") : "–",
-    },
-    { icon: CalendarCheck, label: "All-time", short: "Total", value: history ? String(history.total) : "–" },
+    { icon: CalendarDays, label: "This week", short: "Week", value: history ? String(since(monday)) : "-" },
+    { icon: CalendarRange, label: "This month", short: "Month", value: history ? String(since(firstOfMonth)) : "-" },
+    { icon: CalendarCheck, label: "All-time", short: "Total", value: history ? String(history.total) : "-" },
   ];
 
   return (

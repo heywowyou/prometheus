@@ -7,6 +7,7 @@ import PageLoader from "@components/feedback/PageLoader";
 import { cn } from "@lib/utils";
 import { isWidePath } from "./navigation";
 import { CommandPaletteContext } from "./command-palette";
+import { useFocusAlerts } from "@features/focus/useFocusAlerts";
 
 /**
  * Layout for every signed-in route: header, the routed page, and the
@@ -18,6 +19,7 @@ import { CommandPaletteContext } from "./command-palette";
 function AppShell() {
   const { pathname } = useLocation();
   const wide = isWidePath(pathname);
+  useFocusAlerts();
   const [palette, setPalette] = useState<{ open: boolean; query: string }>({ open: false, query: "" });
 
   const open = useCallback((query = "") => setPalette({ open: true, query }), []);

@@ -1,16 +1,26 @@
 import type { RepeatUnit } from "@features/todos/types/todo-types";
 
-export const EVENT_COLORS = ["sage", "blue", "amber", "red", "orange", "violet"] as const;
+/** Calm hues, plus red for what is genuinely urgent. */
+export const EVENT_COLORS = ["sage", "teal", "blue", "sky", "stone", "red"] as const;
 export type EventColor = (typeof EVENT_COLORS)[number];
+
+export const COLOR_NAMES: Record<EventColor, string> = {
+  sage: "Sage",
+  teal: "Teal",
+  blue: "Blue",
+  sky: "Light blue",
+  stone: "Stone",
+  red: "Red (urgent)",
+};
 
 /** The CSS variable each event color draws with. */
 export const COLOR_VARS: Record<EventColor, string> = {
   sage: "var(--rating)",
+  teal: "var(--teal)",
   blue: "var(--info)",
-  amber: "var(--warning)",
+  sky: "var(--highlight)",
+  stone: "var(--stone)",
   red: "var(--destructive)",
-  orange: "var(--streak)",
-  violet: "var(--violet)",
 };
 
 export const REMIND_OPTIONS: Array<{ value: number | null; label: string }> = [

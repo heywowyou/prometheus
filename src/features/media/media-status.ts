@@ -38,7 +38,7 @@ export const STATUS_META: Record<MediaLogStatus, StatusMeta> = {
   in_progress: {
     label: "In progress",
     dateLabel: "Started",
-    badge: "border-warning/40 bg-warning/15 text-warning",
+    badge: "border-highlight/40 bg-highlight/15 text-highlight",
     rated: true,
   },
   planned: {

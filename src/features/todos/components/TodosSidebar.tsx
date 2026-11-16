@@ -175,19 +175,18 @@ export default function TodosSidebar({
         <div className="h-2" />
         <Row
           to="/todos/today"
-          icon={<Star className="h-4 w-4 fill-warning text-warning" />}
+          icon={<Star className="h-4 w-4 fill-highlight text-highlight" />}
           label="Today"
           count={overdueToday || todayOpen}
           countTone={overdueToday ? "danger" : undefined}
           onNavigate={onNavigate}
         />
-        <Row to="/todos/upcoming" icon={<CalendarDays className="h-4 w-4 text-destructive/80" />} label="Upcoming" onNavigate={onNavigate} />
+        <Row to="/todos/upcoming" icon={<CalendarDays className="h-4 w-4 text-info" />} label="Upcoming" onNavigate={onNavigate} />
         <Row to="/todos/anytime" icon={<Layers className="h-4 w-4 text-rating" />} label="Anytime" onNavigate={onNavigate} />
         {index.someday.length > 0 && (
           <Row to="/todos/someday" icon={<Archive className="h-4 w-4 text-muted-foreground" />} label="Someday" onNavigate={onNavigate} />
         )}
-        <div className="h-2" />
-        <Row to="/todos/logbook" icon={<BookCheck className="h-4 w-4 text-rating" />} label="Logbook" onNavigate={onNavigate} />
+        <Row to="/todos/completed" icon={<BookCheck className="h-4 w-4 text-rating" />} label="Completed" onNavigate={onNavigate} />
       </nav>
 
       {(looseProjects.length > 0 || areas.length > 0) && (

@@ -84,7 +84,8 @@ function App() {
               <Route path="upcoming" element={<TodoListPages.Upcoming />} />
               <Route path="anytime" element={<TodoListPages.Anytime />} />
               <Route path="someday" element={<TodoListPages.Someday />} />
-              <Route path="logbook" element={<TodoListPages.Logbook />} />
+              <Route path="completed" element={<TodoListPages.Logbook />} />
+              <Route path="logbook" element={<Navigate to="/todos/completed" replace />} />
               <Route path="habits" element={<Navigate to="/habits" replace />} />
               <Route path="projects/:id" element={<TodoListPages.Project />} />
               <Route path="areas/:id" element={<TodoListPages.Area />} />

@@ -12,8 +12,8 @@ const PHONE_LISTS = [
   { to: "/todos/inbox", label: "Inbox", icon: Inbox },
   { to: "/todos/upcoming", label: "Upcoming", icon: CalendarDays },
   { to: "/todos/anytime", label: "Anytime", icon: Layers },
+  { to: "/todos/completed", label: "Completed", icon: BookCheck },
   { to: "/todos/someday", label: "Someday", icon: Archive },
-  { to: "/todos/logbook", label: "Logbook", icon: BookCheck },
 ];
 
 const isTyping = (target: EventTarget | null) =>

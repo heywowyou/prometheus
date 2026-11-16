@@ -3,8 +3,8 @@ import {
   CalendarClock,
   CalendarDays,
   Check,
+  Coffee,
   Ellipsis,
-  Flame,
   PauseCircle,
   Pause,
   Pencil,
@@ -43,8 +43,8 @@ const RESET_LABELS: Record<RecurrenceType, string | null> = {
 
 const DUE_TONES: Record<DueTone, string> = {
   overdue: "text-destructive",
-  today: "text-warning",
-  soon: "text-rating",
+  today: "text-info",
+  soon: "text-soft",
   later: "text-muted-foreground",
 };
 
@@ -61,7 +61,9 @@ interface TodoItemProps {
   onHistory?: (todo: Todo) => void;
   /** Habits: turn into a repeating task (history kept). */
   onConvert?: (todo: Todo) => void;
-  /** Extra content before the streak (the Habits page's recent dots). */
+  /** Habits: skip this cycle (a rest day) or take the skip back. */
+  onSkip?: (id: string) => void;
+  /** Extra content at the row's end (the Habits page's week dots). */
   renderTrailing?: (todo: Todo) => ReactNode;
   /** A drag handle, rendered at the row's left edge when the list is sortable. */
   handle?: ReactNode;
@@ -77,9 +79,11 @@ function TodoItem({
   onPause,
   onHistory,
   onConvert,
+  onSkip,
   renderTrailing,
   handle,
 }: TodoItemProps) {
+  const skipped = Boolean(todo.skipped) && !todo.completed;
   const isRecurring = todo.recurrenceType !== "none";
   const isTimer = todo.interactionType === "timer" && Boolean(onTimer);
   const running = isTimer && Boolean(todo.timer?.startedAt) && !todo.completed;
@@ -88,7 +92,6 @@ function TodoItem({
   const goalMs = Math.max(1, todo.durationGoal) * 60_000;
   const elapsed = isTimer ? timerElapsedMs(todo, now) : 0;
   const fraction = Math.min(1, elapsed / goalMs);
-  const streak = todo.streak?.current ?? 0;
   const due = todo.dueDate && !isRecurring ? describeDue(todo.dueDate) : null;
 
   const [renaming, setRenaming] = useState(false);
@@ -131,10 +134,17 @@ function TodoItem({
   };
 
   const detail = (() => {
+    if (skipped) return todo.recurrenceType === "daily" ? "Rest day" : "Skipped this time";
     if (isTimer && !todo.completed && elapsed > 0) {
       return `${formatClock(elapsed)} / ${formatClock(goalMs)}`;
     }
-    return todo.durationGoal > 0 ? `${todo.durationGoal} min` : null;
+    const parts = [
+      todo.perWeek && todo.recurrenceType === "daily"
+        ? `${Math.min(todo.thisWeek ?? 0, todo.perWeek)} of ${todo.perWeek} this week`
+        : null,
+      todo.durationGoal > 0 ? `${todo.durationGoal} min` : null,
+    ].filter(Boolean);
+    return parts.length ? parts.join(" · ") : null;
   })();
 
   return (
@@ -194,12 +204,15 @@ function TodoItem({
               "ml-1.5 mr-[1.125rem] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-200 focus-visible:outline-none before:absolute before:-inset-2.5 relative",
               todo.completed
                 ? "border-raised bg-raised"
-                : due?.tone === "overdue"
+                : skipped
+                  ? "border-dashed border-muted-foreground/60"
+                  : due?.tone === "overdue"
                   ? "border-destructive group-hover:bg-destructive/15"
                   : "border-muted-foreground/70 group-hover:border-foreground",
             )}
           >
             {todo.completed && <Check className="h-3 w-3 text-foreground" strokeWidth={3} />}
+            {skipped && <span className="h-[1.5px] w-2 rounded-full bg-muted-foreground" />}
           </button>
         )}
 
@@ -225,7 +238,11 @@ function TodoItem({
               <span
                 className={cn(
                   "truncate font-serif text-[1.1875rem] leading-snug",
-                  todo.completed ? "text-muted-foreground line-through decoration-muted-foreground/60" : "text-foreground",
+                  todo.completed
+                    ? "text-muted-foreground line-through decoration-muted-foreground/60"
+                    : skipped
+                      ? "text-muted-foreground"
+                      : "text-foreground",
                 )}
               >
                 {todo.text}
@@ -250,16 +267,7 @@ function TodoItem({
 
           <span className="flex shrink-0 items-center gap-2">
             {renderTrailing?.(todo)}
-            {streak > 0 && (
-              <span
-                className="flex items-center text-xs font-medium tabular-nums text-streak"
-                title={`Streak ${streak} · best ${todo.streak?.best ?? streak} · ${todo.completionCount} total`}
-              >
-                <Flame className="mr-0.5 h-3.5 w-3.5" strokeWidth={2.5} />
-                {streak}
-              </span>
-            )}
-            {isRecurring && streak === 0 && (
+            {isRecurring && !renderTrailing && (
               <span
                 className="flex items-center text-muted-foreground/60"
                 title={RESET_LABELS[todo.recurrenceType] ?? undefined}
@@ -320,6 +328,12 @@ function TodoItem({
               <DropdownMenuItem onClick={() => onTimer(todo._id, "reset")}>
                 <RotateCcw className="mr-2 h-3.5 w-3.5" />
                 Reset timer
+              </DropdownMenuItem>
+            )}
+            {isRecurring && onSkip && !todo.completed && (
+              <DropdownMenuItem onClick={() => onSkip(todo._id)}>
+                <Coffee className="mr-2 h-3.5 w-3.5" />
+                {skipped ? "Undo skip" : todo.recurrenceType === "daily" ? "Skip today" : todo.recurrenceType === "weekly" ? "Skip this week" : "Skip this month"}
               </DropdownMenuItem>
             )}
             {isRecurring && onHistory && (

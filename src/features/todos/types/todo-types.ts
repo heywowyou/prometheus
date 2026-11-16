@@ -58,6 +58,14 @@ export interface Todo {
   timer?: TodoTimer;
   /** Recurring tasks only. */
   streak?: Streak;
+  /** Habits: the current cycle (day, week or month) was skipped on purpose. */
+  skipped?: boolean;
+  /** Habits: skipped cycles, by their first day `YYYY-MM-DD`. */
+  skips?: string[];
+  /** Daily habits: days a week to aim for (1-6); null or absent = every day. */
+  perWeek?: number | null;
+  /** Daily habits with `perWeek`: days done this week. */
+  thisWeek?: number;
   /** One-time tasks only: the day it's due, `YYYY-MM-DD`. */
   dueDate?: string | null;
   /** Manual position within its section, set by drag and drop. */
@@ -95,6 +103,8 @@ export type TimerAction = "start" | "pause" | "reset";
 
 export interface TodoHistory {
   streak: Streak;
+  /** Skipped cycles, by their first day. */
+  skips?: string[];
   total: number;
   /** Completions per local day (`YYYY-MM-DD`), only days with any. */
   days: Array<{ date: string; count: number }>;

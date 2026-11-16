@@ -46,7 +46,8 @@ function SortableRow({ todo, ...handlers }: ItemHandlers & { todo: Todo }) {
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        "relative border-t border-border py-0.5",
+        "relative border-t border-border py-0.5 transition-opacity",
+        (todo.completed || todo.skipped) && !isDragging && "opacity-70",
         isDragging && "z-20 rounded-2xl border-transparent bg-card shadow-xl shadow-overlay/50",
       )}
     >
@@ -74,7 +75,7 @@ function SortableRow({ todo, ...handlers }: ItemHandlers & { todo: Todo }) {
 }
 
 /**
- * A section's open tasks, reorderable by dragging the grip (mouse or touch),
+ * A section's tasks, reorderable by dragging the grip (mouse or touch),
  * or with the keyboard: focus the grip, Space to lift, arrows to move, Space
  * to drop, Escape to cancel.
  */

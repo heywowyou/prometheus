@@ -65,7 +65,7 @@ export default {
   			info: token('info'),
   			raised: token('raised'),
   			soft: token('soft-foreground'),
-  			streak: token('streak'),
+  			highlight: token('highlight'),
   			overlay: token('overlay'),
   			navbar: token('navbar'),
   			border: token('border'),

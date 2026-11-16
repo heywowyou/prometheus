@@ -147,7 +147,7 @@ export default function CalendarPage() {
     <>
       <div className="space-y-4">
         <header className="flex flex-wrap items-center gap-3 pt-1 sm:pt-4">
-          <CalendarDays className="hidden h-6 w-6 text-destructive/80 sm:block" />
+          <CalendarDays className="hidden h-6 w-6 text-info sm:block" />
           <h1 className="page-title mr-auto text-[2rem] sm:text-[2.5rem]">{title}</h1>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="sm" onClick={() => go({ date: todayKey() })} title="Today (T)">

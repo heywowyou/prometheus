@@ -70,7 +70,7 @@ export function WhenPicker({
       <PopoverContent align={align} className="w-72 p-2">
         <p className="px-2 pb-1 pt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">When</p>
         <PickerRow
-          icon={<Star className="h-4 w-4 fill-warning text-warning" />}
+          icon={<Star className="h-4 w-4 fill-highlight text-highlight" />}
           label="Today"
           active={value.when === today && !value.evening}
           onClick={() => pick({ when: today, evening: false, time: value.time })}

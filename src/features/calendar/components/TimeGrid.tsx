@@ -10,6 +10,7 @@ import {
   colorOf,
   dayItemsOn,
   layoutLanes,
+  spanBars,
   timedItemsOn,
   todayKey,
   type DayItem,
@@ -17,6 +18,7 @@ import {
 } from "../calendar-items";
 import type { CalendarOccurrence } from "../types/calendar-types";
 import type { EventDraft } from "./EventDialog";
+import SpanBarItem from "./SpanBarItem";
 
 const SNAP = 15;
 
@@ -48,21 +50,7 @@ type Drag =
 const snap = (minutes: number) => Math.max(0, Math.min(24 * 60, Math.round(minutes / SNAP) * SNAP));
 
 function AllDayChip({ item, handlers }: { item: DayItem; handlers: GridHandlers }) {
-  if (item.kind === "event") {
-    const color = colorOf(item.occurrence);
-    return (
-      <button
-        type="button"
-        draggable={false}
-        onClick={() => handlers.onOpenEvent(item.occurrence)}
-        className="block w-full truncate rounded-md px-1.5 py-0.5 text-left text-xs text-foreground"
-        style={{ background: `color-mix(in srgb, ${color} 28%, transparent)`, boxShadow: `inset 3px 0 0 ${color}` }}
-      >
-        {item.continues ? "↳ " : ""}
-        {item.occurrence.title || "Untitled"}
-      </button>
-    );
-  }
+  const overdue = item.deadline && !item.todo.completed && item.todo.dueDate !== undefined && item.todo.dueDate !== null && item.todo.dueDate < todayKey();
   return (
     <div
       draggable
@@ -70,12 +58,12 @@ function AllDayChip({ item, handlers }: { item: DayItem; handlers: GridHandlers 
       onClick={() => handlers.onOpenTask(item.todo)}
       className={cn(
         "flex w-full cursor-pointer items-center gap-1 truncate rounded-md border border-dashed px-1.5 py-0.5 text-xs",
-        item.deadline ? "border-destructive/50 text-destructive" : "border-border text-soft",
+        overdue ? "border-destructive/50 text-destructive" : "border-border text-soft",
         item.todo.completed && "line-through opacity-60",
       )}
     >
       {item.deadline ? (
-        <Flag className="h-3 w-3 shrink-0" />
+        <Flag className="h-3 w-3 shrink-0" aria-label="Deadline" />
       ) : (
         <button
           type="button"
@@ -115,6 +103,7 @@ export default function TimeGrid({
   const [dropTarget, setDropTarget] = useState<{ day: string; minutes: number | null } | null>(null);
   const now = useNow(true, 60_000);
   const today = todayKey();
+  const spans = spanBars(days, events);
 
   // Open around the morning, or an hour and a half before now when today is
   // shown during the day. Late at night the coming morning matters more.
@@ -308,36 +297,78 @@ export default function TimeGrid({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card/40">
-      {/* Day headers and the all-day row */}
+      {/* Day headers, then all-day and multi-day events as continuous bars, then untimed tasks. */}
       <div className="flex border-b border-border">
         <div className="w-12 shrink-0 sm:w-14" />
-        <div className="grid flex-1" style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}>
-          {days.map((day) => {
+        <div
+          className="relative grid flex-1"
+          style={{
+            gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+            gridTemplateRows: `auto ${spans.lanes > 0 ? `repeat(${spans.lanes}, auto)` : ""} auto`,
+          }}
+        >
+          {/* Day columns behind everything: borders, drop targets for untimed tasks. */}
+          {days.map((day, index) => (
+            <div
+              key={`bg-${day}`}
+              {...dropProps(day, true)}
+              className={cn(
+                "border-l border-border",
+                index === 0 && "border-l-0",
+                dropTarget?.day === day && dropTarget.minutes === null && "bg-rating/10",
+              )}
+              style={{ gridColumn: index + 1, gridRow: "1 / -1" }}
+            />
+          ))}
+          {days.map((day, index) => {
             const date = parseDay(day);
-            const items = dayItemsOn(day, events, todos);
             const isToday = day === today;
             return (
               <div
-                key={day}
-                {...dropProps(day, true)}
-                className={cn(
-                  "min-h-[3.25rem] space-y-0.5 border-l border-border px-1 pb-1.5 pt-1 first:border-l-0",
-                  dropTarget?.day === day && dropTarget.minutes === null && "bg-rating/10",
-                )}
+                key={`head-${day}`}
+                className="pointer-events-none flex items-baseline gap-1.5 px-1.5 pb-1.5 pt-1.5"
+                style={{ gridColumn: index + 1, gridRow: 1 }}
               >
-                <div className="flex items-baseline gap-1.5 px-0.5 pb-1">
-                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    {date.toLocaleDateString(undefined, { weekday: "short" })}
-                  </span>
-                  <span
-                    className={cn(
-                      "flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-sm tabular-nums",
-                      isToday ? "bg-rating font-semibold text-rating-foreground" : "text-foreground",
-                    )}
-                  >
-                    {date.getDate()}
-                  </span>
-                </div>
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {date.toLocaleDateString(undefined, { weekday: "short" })}
+                </span>
+                <span
+                  className={cn(
+                    "flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-sm tabular-nums",
+                    isToday ? "bg-rating font-semibold text-rating-foreground" : "text-foreground",
+                  )}
+                >
+                  {date.getDate()}
+                </span>
+              </div>
+            );
+          })}
+          {spans.lanes > 0 && (
+            <div
+              className="pointer-events-none grid gap-y-0.5 pb-1"
+              style={{
+                gridColumn: "1 / -1",
+                gridRow: `2 / span ${spans.lanes}`,
+                gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))`,
+                gridTemplateRows: `repeat(${spans.lanes}, auto)`,
+              }}
+            >
+              {spans.bars.map((bar) => (
+                <span key={bar.key} className="pointer-events-auto contents">
+                  <SpanBarItem bar={bar} onOpen={handlers.onOpenEvent} />
+                </span>
+              ))}
+            </div>
+          )}
+          {days.map((day, index) => {
+            const items = dayItemsOn(day, todos);
+            if (items.length === 0) return null;
+            return (
+              <div
+                key={`tasks-${day}`}
+                className="relative z-10 space-y-0.5 px-1 pb-1.5"
+                style={{ gridColumn: index + 1, gridRow: spans.lanes + 2 }}
+              >
                 {items.map((item) => (
                   <AllDayChip key={item.key} item={item} handlers={handlers} />
                 ))}
@@ -408,10 +439,10 @@ export default function TimeGrid({
                   )}
                   {isToday && (
                     <div
-                      className="pointer-events-none absolute inset-x-0 z-30 h-px bg-destructive"
+                      className="pointer-events-none absolute inset-x-0 z-30 h-px bg-highlight"
                       style={{ top: (minutesOfDay(new Date(now)) / 60) * HOUR_PX }}
                     >
-                      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-destructive" />
+                      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-highlight" />
                     </div>
                   )}
                 </div>

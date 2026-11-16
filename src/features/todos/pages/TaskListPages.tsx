@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Link } from "react-router-dom";
-import { Archive, Box, CalendarDays, Flame, Inbox, Layers, Moon, Star } from "lucide-react";
+import { Archive, Box, CalendarDays, Inbox, Layers, Moon, Sprout, Star } from "lucide-react";
 import { toDayKey } from "../due";
 import { useRowContext } from "../hooks/useTaskActions";
 import { shiftDayKey, upcomingHeader } from "../task-views";
@@ -10,6 +10,7 @@ import ListHeader from "../components/tasks/ListHeader";
 import NewTaskInput from "../components/tasks/NewTaskInput";
 import TaskList from "../components/tasks/TaskList";
 import ProgressPie from "../components/tasks/ProgressPie";
+import CompletedSection from "../components/tasks/CompletedSection";
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="py-10 text-center font-serif text-xl italic text-muted-foreground">{children}</p>;
@@ -31,11 +32,16 @@ export function InboxPage() {
   const tasks = data.index.inbox;
   return (
     <>
-      <ListHeader icon={<Inbox className="h-6 w-6 text-info" />} title="Inbox" subtitle="Capture now, sort later." />
+      <ListHeader
+        icon={<Inbox className="h-6 w-6 text-info" />}
+        title="Inbox"
+        subtitle="New tasks wait here until you give them a day or a project."
+      />
       <NewTaskInput defaults={{}} projects={data.projects} areas={data.areas} onCreate={data.createTodo} />
       {data.loading ? <Loading /> : tasks.length === 0 ? <Empty>Inbox zero.</Empty> : (
         <TaskList todos={tasks} context={context} onReorder={data.reorderTodos} />
       )}
+      <CompletedSection data={data} />
     </>
   );
 }
@@ -45,23 +51,24 @@ export function TodayListPage() {
   const context = useRowContext(data, { showList: true });
   const { todayList, evening, today } = data.index;
   const habitsLeft = data.todos.filter(
-    (todo) => !isTask(todo) && todo.recurrenceType === "daily" && !todo.completed,
+    // Rest days and few-days-a-week habits don't count as left.
+    (todo) => !isTask(todo) && todo.recurrenceType === "daily" && !todo.completed && !todo.skipped && !todo.perWeek,
   ).length;
   const date = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
 
   return (
     <>
       <ListHeader
-        icon={<Star className="h-6 w-6 fill-warning text-warning" />}
+        icon={<Star className="h-6 w-6 fill-highlight text-highlight" />}
         title="Today"
-        subtitle={date}
+        subtitle={`${date}. What you plan to do today.`}
         actions={
           habitsLeft > 0 ? (
             <Link
               to="/habits"
               className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-soft hover:text-foreground"
             >
-              <Flame className="h-3.5 w-3.5 text-streak" />
+              <Sprout className="h-3.5 w-3.5 text-rating" />
               {habitsLeft} habit{habitsLeft === 1 ? "" : "s"} left
             </Link>
           ) : null
@@ -91,6 +98,7 @@ export function TodayListPage() {
           )}
         </>
       )}
+      <CompletedSection data={data} />
     </>
   );
 }
@@ -118,7 +126,11 @@ export function UpcomingPage() {
 
   return (
     <>
-      <ListHeader icon={<CalendarDays className="h-6 w-6 text-destructive/80" />} title="Upcoming" />
+      <ListHeader
+        icon={<CalendarDays className="h-6 w-6 text-info" />}
+        title="Upcoming"
+        subtitle="Tasks planned for the days ahead. Each moves to Today on its day."
+      />
       <NewTaskInput
         defaults={{ when: shiftDayKey(toDayKey(new Date()), 1) }}
         projects={data.projects}
@@ -160,7 +172,7 @@ export function AnytimePage() {
       <ListHeader
         icon={<Layers className="h-6 w-6 text-rating" />}
         title="Anytime"
-        subtitle="Everything you could do now, by area and project."
+        subtitle="Everything without a day that you could do now, by area and project."
       />
       {data.loading ? (
         <Loading />
@@ -245,6 +257,7 @@ export function SomedayPage() {
       ) : (
         <TaskList todos={data.index.someday} context={context} onReorder={data.reorderTodos} />
       )}
+      <CompletedSection data={data} />
     </>
   );
 }

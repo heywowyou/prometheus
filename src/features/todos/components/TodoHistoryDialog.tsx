@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Flame, Trophy, CheckCheck } from "lucide-react";
+import { CalendarDays, CalendarRange, CheckCheck } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,17 +9,10 @@ import {
 } from "@components/ui/dialog";
 import { Heatmap, dayKey, heatmapDays } from "@components/ui/heatmap";
 import { useTodoHistory } from "../hooks/useTodos";
-import type { RecurrenceType, Todo } from "../types/todo-types";
+import type { Todo } from "../types/todo-types";
 
 /** 26 weeks: fits a phone screen and covers half a year. */
 const WEEKS = 26;
-
-const CYCLE_UNIT: Record<RecurrenceType, string> = {
-  none: "day",
-  daily: "day",
-  weekly: "week",
-  monthly: "month",
-};
 
 const plural = (count: number, unit: string) => `${count} ${unit}${count === 1 ? "" : "s"}`;
 
@@ -36,17 +29,22 @@ interface TodoHistoryDialogProps {
   onClose: () => void;
 }
 
-/** Streaks and a GitHub-style completion calendar for one recurring task. */
+/** Days with a completion from `from` (`YYYY-MM-DD`) onwards. */
+const daysSince = (days: Array<{ date: string }>, from: string) => days.filter((day) => day.date >= from).length;
+
+/** What a habit has added up to, and its completion calendar. Counts only what was done. */
 function TodoHistoryDialog({ todo, onClose }: TodoHistoryDialogProps) {
   const { history, loading } = useTodoHistory(todo?._id ?? null, heatmapDays(WEEKS));
 
-  const unit = CYCLE_UNIT[todo?.recurrenceType ?? "daily"];
   const doneInWindow = useMemo(() => countInWindow(history?.days ?? []), [history]);
+  const now = new Date();
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const stats = [
-    { icon: Flame, label: "Current streak", value: history ? plural(history.streak.current, unit) : "–" },
-    { icon: Trophy, label: "Best streak", value: history ? plural(history.streak.best, unit) : "–" },
-    { icon: CheckCheck, label: "All-time", value: history ? `${history.total} done` : "–" },
+    { icon: CalendarDays, label: "This week", value: history ? plural(daysSince(history.days, dayKey(monday)), "day") : "-" },
+    { icon: CalendarRange, label: "This month", value: history ? plural(daysSince(history.days, dayKey(firstOfMonth)), "day") : "-" },
+    { icon: CheckCheck, label: "All time", value: history ? `${history.total} done` : "-" },
   ];
 
   return (

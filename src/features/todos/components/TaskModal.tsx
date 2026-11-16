@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,9 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@components/ui/select";
-import { RECURRENCE_TYPES, RECURRENCE_LABELS } from "@lib/date/recurrence";
 import { cn } from "@lib/utils";
-import { dayKeyFromToday, describeDue } from "../due";
 import {
   MAX_DURATION_GOAL,
   type InteractionType,
@@ -27,83 +24,73 @@ import {
   type Todo,
 } from "../types/todo-types";
 
-interface TaskFormValues {
+type HabitCadence = Exclude<RecurrenceType, "none">;
+
+interface HabitFormValues {
   text: string;
-  recurrenceType: RecurrenceType;
+  recurrenceType: HabitCadence;
+  /** Daily habits: 7 = every day, otherwise days a week. */
+  perWeek: number;
   interactionType: InteractionType;
   durationGoal: string;
-  /** `YYYY-MM-DD` or "" for none. One-time tasks only. */
-  dueDate: string;
 }
 
-const initialValues = (task: Todo | null, defaultRecurrence: RecurrenceType = "none"): TaskFormValues =>
-  task
-    ? {
-        text: task.text,
-        recurrenceType: task.recurrenceType,
-        interactionType: task.interactionType,
-        durationGoal: task.durationGoal ? String(task.durationGoal) : "",
-        dueDate: task.dueDate ?? "",
-      }
-    : {
-        text: "",
-        recurrenceType: defaultRecurrence,
-        interactionType: "checkbox",
-        durationGoal: "",
-        dueDate: "",
-      };
+const initialValues = (task: Todo | null, defaultRecurrence: HabitCadence): HabitFormValues => ({
+  text: task?.text ?? "",
+  recurrenceType: task && task.recurrenceType !== "none" ? task.recurrenceType : defaultRecurrence,
+  perWeek: task?.perWeek ?? 7,
+  interactionType: task?.interactionType ?? "checkbox",
+  durationGoal: task?.durationGoal ? String(task.durationGoal) : "",
+});
 
-const RECURRENCE_OPTIONS = RECURRENCE_TYPES.map((value) => ({
-  value,
-  label: value === "none" ? "One-time task" : RECURRENCE_LABELS[value],
-}));
+const CADENCES: Array<{ value: HabitCadence; label: string }> = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
+const DAYS_A_WEEK = [7, 6, 5, 4, 3, 2, 1];
 
 export interface TaskSubmitValues {
   text: string;
   recurrenceType: RecurrenceType;
   interactionType: InteractionType;
   durationGoal: number;
-  /** null clears it; always null for recurring tasks. */
+  /** Always null for habits; kept for the create payload's shape. */
   dueDate: string | null;
+  /** Daily habits: days a week, or null for every day. */
+  perWeek: number | null;
 }
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** Pass a task to edit it; omit to create a new one. */
+  /** Pass a habit to edit it; omit to create a new one. */
   task?: Todo | null;
   onSubmit: (values: TaskSubmitValues) => Promise<unknown>;
-  /** Recurrence preselected for a new task. */
+  /** Cadence preselected for a new habit. */
   defaultRecurrence?: RecurrenceType;
 }
 
 type BodyProps = Omit<TaskModalProps, "isOpen">;
 
-/** Mounted only while open, so its state is seeded from props on mount. */
 function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: BodyProps) {
   const isEdit = task !== null;
-  const [values, setValues] = useState<TaskFormValues>(() => initialValues(task, defaultRecurrence));
+  const [values, setValues] = useState<HabitFormValues>(() =>
+    initialValues(task, defaultRecurrence && defaultRecurrence !== "none" ? defaultRecurrence : "daily"),
+  );
   const [submitting, setSubmitting] = useState(false);
 
-  const set = <K extends keyof TaskFormValues>(key: K, value: TaskFormValues[K]) =>
+  const set = <K extends keyof HabitFormValues>(key: K, value: HabitFormValues[K]) =>
     setValues((previous) => ({ ...previous, [key]: value }));
 
   const isTimer = values.interactionType === "timer";
   const minutes = Math.min(MAX_DURATION_GOAL, Math.max(0, Math.floor(Number(values.durationGoal) || 0)));
   const missingGoal = isTimer && minutes < 1;
-
-  // Switching a recurring task to one-time deletes its completion history.
-  const erasesHistory =
-    isEdit &&
-    task.recurrenceType !== "none" &&
-    values.recurrenceType === "none" &&
-    task.completionCount > 0;
-
   const canSubmit = values.text.trim() !== "" && !missingGoal && !submitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
-
     setSubmitting(true);
     try {
       await onSubmit({
@@ -111,7 +98,8 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
         recurrenceType: values.recurrenceType,
         interactionType: values.interactionType,
         durationGoal: minutes,
-        dueDate: values.recurrenceType === "none" && values.dueDate ? values.dueDate : null,
+        dueDate: null,
+        perWeek: values.recurrenceType === "daily" && values.perWeek < 7 ? values.perWeek : null,
       });
       onClose();
     } catch {
@@ -124,16 +112,16 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{isEdit ? "Edit task" : "Create new task"}</DialogTitle>
+        <DialogTitle>{isEdit ? "Edit habit" : "New habit"}</DialogTitle>
       </DialogHeader>
 
-      <div className="space-y-4 py-2">
+      <div className="space-y-5 py-2">
         <div className="space-y-1.5">
-          <Label htmlFor="task-text">Description</Label>
+          <Label htmlFor="habit-text">Habit</Label>
           <Input
-            id="task-text"
+            id="habit-text"
             type="text"
-            placeholder="What needs to be done?"
+            placeholder="Read, stretch, gym…"
             value={values.text}
             onChange={(event) => set("text", event.target.value)}
             onKeyDown={(event) => {
@@ -147,92 +135,59 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
         </div>
 
         <div className="space-y-1.5">
-          <Label>Recurrence</Label>
-          <Select
-            value={values.recurrenceType}
-            onValueChange={(value) =>
-              set("recurrenceType", value as RecurrenceType)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RECURRENCE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {erasesHistory && (
-            <p className="flex items-start gap-1.5 pt-1 text-xs text-destructive">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              Making this a one-time task permanently erases its{" "}
-              {task.completionCount} completions and its streak.
-            </p>
-          )}
+          <Label>Resets</Label>
+          <div className="flex gap-1.5">
+            {CADENCES.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => set("recurrenceType", option.value)}
+                className={cn(
+                  "flex-1 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                  values.recurrenceType === option.value
+                    ? "border-rating bg-rating/10 text-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {values.recurrenceType === "none" && (
+        {values.recurrenceType === "daily" && (
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="task-due">Due</Label>
-              {values.dueDate && (
-                <span className="text-xs text-muted-foreground">
-                  {describeDue(values.dueDate).label}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {[
-                { label: "Today", key: dayKeyFromToday(0) },
-                { label: "Tomorrow", key: dayKeyFromToday(1) },
-                { label: "In a week", key: dayKeyFromToday(7) },
-              ].map(({ label, key }) => (
+            <Label>How often</Label>
+            <div className="flex flex-wrap gap-1.5">
+              {DAYS_A_WEEK.map((count) => (
                 <button
-                  key={label}
+                  key={count}
                   type="button"
-                  onClick={() => set("dueDate", values.dueDate === key ? "" : key)}
+                  onClick={() => set("perWeek", count)}
+                  aria-pressed={values.perWeek === count}
                   className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                    values.dueDate === key
-                      ? "border-rating bg-rating/10 text-rating"
+                    "rounded-full border px-3 py-1 text-xs tabular-nums transition-colors",
+                    values.perWeek === count
+                      ? "border-rating bg-rating/10 text-foreground"
                       : "border-border text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {label}
+                  {count === 7 ? "Every day" : `${count}×`}
                 </button>
               ))}
-              <Input
-                id="task-due"
-                type="date"
-                value={values.dueDate}
-                onChange={(event) => set("dueDate", event.target.value)}
-                className="h-8 w-auto flex-1 text-xs"
-              />
-              {values.dueDate && (
-                <button
-                  type="button"
-                  onClick={() => set("dueDate", "")}
-                  className="px-1 text-xs text-muted-foreground hover:text-foreground"
-                >
-                  Clear
-                </button>
-              )}
             </div>
+            <p className="text-xs text-muted-foreground">
+              {values.perWeek === 7
+                ? "Every day. You can still skip a day from its menu without it counting against you."
+                : `${values.perWeek} days a week, any days you like. The other days are rest days.`}
+            </p>
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label>Mode</Label>
-            <Select
-              value={values.interactionType}
-              onValueChange={(value) =>
-                set("interactionType", value as InteractionType)
-              }
-            >
+            <Select value={values.interactionType} onValueChange={(value) => set("interactionType", value as InteractionType)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -244,16 +199,14 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="task-duration">
-              {isTimer ? "Target (min) *" : "Minutes (optional)"}
-            </Label>
+            <Label htmlFor="habit-duration">{isTimer ? "Target (min) *" : "Minutes (optional)"}</Label>
             <Input
-              id="task-duration"
+              id="habit-duration"
               type="number"
               inputMode="numeric"
               min={isTimer ? 1 : 0}
               max={MAX_DURATION_GOAL}
-              placeholder={isTimer ? "30" : "—"}
+              placeholder={isTimer ? "30" : "-"}
               value={values.durationGoal}
               onChange={(event) => set("durationGoal", event.target.value)}
               aria-invalid={missingGoal && values.durationGoal !== ""}
@@ -262,7 +215,7 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
         </div>
         <p className="text-xs text-muted-foreground">
           {isTimer
-            ? "Start the timer when you begin; the task ticks itself once the target is reached. Progress syncs across devices."
+            ? "Start the timer when you begin; the habit ticks itself once the target is reached."
             : "Tick it when it's done. Minutes, if set, are shown as a reminder."}
         </p>
       </div>
@@ -279,7 +232,7 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
   );
 }
 
-/** One modal for creating and editing a task. */
+/** One modal for creating and editing a habit. */
 function TaskModal({ isOpen, ...rest }: TaskModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && rest.onClose()}>
