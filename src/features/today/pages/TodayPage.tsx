@@ -10,6 +10,10 @@ import { useNow } from "@lib/hooks/useNow";
 import { useTodos } from "@features/todos/hooks/useTodos";
 import { useTodoLists } from "@features/todos/hooks/useTodoLists";
 import { buildTaskIndex } from "@features/todos/task-views";
+import { useEvents } from "@features/calendar/hooks/useCalendar";
+import { COLOR_VARS } from "@features/calendar/types/calendar-types";
+import { formatTime } from "@features/calendar/calendar-dates";
+import { toDayKey } from "@features/todos/due";
 import TodoItem from "@features/todos/components/TodoItem";
 import { compareOpenTodos, isOverdue } from "@features/todos/due";
 import { timerElapsedMs, type TimerAction, type Todo } from "@features/todos/types/todo-types";
@@ -207,6 +211,8 @@ function TodayPage() {
   const { notes, loading: notesLoading } = useNotes({ view: "active" });
   const { createNote } = useNoteActions();
   const { summary: workouts } = useWorkoutSummary();
+  const todayKeyValue = toDayKey(now);
+  const { events: agenda, loading: agendaLoading } = useEvents(todayKeyValue, todayKeyValue);
   const liveNow = useNow(true, 30_000);
 
   const daily = useMemo(
@@ -328,6 +334,28 @@ function TodayPage() {
               ))}
             </div>
           )}
+        </Section>
+      )}
+
+      {!agendaLoading && agenda.length > 0 && (
+        <Section title="Agenda" aside={<AsideLink to="/calendar?view=day">Calendar</AsideLink>}>
+          <ul className="divide-y divide-border border-t border-border">
+            {agenda.map((event) => {
+              const ended = !event.allDay && new Date(event.end).getTime() < liveNow;
+              return (
+                <li key={event._id} className={cn("flex items-baseline gap-4 py-3.5", ended && "opacity-50")}>
+                  <span className="w-24 shrink-0 text-[13px] tabular-nums text-muted-foreground">
+                    {event.allDay ? "All day" : `${formatTime(new Date(event.start))}`}
+                  </span>
+                  <span className="h-2 w-2 shrink-0 self-center rounded-full" style={{ background: COLOR_VARS[event.color] }} />
+                  <span className="min-w-0 flex-1 truncate font-serif text-xl text-foreground">{event.title || "Untitled"}</span>
+                  {event.location && (
+                    <span className="hidden shrink-0 truncate text-[13px] text-muted-foreground sm:inline">{event.location}</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </Section>
       )}
 

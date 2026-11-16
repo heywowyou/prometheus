@@ -63,6 +63,8 @@
     --success: #8fcba8;
     --warning: #e6c27a;
     --info: #9db4d6;
+    /* Calendar event color */
+    --violet: #b9a7dc;
 
     /* Streak flame on recurring todos */
     --streak: #e8a87c;

@@ -16,6 +16,10 @@ export const queryKeys = {
     lists: () => ["todos", "lists"] as const,
     logbook: () => ["todos", "logbook"] as const,
   },
+  calendar: {
+    all: ["calendar"] as const,
+    range: (from: string, to: string) => ["calendar", "range", from, to] as const,
+  },
   media: {
     all: ["media"] as const,
     list: (type?: MediaLogType) => ["media", "list", type ?? "all"] as const,

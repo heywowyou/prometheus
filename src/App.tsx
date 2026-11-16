@@ -4,7 +4,6 @@ import AppShell from "@app/AppShell";
 import ProtectedRoute from "@app/ProtectedRoute";
 import LandingPage from "@app/pages/LandingPage";
 import AuthPage from "@app/pages/AuthPage";
-import ComingSoonPage from "@app/pages/ComingSoonPage";
 import MediaPanelPage from "@features/media/pages/MediaPanelPage";
 import {
   MEDIA_TYPE_CONFIGS,
@@ -17,6 +16,7 @@ import { DEFAULT_ROUTE } from "@app/navigation";
 const TodayPage = lazy(() => import("@features/today/pages/TodayPage"));
 const TodosLayout = lazy(() => import("@features/todos/pages/TodosLayout"));
 const HabitsPage = lazy(() => import("@features/todos/pages/HabitsPage"));
+const CalendarPage = lazy(() => import("@features/calendar/pages/CalendarPage"));
 const TodoListPages = {
   Inbox: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.InboxPage }))),
   Today: lazy(() => import("@features/todos/pages/TaskListPages").then((m) => ({ default: m.TodayListPage }))),
@@ -110,10 +110,7 @@ function App() {
               <Route path=":id" element={<NoteEditorPage />} />
             </Route>
 
-            <Route
-              path="/calendar"
-              element={<ComingSoonPage title="Calendar" />}
-            />
+            <Route path="/calendar" element={<CalendarPage />} />
 
             {/* Tabbed hub; the full-screen pages below sit outside the tabs. */}
             <Route path="/workouts" element={<WorkoutsLayout />}>
