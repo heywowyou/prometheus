@@ -82,8 +82,9 @@ export const compareOpenTodos = (a: Todo, b: Todo): number => {
 export const compareSectionTodos = (a: Todo, b: Todo): number => {
   const aPlaced = typeof a.order === "number";
   const bPlaced = typeof b.order === "number";
-  if (aPlaced && bPlaced) return (a.order as number) - (b.order as number);
-  if (aPlaced) return 1;
-  if (bPlaced) return -1;
-  return compareOpenTodos(a, b);
+  if (aPlaced && bPlaced && a.order !== b.order) return (a.order as number) - (b.order as number);
+  if (aPlaced && !bPlaced) return 1;
+  if (bPlaced && !aPlaced) return -1;
+  // Same position (or none): a fixed fallback, so every page shows one order.
+  return compareOpenTodos(a, b) || a._id.localeCompare(b._id);
 };

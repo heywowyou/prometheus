@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ClerkProvider } from "@clerk/clerk-react";
+import * as Sentry from "@sentry/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@components/ui/tooltip";
 import { Toaster } from "@components/ui/sonner";
@@ -19,6 +20,16 @@ const rootElement = document.getElementById("root");
 
 if (!rootElement) {
   throw new Error("Root element with id 'root' not found");
+}
+
+// Error reporting, only when a DSN is configured (Railway variable VITE_SENTRY_DSN).
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 0,
+  });
 }
 
 const queryClient = createQueryClient();
