@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCommandPalette } from "@app/command-palette";
 import { Outlet, useLocation, useMatch } from "react-router-dom";
-import { PanelLeft, Search } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/ui/sheet";
 import NotesSidebar from "../components/NotesSidebar";
 import type { NotesOutletContext } from "../notes-layout-context";
@@ -44,14 +44,6 @@ export default function NotesLayout() {
             className="flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3.5 text-sm text-soft"
           >
             <PanelLeft className="h-4 w-4" /> Pages
-          </button>
-          <button
-            type="button"
-            aria-label="Search notes"
-            onClick={() => palette.open()}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-soft"
-          >
-            <Search className="h-4 w-4" />
           </button>
         </div>
         <Outlet context={context} />

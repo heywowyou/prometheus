@@ -186,8 +186,14 @@ export default function CalendarPage() {
               </button>
             ))}
           </div>
-          <Button size="sm" onClick={() => setDraft(newEventDraft())} aria-label="New event">
-            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Event</span>
+          {/* On phones this floats above the tab bar instead of taking a row. */}
+          <Button
+            size="sm"
+            onClick={() => setDraft(newEventDraft())}
+            aria-label="New event"
+            className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-5 z-30 h-14 w-14 rounded-full p-0 shadow-lg shadow-overlay/50 sm:static sm:h-9 sm:w-auto sm:px-4 sm:shadow-none"
+          >
+            <Plus className="h-5 w-5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Event</span>
           </Button>
         </header>
 

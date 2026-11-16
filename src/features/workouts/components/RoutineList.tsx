@@ -29,6 +29,8 @@ interface RoutineListProps {
   onStart: (routine: Routine) => void;
   onReorder: (ids: string[]) => void;
   starting: boolean;
+  /** The routine the rotation suggests next, marked "Up next". */
+  upNextId?: string;
 }
 
 interface RowProps {
@@ -36,9 +38,10 @@ interface RowProps {
   names: Map<string, string>;
   onStart: (routine: Routine) => void;
   starting: boolean;
+  upNext: boolean;
 }
 
-function RoutineRow({ routine, names, onStart, starting }: RowProps) {
+function RoutineRow({ routine, names, onStart, starting, upNext }: RowProps) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
     useSortable({ id: routine._id });
 
@@ -70,6 +73,11 @@ function RoutineRow({ routine, names, onStart, starting }: RowProps) {
         <span className="flex items-center gap-1.5">
           <span className="truncate font-serif text-2xl leading-tight text-foreground">{routine.name}</span>
           <Pencil className="h-3 w-3 shrink-0 text-muted-foreground" />
+          {upNext && (
+            <span className="ml-1 shrink-0 rounded-full bg-rating/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-rating">
+              Up next
+            </span>
+          )}
         </span>
         <span className="mt-0.5 block truncate text-xs text-muted-foreground">
           {routine.exercises.length} exercise{routine.exercises.length === 1 ? "" : "s"}
@@ -90,7 +98,7 @@ function RoutineRow({ routine, names, onStart, starting }: RowProps) {
 }
 
 /** Routines in Start-tab order; drag the grip (touch: press and hold) to reorder. */
-function RoutineList({ routines, names, onStart, onReorder, starting }: RoutineListProps) {
+function RoutineList({ routines, names, onStart, onReorder, starting, upNextId }: RoutineListProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     // A short hold, so a scroll that starts on the grip still scrolls.
@@ -122,6 +130,7 @@ function RoutineList({ routines, names, onStart, onReorder, starting }: RoutineL
               names={names}
               onStart={onStart}
               starting={starting}
+              upNext={routines.length > 1 && routine._id === upNextId}
             />
           ))}
         </ul>

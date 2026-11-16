@@ -8,7 +8,9 @@ import {
   useRoutineActions,
   useRoutines,
   useStartSession,
+  useWorkoutSummary,
 } from "../hooks/useWorkouts";
+import { nextRoutine } from "../workout-format";
 
 /** `/workouts` index: start an empty workout or a saved routine. */
 function StartPage() {
@@ -17,6 +19,8 @@ function StartPage() {
   const { reorderRoutines } = useRoutineActions();
   const { startSession, starting } = useStartSession();
   const names = useExerciseNames();
+  const { summary } = useWorkoutSummary();
+  const upNext = summary ? nextRoutine(summary) : null;
 
   return (
     <div className="space-y-12">
@@ -62,6 +66,7 @@ function StartPage() {
             starting={starting}
             onStart={(routine) => startSession(routine._id)}
             onReorder={reorderRoutines}
+            upNextId={upNext?._id}
           />
         )}
       </section>

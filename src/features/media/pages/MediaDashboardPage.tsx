@@ -5,10 +5,11 @@ import { MEDIA_TYPE_CONFIGS } from "../media-config";
 function MediaDashboardPage() {
   return (
     <div>
-      <h1 className="page-title mb-8 pt-2 sm:pt-6">Media log</h1>
+      {/* Phones go straight to the type tabs, the section title below names the page. */}
+      <h1 className="page-title mb-8 hidden pt-2 sm:block sm:pt-6">Media log</h1>
       <nav
         aria-label="Media type"
-        className="-mx-5 mb-10 flex overflow-x-auto px-5 sm:mx-0 sm:px-0"
+        className="-mx-5 mb-6 mt-2 flex overflow-x-auto px-5 sm:mx-0 sm:mb-10 sm:mt-0 sm:px-0"
       >
         <div className="flex shrink-0 gap-0.5 rounded-full border border-border bg-card p-1">
         {MEDIA_TYPE_CONFIGS.map((config) => (

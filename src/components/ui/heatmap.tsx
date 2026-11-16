@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { cn } from "@lib/utils";
 
 const WEEKDAY_LABELS = ["Mon", "", "Wed", "", "Fri", "", ""];
@@ -56,56 +56,72 @@ export function Heatmap({ days, weeks = 26, loading, describe, className }: Heat
     [days],
   );
 
+  // When the grid is wider than its container (phones), start scrolled to the
+  // latest weeks rather than the oldest.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const scroller = scrollRef.current;
+    if (scroller) scroller.scrollLeft = scroller.scrollWidth;
+  }, [weeks]);
+
   return (
-    <div className={cn("overflow-x-auto pb-1", className)}>
-      <div className="inline-flex gap-[3px]">
-        <div className="mr-1 flex flex-col gap-[3px] pt-4 text-[9px] leading-[12px] text-muted-foreground">
-          {WEEKDAY_LABELS.map((label, index) => (
-            <span key={index} className="h-3">
-              {label}
-            </span>
-          ))}
+    <div className={cn("flex", className)}>
+      {/* Weekday labels stay put while the weeks scroll. */}
+      <div className="mr-1 flex shrink-0 flex-col gap-[3px] pt-4 text-[9px] leading-[12px] text-muted-foreground">
+        {WEEKDAY_LABELS.map((label, index) => (
+          <span key={index} className="h-3">
+            {label}
+          </span>
+        ))}
+      </div>
+      <div ref={scrollRef} className="min-w-0 overflow-x-auto pb-1">
+        <div className="inline-flex gap-[3px]">
+          {grid.map((week, index) => {
+            const first = week[0] as Cell;
+            const previous = grid[index - 1]?.[0];
+            const newMonth =
+              !previous || previous.date.getMonth() !== first.date.getMonth();
+            return (
+              <div key={first.key} className="flex flex-col gap-[3px]">
+                <span className="h-[13px] whitespace-nowrap text-[9px] text-muted-foreground">
+                  {newMonth
+                    ? first.date.toLocaleDateString(undefined, {
+                        month: "short",
+                      })
+                    : ""}
+                </span>
+                {week.map((cell) => {
+                  const count = counts.get(cell.key) ?? 0;
+                  return (
+                    <div
+                      key={cell.key}
+                      title={
+                        cell.future
+                          ? undefined
+                          : `${cell.date.toLocaleDateString(undefined, {
+                              weekday: "short",
+                              day: "numeric",
+                              month: "short",
+                            })}: ${describe(count)}`
+                      }
+                      className={cn(
+                        "h-3 w-3 rounded-[3px]",
+                        cell.future
+                          ? "bg-transparent"
+                          : count === 0
+                            ? "bg-secondary"
+                            : count === 1
+                              ? "bg-rating/70"
+                              : "bg-rating",
+                        loading && !cell.future && "animate-pulse",
+                      )}
+                    />
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
-        {grid.map((week, index) => {
-          const first = week[0] as Cell;
-          const previous = grid[index - 1]?.[0];
-          const newMonth = !previous || previous.date.getMonth() !== first.date.getMonth();
-          return (
-            <div key={first.key} className="flex flex-col gap-[3px]">
-              <span className="h-[13px] whitespace-nowrap text-[9px] text-muted-foreground">
-                {newMonth ? first.date.toLocaleDateString(undefined, { month: "short" }) : ""}
-              </span>
-              {week.map((cell) => {
-                const count = counts.get(cell.key) ?? 0;
-                return (
-                  <div
-                    key={cell.key}
-                    title={
-                      cell.future
-                        ? undefined
-                        : `${cell.date.toLocaleDateString(undefined, {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short",
-                          })}: ${describe(count)}`
-                    }
-                    className={cn(
-                      "h-3 w-3 rounded-[3px]",
-                      cell.future
-                        ? "bg-transparent"
-                        : count === 0
-                          ? "bg-secondary"
-                          : count === 1
-                            ? "bg-rating/70"
-                            : "bg-rating",
-                      loading && !cell.future && "animate-pulse",
-                    )}
-                  />
-                );
-              })}
-            </div>
-          );
-        })}
       </div>
     </div>
   );

@@ -226,9 +226,12 @@ function HabitsPage() {
                     className="mb-3 flex w-full items-center gap-3 rounded-xl py-1 text-left"
                   >
                     <h2 className="section-title">{title}</h2>
-                    <span className="text-[13px] tabular-nums text-muted-foreground">
-                      {data.open.length || ""}
-                    </span>
+                    {/* Sections with a progress bar already show done/total. */}
+                    {key === "none" && (
+                      <span className="text-[13px] tabular-nums text-muted-foreground">
+                        {data.open.length || ""}
+                      </span>
+                    )}
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 text-muted-foreground transition-transform",

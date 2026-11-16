@@ -116,12 +116,14 @@ export default function TimeGrid({
   const now = useNow(true, 60_000);
   const today = todayKey();
 
-  // Open around the morning, or an hour before now when today is shown.
+  // Open around the morning, or an hour and a half before now when today is
+  // shown during the day. Late at night the coming morning matters more.
   useEffect(() => {
     const scroller = scrollRef.current;
     if (!scroller) return;
     const nowMinutes = minutesOfDay(new Date());
-    const target = days.includes(todayKey()) ? Math.max(0, nowMinutes - 90) : 7 * 60;
+    const daytime = nowMinutes >= 6 * 60;
+    const target = days.includes(todayKey()) && daytime ? nowMinutes - 90 : 7 * 60;
     scroller.scrollTop = (target / 60) * HOUR_PX;
     // Only when the range changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps

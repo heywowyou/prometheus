@@ -53,24 +53,27 @@ function HistoryPage() {
     {
       icon: Flame,
       label: "Week streak",
+      short: "Streak",
       value: history ? plural(history.streak.current, "week") : "–",
     },
     {
       icon: Trophy,
       label: "Best streak",
+      short: "Best",
       value: history ? plural(history.streak.best, "week") : "–",
     },
-    { icon: CalendarCheck, label: "All-time", value: history ? String(history.total) : "–" },
+    { icon: CalendarCheck, label: "All-time", short: "Total", value: history ? String(history.total) : "–" },
   ];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-2">
-        {stats.map(({ icon: Icon, label, value }) => (
+        {stats.map(({ icon: Icon, label, short, value }) => (
           <div key={label} className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Icon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{label}</span>
+              <span className="truncate sm:hidden">{short}</span>
+              <span className="hidden truncate sm:inline">{label}</span>
             </div>
             <p className="mt-1.5 font-serif text-xl tabular-nums text-foreground sm:text-2xl">{value}</p>
           </div>

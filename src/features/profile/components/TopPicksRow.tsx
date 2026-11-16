@@ -154,7 +154,7 @@ function TopPicksRow({ config, picks, onChange }: TopPicksRowProps) {
           onClick={() => setSlot(0)}
           className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3.5 text-left text-sm text-muted-foreground transition-colors hover:border-muted-foreground/60 hover:text-foreground"
         >
-          <Plus className="h-4 w-4" /> Pick your top {TOP_PICKS_LIMIT} {config.plural.toLowerCase()}
+          <Plus className="h-4 w-4" /> Pick your top {TOP_PICKS_LIMIT} {config.singular}s
         </button>
       ) : (
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
