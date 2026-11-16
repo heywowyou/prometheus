@@ -4,7 +4,6 @@ import AppShell from "@app/AppShell";
 import ProtectedRoute from "@app/ProtectedRoute";
 import LandingPage from "@app/pages/LandingPage";
 import AuthPage from "@app/pages/AuthPage";
-import MediaPanelPage from "@features/media/pages/MediaPanelPage";
 import {
   MEDIA_TYPE_CONFIGS,
   DEFAULT_MEDIA_SLUG,
@@ -27,6 +26,7 @@ const TodoListPages = {
   Project: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.ProjectPage }))),
   Area: lazy(() => import("@features/todos/pages/ListPages").then((m) => ({ default: m.AreaPage }))),
 };
+const MediaPanelPage = lazy(() => import("@features/media/pages/MediaPanelPage"));
 const MediaDashboardPage = lazy(
   () => import("@features/media/pages/MediaDashboardPage"),
 );
@@ -85,7 +85,7 @@ function App() {
               <Route path="anytime" element={<TodoListPages.Anytime />} />
               <Route path="someday" element={<TodoListPages.Someday />} />
               <Route path="logbook" element={<TodoListPages.Logbook />} />
-              <Route path="habits" element={<HabitsPage />} />
+              <Route path="habits" element={<Navigate to="/habits" replace />} />
               <Route path="projects/:id" element={<TodoListPages.Project />} />
               <Route path="areas/:id" element={<TodoListPages.Area />} />
             </Route>
@@ -110,6 +110,7 @@ function App() {
               <Route path=":id" element={<NoteEditorPage />} />
             </Route>
 
+            <Route path="/habits" element={<HabitsPage />} />
             <Route path="/calendar" element={<CalendarPage />} />
 
             {/* Tabbed hub; the full-screen pages below sit outside the tabs. */}

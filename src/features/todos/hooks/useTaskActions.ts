@@ -29,7 +29,7 @@ export const useRowContext = (
       convertToHabit: (todo) => {
         void convertTodo(todo._id, "habit").then(() =>
           toast(`“${todo.text}” is now a habit`, {
-            action: { label: "Open Habits", onClick: () => navigate("/todos/habits") },
+            action: { label: "Open Habits", onClick: () => navigate("/habits") },
           }),
         );
       },

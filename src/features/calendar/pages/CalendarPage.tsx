@@ -54,6 +54,9 @@ export default function CalendarPage() {
   const context = useRowContext(data, { showList: true });
 
   const [draft, setDraft] = useState<EventDraft | null>(null);
+  // `?new=<title>` (an event typed in search) opens the new-event dialog once.
+  const newTitle = params.get("new");
+  const [handledNew, setHandledNew] = useState<string | null>(null);
   const [openOccurrence, setOpenOccurrence] = useState<CalendarOccurrence | null>(null);
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const openTask = openTaskId ? (data.todos.find((todo) => todo._id === openTaskId) ?? null) : null;
@@ -135,6 +138,11 @@ export default function CalendarPage() {
     return { allDay: false, startDay: day, endDay: day, startMinutes, endMinutes: startMinutes + 60 };
   };
 
+  if (newTitle && newTitle !== handledNew) {
+    setHandledNew(newTitle);
+    setDraft({ ...newEventDraft(), title: newTitle });
+  }
+
   return (
     <>
       <div className="space-y-4">
@@ -178,8 +186,8 @@ export default function CalendarPage() {
               </button>
             ))}
           </div>
-          <Button size="sm" onClick={() => setDraft(newEventDraft())}>
-            <Plus className="h-4 w-4" /> Event
+          <Button size="sm" onClick={() => setDraft(newEventDraft())} aria-label="New event">
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Event</span>
           </Button>
         </header>
 

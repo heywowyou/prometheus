@@ -45,6 +45,12 @@ export type UpdateTodoPayload = Partial<Omit<CreateTodoPayload, "dueDate">> & {
   dueDate?: string | null;
 };
 
+/** Completion days per habit, and all habits' completions per day. */
+export interface HabitCompletions {
+  habits: Array<{ todoId: string; days: string[] }>;
+  totals: Array<{ date: string; count: number }>;
+}
+
 export interface ProjectPayload {
   title?: string;
   notes?: string;
@@ -162,6 +168,14 @@ export const useTodosApi = () => {
     [client],
   );
 
+  const fetchHabitCompletions = useCallback(
+    async (days: number): Promise<HabitCompletions> => {
+      const { data } = await client.get<HabitCompletions>(`${TODOS_PATH}/habits/completions`, { params: { days } });
+      return data;
+    },
+    [client],
+  );
+
   const fetchLists = useCallback(async (): Promise<TodoLists> => {
     const { data } = await client.get<TodoLists>(`${TODOS_PATH}/lists`);
     return data;
@@ -222,6 +236,7 @@ export const useTodosApi = () => {
 
   return useMemo(
     () => ({
+      fetchHabitCompletions,
       convertTodo,
       fetchLogbook,
       fetchLists,
@@ -244,6 +259,7 @@ export const useTodosApi = () => {
       deleteTodo,
     }),
     [
+      fetchHabitCompletions,
       convertTodo,
       fetchLogbook,
       fetchLists,

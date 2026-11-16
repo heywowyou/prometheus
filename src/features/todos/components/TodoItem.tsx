@@ -61,6 +61,8 @@ interface TodoItemProps {
   onHistory?: (todo: Todo) => void;
   /** Habits: turn into a repeating task (history kept). */
   onConvert?: (todo: Todo) => void;
+  /** Extra content before the streak (the Habits page's recent dots). */
+  renderTrailing?: (todo: Todo) => ReactNode;
   /** A drag handle, rendered at the row's left edge when the list is sortable. */
   handle?: ReactNode;
 }
@@ -75,6 +77,7 @@ function TodoItem({
   onPause,
   onHistory,
   onConvert,
+  renderTrailing,
   handle,
 }: TodoItemProps) {
   const isRecurring = todo.recurrenceType !== "none";
@@ -135,20 +138,15 @@ function TodoItem({
   })();
 
   return (
+    // The whole row is a pointer target, but keyboard and screen readers use
+    // the real toggle or timer button inside it, so controls are never nested.
     <div
-      role="button"
-      tabIndex={0}
-      aria-pressed={todo.completed}
       className={cn(
-        "group relative flex min-h-[3.5rem] cursor-pointer select-none items-center overflow-hidden rounded-2xl px-3 py-2.5 transition-colors hover:bg-secondary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group relative flex min-h-[3.5rem] cursor-pointer select-none items-center overflow-hidden rounded-2xl px-3 py-2.5 transition-colors hover:bg-secondary/60 has-[[data-row-main]:focus-visible]:ring-2 has-[[data-row-main]:focus-visible]:ring-ring",
       )}
       onClick={activate}
       onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          activate();
-        } else if (event.key === "F2") {
+        if (event.key === "F2" && !renaming) {
           event.preventDefault();
           startRename();
         }
@@ -167,12 +165,13 @@ function TodoItem({
         {isTimer && !todo.completed ? (
           <button
             type="button"
+            data-row-main
             onClick={(event) => {
               event.stopPropagation();
               startOrPause();
             }}
             aria-label={running ? `Pause timer for ${todo.text}` : `Start timer for ${todo.text}`}
-            className="relative mr-3 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="relative mr-3 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-foreground focus-visible:outline-none"
           >
             <ProgressRing fraction={fraction} />
             {running ? (
@@ -182,10 +181,17 @@ function TodoItem({
             )}
           </button>
         ) : (
-          <div
-            aria-hidden
+          <button
+            type="button"
+            data-row-main
+            aria-pressed={todo.completed}
+            aria-label={`${todo.completed ? "Mark not done" : "Complete"}: ${todo.text}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggle(todo._id);
+            }}
             className={cn(
-              "ml-1.5 mr-[1.125rem] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-200",
+              "ml-1.5 mr-[1.125rem] flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors duration-200 focus-visible:outline-none before:absolute before:-inset-2.5 relative",
               todo.completed
                 ? "border-raised bg-raised"
                 : due?.tone === "overdue"
@@ -194,7 +200,7 @@ function TodoItem({
             )}
           >
             {todo.completed && <Check className="h-3 w-3 text-foreground" strokeWidth={3} />}
-          </div>
+          </button>
         )}
 
         <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
@@ -243,6 +249,7 @@ function TodoItem({
           </span>
 
           <span className="flex shrink-0 items-center gap-2">
+            {renderTrailing?.(todo)}
             {streak > 0 && (
               <span
                 className="flex items-center text-xs font-medium tabular-nums text-streak"

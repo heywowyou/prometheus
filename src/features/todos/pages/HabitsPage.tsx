@@ -6,7 +6,9 @@ import { Button } from "@components/ui/button";
 import EmptyState from "@components/feedback/EmptyState";
 import { useLocalStorage } from "@lib/hooks/useLocalStorage";
 import { cn } from "@lib/utils";
-import { usePausedTodos, useTodos } from "../hooks/useTodos";
+import { useHabitCompletions, usePausedTodos, useTodos } from "../hooks/useTodos";
+import { recentCycles } from "../habit-dots";
+import { Heatmap } from "@components/ui/heatmap";
 import TodoItem from "../components/TodoItem";
 import TaskModal, { type TaskSubmitValues } from "../components/TaskModal";
 import DeleteConfirmModal from "../components/DeleteConfirmModal";
@@ -28,6 +30,9 @@ const SECTIONS: Array<{ key: RecurrenceType; title: string; quickAdd: string }> 
   { key: "weekly", title: "This week", quickAdd: "weekly" },
   { key: "monthly", title: "This month", quickAdd: "monthly" },
 ];
+
+/** Columns of the consistency heatmap; fits the side panel. */
+const CONSISTENCY_WEEKS = 16;
 
 /** How long a finished one-time task stays visible in its section. */
 const RECENT_DONE_DAYS = 7;
@@ -82,6 +87,11 @@ function HabitsPage() {
   } = useTodos();
   const { pausedTodos, resumeTodo } = usePausedTodos();
   const todos = useMemo(() => allTodos.filter((todo) => todo.recurrenceType !== "none"), [allTodos]);
+  const { data: completions, loading: completionsLoading } = useHabitCompletions(CONSISTENCY_WEEKS * 7 + 7);
+  const daysByHabit = useMemo(
+    () => new Map((completions?.habits ?? []).map((habit) => [habit.todoId, new Set(habit.days)])),
+    [completions],
+  );
 
   const [modal, setModal] = useState<ModalState>({ type: "none" });
   const [collapsed, setCollapsed] = useLocalStorage<string[]>("todo-collapsed", [], isStringArray);
@@ -126,6 +136,21 @@ function HabitsPage() {
     onDelete: (task: Todo) => setModal({ type: "delete", task }),
     onHistory: (task: Todo) => setModal({ type: "history", task }),
     onPause: pauseTodo,
+    renderTrailing: (task: Todo) => {
+      if (task.recurrenceType === "none") return null;
+      const cycles = recentCycles(task.recurrenceType, daysByHabit.get(task._id) ?? new Set());
+      return (
+        <span className="hidden items-center gap-[3px] sm:flex" aria-label="Recent history">
+          {cycles.map((cycle) => (
+            <span
+              key={cycle.key}
+              title={`${cycle.label}: ${cycle.done ? "done" : "missed"}`}
+              className={cn("h-2 w-2 rounded-full", cycle.done ? "bg-rating" : "bg-secondary")}
+            />
+          ))}
+        </span>
+      );
+    },
     onConvert: (task: Todo) => {
       void convertTodo(task._id, "task").then((converted) =>
         toast(`“${task.text}” now repeats as a task`, {
@@ -272,6 +297,15 @@ function HabitsPage() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
+            <div className="panel p-6">
+              <h2 className="eyebrow mb-4">Consistency</h2>
+              <Heatmap
+                days={completions?.totals}
+                weeks={CONSISTENCY_WEEKS}
+                loading={completionsLoading}
+                describe={(count) => (count ? `${count} habit${count === 1 ? "" : "s"} done` : "nothing done")}
+              />
+            </div>
             <div className="panel p-6">
               <h2 className="eyebrow mb-4">Streaks</h2>
               {topStreaks.length === 0 ? (

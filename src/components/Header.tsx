@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { Link, NavLink, useMatch } from "react-router-dom";
-import { UserRound } from "lucide-react";
-import { DEFAULT_ROUTE, NAV_ITEMS } from "@app/navigation";
+import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
+import { Ellipsis, Search, UserRound } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/ui/sheet";
+import { DEFAULT_ROUTE, MORE_ITEMS, NAV_ITEMS, PHONE_TABS } from "@app/navigation";
+import { useCommandPalette } from "@app/command-palette";
 import { cn } from "@lib/utils";
 
 /** The serif wordmark, also the way home. */
@@ -42,19 +45,80 @@ function ProfileLink() {
   );
 }
 
+/** Search and quick add, everywhere: a pill on desktop, an icon on phones. */
+function SearchButton() {
+  const palette = useCommandPalette();
+  return (
+    <button
+      type="button"
+      onClick={() => palette.open()}
+      aria-label="Search or add (Ctrl K)"
+      className="flex h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border bg-card px-3 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/60 hover:text-foreground xl:w-40"
+    >
+      <Search className="h-4 w-4 shrink-0" />
+      <span className="hidden xl:inline">Search</span>
+      <kbd className="ml-auto hidden rounded border border-border px-1 font-sans text-[10px] xl:inline">Ctrl K</kbd>
+    </button>
+  );
+}
+
+function TabLink({ to, label, icon: Icon }: { to: string; label: string; icon: typeof Search }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        cn(
+          "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors",
+          isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <span
+            className={cn(
+              "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
+              isActive ? "bg-raised" : "group-hover:bg-secondary",
+            )}
+          >
+            <Icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.2 : 1.8} />
+          </span>
+          <span className="truncate">{label}</span>
+        </>
+      )}
+    </NavLink>
+  );
+}
+
 /**
  * Top bar plus, below `lg`, a bottom tab bar: the labelled tabs don't fit
  * next to the wordmark on a phone, and the bottom of the screen is where thumbs are.
  */
-function Header() {
+function Header({ wide = false }: { wide?: boolean }) {
+  const { pathname } = useLocation();
+  const palette = useCommandPalette();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [moreFor, setMoreFor] = useState(pathname);
   // The workout screen has its own bottom action bar; tabs would sit under thumbs.
   const immersive = useMatch("/workouts/session/:id") !== null;
+  const inMore = MORE_ITEMS.some((item) => pathname.startsWith(item.to));
+
+  // Navigating closes the More sheet.
+  if (moreFor !== pathname) {
+    setMoreFor(pathname);
+    setMoreOpen(false);
+  }
 
   return (
     <>
       {/* Top padding clears the iPhone status bar in standalone mode. */}
       <header data-app-chrome className="sticky top-0 z-40 w-full bg-navbar/85 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-5 sm:px-8 lg:h-20">
+        <div
+          className={cn(
+            "mx-auto flex h-16 items-center justify-between gap-4 px-5 sm:px-8 lg:h-20",
+            wide ? "max-w-[1480px]" : "max-w-6xl",
+          )}
+        >
           <Wordmark className="shrink-0" />
           <nav
             aria-label="Main"
@@ -66,7 +130,7 @@ function Header() {
                 to={item.to}
                 className={({ isActive }) =>
                   cn(
-                    "flex h-9 items-center rounded-full px-4 text-[13px] transition-colors",
+                    "flex h-9 items-center rounded-full px-3.5 text-[13px] transition-colors",
                     isActive
                       ? "bg-primary font-semibold text-primary-foreground"
                       : "text-muted-foreground hover:text-foreground",
@@ -77,7 +141,10 @@ function Header() {
               </NavLink>
             ))}
           </nav>
-          <ProfileLink />
+          <div className="flex items-center gap-2">
+            <SearchButton />
+            <ProfileLink />
+          </div>
         </div>
       </header>
 
@@ -89,33 +156,63 @@ function Header() {
           immersive && "hidden",
         )}
       >
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              cn(
-                "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors",
-                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span
-                  className={cn(
-                    "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
-                    isActive ? "bg-raised" : "group-hover:bg-secondary",
-                  )}
-                >
-                  <item.icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.2 : 1.8} />
-                </span>
-                <span className="truncate">{item.label}</span>
-              </>
-            )}
-          </NavLink>
+        {PHONE_TABS.map((item) => (
+          <TabLink key={item.to} {...item} />
         ))}
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          aria-label="More: calendar, workouts, media and profile"
+          className={cn(
+            "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors",
+            inMore ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
+          <span
+            className={cn(
+              "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
+              inMore ? "bg-raised" : "group-hover:bg-secondary",
+            )}
+          >
+            <Ellipsis className="h-[18px] w-[18px]" strokeWidth={inMore ? 2.2 : 1.8} />
+          </span>
+          <span>{inMore ? (MORE_ITEMS.find((item) => pathname.startsWith(item.to))?.label ?? "More") : "More"}</span>
+        </button>
       </nav>
+
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+        <SheetContent className="gap-3">
+          <SheetTitle className="px-1 font-serif text-2xl font-normal">More</SheetTitle>
+          <SheetDescription className="sr-only">Calendar, workouts, media and profile</SheetDescription>
+          <div className="grid grid-cols-2 gap-2">
+            {MORE_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  cn(
+                    "flex flex-col gap-3 rounded-2xl border p-4 transition-colors",
+                    isActive ? "border-rating/50 bg-rating/10" : "border-border bg-secondary/40 hover:bg-secondary",
+                  )
+                }
+              >
+                <item.icon className="h-5 w-5 text-soft" />
+                <span className="text-[15px] text-foreground">{item.label}</span>
+              </NavLink>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setMoreOpen(false);
+              palette.open();
+            }}
+            className="flex h-12 items-center gap-3 rounded-2xl border border-border px-4 text-sm text-muted-foreground"
+          >
+            <Search className="h-4 w-4" /> Search or add anything
+          </button>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

@@ -7,7 +7,6 @@ import {
   BookCheck,
   Box,
   CalendarDays,
-  Flame,
   Inbox,
   Layers,
   Plus,
@@ -189,7 +188,6 @@ export default function TodosSidebar({
         )}
         <div className="h-2" />
         <Row to="/todos/logbook" icon={<BookCheck className="h-4 w-4 text-rating" />} label="Logbook" onNavigate={onNavigate} />
-        <Row to="/todos/habits" icon={<Flame className="h-4 w-4 text-streak" />} label="Habits" onNavigate={onNavigate} />
       </nav>
 
       {(looseProjects.length > 0 || areas.length > 0) && (

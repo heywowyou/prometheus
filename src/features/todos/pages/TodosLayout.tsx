@@ -1,10 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
-import { PanelLeft } from "lucide-react";
+import { NavLink, Outlet, useLocation, useSearchParams } from "react-router-dom";
+import { Archive, BookCheck, CalendarDays, Inbox, Layers, PanelLeft, Star } from "lucide-react";
+import { cn } from "@lib/utils";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/ui/sheet";
 import { useTaskData } from "../hooks/useTaskData";
 import { TasksUiContext, type TasksUi } from "../tasks-ui";
 import TodosSidebar from "../components/TodosSidebar";
+
+const PHONE_LISTS = [
+  { to: "/todos/today", label: "Today", icon: Star },
+  { to: "/todos/inbox", label: "Inbox", icon: Inbox },
+  { to: "/todos/upcoming", label: "Upcoming", icon: CalendarDays },
+  { to: "/todos/anytime", label: "Anytime", icon: Layers },
+  { to: "/todos/someday", label: "Someday", icon: Archive },
+  { to: "/todos/logbook", label: "Logbook", icon: BookCheck },
+];
 
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -18,12 +28,20 @@ export default function TodosLayout() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [shownPath, setShownPath] = useState(pathname);
   const newTaskRef = useRef<(() => void) | null>(null);
+  const [params] = useSearchParams();
+  const taskParam = params.get("task");
+  const [openedFromLink, setOpenedFromLink] = useState<string | null>(null);
 
   // A route change closes the open task and the phone sheet.
   if (shownPath !== pathname) {
     setShownPath(pathname);
     setOpenId(null);
     setSheetOpen(false);
+  }
+  // `?task=<id>` (from search) opens that task once.
+  if (taskParam && taskParam !== openedFromLink) {
+    setOpenedFromLink(taskParam);
+    setOpenId(taskParam);
   }
 
   const registerNewTask = useCallback((focus: (() => void) | null) => {
@@ -65,15 +83,43 @@ export default function TodosLayout() {
           <TodosSidebar data={data} className="w-full" />
         </aside>
         <div className="min-w-0 flex-1">
-          <div className="mb-4 lg:hidden">
+          {/* Phones: the main lists as chips, projects and areas in the sheet. */}
+          <nav
+            aria-label="Lists"
+            className="-mx-5 mb-4 flex gap-1.5 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:hidden"
+          >
+            {PHONE_LISTS.map((list) => {
+              const count =
+                list.to === "/todos/inbox"
+                  ? data.index.inbox.filter((todo) => !todo.completed).length
+                  : list.to === "/todos/today"
+                    ? [...data.index.todayList, ...data.index.evening].filter((todo) => !todo.completed).length
+                    : 0;
+              return (
+                <NavLink
+                  key={list.to}
+                  to={list.to}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors",
+                      isActive ? "border-transparent bg-primary font-medium text-primary-foreground" : "border-border bg-card text-soft",
+                    )
+                  }
+                >
+                  <list.icon className="h-3.5 w-3.5" />
+                  {list.label}
+                  {count > 0 && <span className="tabular-nums opacity-70">{count}</span>}
+                </NavLink>
+              );
+            })}
             <button
               type="button"
               onClick={() => setSheetOpen(true)}
-              className="flex h-9 items-center gap-2 rounded-full border border-border bg-card px-3.5 text-sm text-soft"
+              className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3.5 text-sm text-soft"
             >
-              <PanelLeft className="h-4 w-4" /> Lists
+              <PanelLeft className="h-3.5 w-3.5" /> Projects
             </button>
-          </div>
+          </nav>
           <div className="mx-auto max-w-3xl">
             <Outlet context={data} />
           </div>

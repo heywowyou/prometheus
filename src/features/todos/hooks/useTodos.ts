@@ -115,6 +115,7 @@ export const useTodos = () => {
       writeToCache(updated);
       void queryClient.invalidateQueries({ queryKey: queryKeys.todos.historyOf(updated._id) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.todos.logbook() });
+      void queryClient.invalidateQueries({ queryKey: ["todos", "history", "all"] });
       // Reopened from the Logbook: it isn't in the list yet.
       if (!before) void queryClient.invalidateQueries({ queryKey: listKey });
       // A repeating task moved on and left a done copy behind: fetch the copy.
@@ -259,4 +260,14 @@ export const useTodoHistory = (id: string | null, days: number) => {
     enabled: id !== null,
   });
   return { history: query.data ?? null, loading: query.isPending };
+};
+
+/** Every habit's completion days over the last `days`, for the Habits page. */
+export const useHabitCompletions = (days: number) => {
+  const api = useTodosApi();
+  const query = useQuery({
+    queryKey: queryKeys.todos.habitCompletions(days),
+    queryFn: () => api.fetchHabitCompletions(days),
+  });
+  return { data: query.data ?? null, loading: query.isPending };
 };

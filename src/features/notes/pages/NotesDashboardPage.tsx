@@ -59,11 +59,10 @@ function NotesDashboardPage() {
   const tags = useNoteTags();
   const actions = useNoteActions();
 
-  // Ctrl/⌘+K anywhere, or "/" when not typing, jumps to search.
+  // "/" when not typing jumps to the filter. Ctrl/⌘+K belongs to the app-wide palette.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const combo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k";
-      if (combo || (event.key === "/" && !isTyping(event.target))) {
+      if (event.key === "/" && !isTyping(event.target)) {
         event.preventDefault();
         searchRef.current?.focus();
         searchRef.current?.select();
@@ -192,7 +191,7 @@ function NotesDashboardPage() {
             className="h-10 w-full rounded-full border border-border bg-card pl-9 pr-16 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
           />
           <kbd className="pointer-events-none absolute right-3.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-border px-1.5 text-[10px] text-muted-foreground sm:block">
-            Ctrl K
+            /
           </kbd>
         </div>
 

@@ -15,7 +15,9 @@ export const createQueryClient = (): QueryClient =>
       queries: {
         staleTime: 30_000,
         gcTime: 5 * 60_000,
-        refetchOnWindowFocus: false,
+        // Coming back to the app (a phone tab left open overnight) refreshes
+        // stale data, so yesterday's habits and tasks never linger.
+        refetchOnWindowFocus: true,
         retry: (failureCount, error) => {
           const { status } = toApiError(error);
           // Client errors won't fix themselves on a retry.

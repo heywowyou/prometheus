@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useCommandPalette } from "@app/command-palette";
 import { Outlet, useLocation, useMatch } from "react-router-dom";
 import { PanelLeft, Search } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/ui/sheet";
 import NotesSidebar from "../components/NotesSidebar";
-import QuickSwitcher from "../components/QuickSwitcher";
 import type { NotesOutletContext } from "../notes-layout-context";
 
 
@@ -12,20 +12,9 @@ export default function NotesLayout() {
   const { pathname } = useLocation();
   const match = useMatch("/notes/:id");
   const activeId = match?.params.id;
-  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const palette = useCommandPalette();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetPath, setSheetPath] = useState(pathname);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setSwitcherOpen((open) => !open);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
 
   // A route change closes the phone sheet.
   if (sheetPath !== pathname) {
@@ -34,7 +23,7 @@ export default function NotesLayout() {
   }
 
   const context: NotesOutletContext = {
-    openSwitcher: () => setSwitcherOpen(true),
+    openSwitcher: () => palette.open(),
     openSidebar: () => setSheetOpen(true),
   };
 
@@ -44,7 +33,7 @@ export default function NotesLayout() {
         data-app-chrome
         className="sticky top-24 hidden max-h-[calc(100dvh-7rem)] w-64 shrink-0 overflow-y-auto pb-6 pr-1 lg:block"
       >
-        <NotesSidebar activeId={activeId} onOpenSwitcher={() => setSwitcherOpen(true)} />
+        <NotesSidebar activeId={activeId} onOpenSwitcher={() => palette.open()} />
       </aside>
 
       <div className="min-w-0 flex-1">
@@ -59,7 +48,7 @@ export default function NotesLayout() {
           <button
             type="button"
             aria-label="Search notes"
-            onClick={() => setSwitcherOpen(true)}
+            onClick={() => palette.open()}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-soft"
           >
             <Search className="h-4 w-4" />
@@ -78,12 +67,11 @@ export default function NotesLayout() {
             onNavigate={() => setSheetOpen(false)}
             onOpenSwitcher={() => {
               setSheetOpen(false);
-              setSwitcherOpen(true);
+              palette.open();
             }}
           />
         </SheetContent>
       </Sheet>
-      <QuickSwitcher open={switcherOpen} onOpenChange={setSwitcherOpen} />
     </div>
   );
 }

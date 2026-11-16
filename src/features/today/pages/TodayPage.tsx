@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Check, ImageIcon, NotebookPen, Pause, Play, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -7,14 +7,15 @@ import { cn } from "@lib/utils";
 import { relativeDate } from "@lib/date/relative";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
-import { useTodos } from "@features/todos/hooks/useTodos";
-import { useTodoLists } from "@features/todos/hooks/useTodoLists";
-import { buildTaskIndex } from "@features/todos/task-views";
+import { useTaskData } from "@features/todos/hooks/useTaskData";
+import { useRowContext } from "@features/todos/hooks/useTaskActions";
+import TasksUiProvider from "@features/todos/components/tasks/TasksUiProvider";
+import TaskList from "@features/todos/components/tasks/TaskList";
+import NewTaskInput from "@features/todos/components/tasks/NewTaskInput";
 import { useEvents } from "@features/calendar/hooks/useCalendar";
 import { COLOR_VARS } from "@features/calendar/types/calendar-types";
 import { formatTime } from "@features/calendar/calendar-dates";
 import { toDayKey } from "@features/todos/due";
-import TodoItem from "@features/todos/components/TodoItem";
 import { compareOpenTodos, isOverdue } from "@features/todos/due";
 import { timerElapsedMs, type TimerAction, type Todo } from "@features/todos/types/todo-types";
 import { useMediaLogs } from "@features/media/hooks/useMediaLogs";
@@ -25,7 +26,7 @@ import WorkoutsTodayCard from "@features/workouts/components/WorkoutsTodayCard";
 import { useWorkoutSummary } from "@features/workouts/hooks/useWorkouts";
 import { nextRoutine } from "@features/workouts/workout-format";
 
-const TODO_LIMIT = 6;
+const TODO_LIMIT = 8;
 const SHELF_LIMIT = 6;
 const RECENT_NOTES = 4;
 
@@ -204,16 +205,19 @@ function HabitPill({
 function TodayPage() {
   const navigate = useNavigate();
   const { user } = useUser();
-  const [now] = useState(() => new Date());
+  // Ticks every 30 s, so the date, greeting and lists roll over at midnight.
+  const liveNow = useNow(true, 30_000);
+  const now = useMemo(() => new Date(liveNow), [liveNow]);
 
-  const { todos, loading: todosLoading, toggleTodo, timerAction } = useTodos();
+  const data = useTaskData();
+  const { todos, loading: todosLoading, toggleTodo, timerAction } = data;
+  const rowContext = useRowContext(data, { showList: true });
   const { logs, loading: mediaLoading } = useMediaLogs();
   const { notes, loading: notesLoading } = useNotes({ view: "active" });
   const { createNote } = useNoteActions();
   const { summary: workouts } = useWorkoutSummary();
   const todayKeyValue = toDayKey(now);
   const { events: agenda, loading: agendaLoading } = useEvents(todayKeyValue, todayKeyValue);
-  const liveNow = useNow(true, 30_000);
 
   const daily = useMemo(
     () =>
@@ -223,19 +227,22 @@ function TodayPage() {
     [todos],
   );
   const dailyDone = daily.filter((todo) => todo.completed).length;
+  // The week's and month's habits sit with the daily ones, not in the task list.
+  const periodic = useMemo(
+    () =>
+      todos
+        .filter((todo) => todo.recurrenceType === "weekly" || todo.recurrenceType === "monthly")
+        .sort((a, b) => Number(a.completed) - Number(b.completed) || compareOpenTodos(a, b)),
+    [todos],
+  );
   const running = todos.find(isRunning) ?? null;
 
-  // The to-do Today list (overdue first), then the week's and month's habits.
-  const { projects, areas } = useTodoLists();
+  // The to-do Today list: overdue first, done ones (ticked today) last.
   const due = useMemo(() => {
-    const index = buildTaskIndex(todos, projects, areas, now);
-    const tasks = [...index.todayList, ...index.evening].filter((todo) => !todo.completed);
-    const rank = (todo: Todo) => (isOverdue(todo, now) ? 0 : 1);
-    const habits = todos.filter(
-      (todo) => !todo.completed && (todo.recurrenceType === "weekly" || todo.recurrenceType === "monthly"),
-    );
-    return [...tasks.sort((a, b) => rank(a) - rank(b)), ...habits.sort(compareOpenTodos)];
-  }, [todos, projects, areas, now]);
+    const tasks = [...data.index.todayList, ...data.index.evening];
+    const rank = (todo: Todo) => (todo.completed ? 2 : isOverdue(todo, now) ? 0 : 1);
+    return tasks.sort((a, b) => rank(a) - rank(b));
+  }, [data.index, now]);
   const overdue = due.filter((todo) => isOverdue(todo, now)).length;
 
   const inProgress = logs.filter((log) => log.status === "in_progress");
@@ -310,13 +317,18 @@ function TodayPage() {
 
       {running && <NowCard todo={running} onTimer={timerAction} onToggle={toggleTodo} />}
 
-      {(todosLoading || daily.length > 0) && (
+      {(todosLoading || daily.length > 0 || periodic.length > 0) && (
         <Section
           title="Habits"
           aside={
             !todosLoading && (
-              <span className="text-[13px] tabular-nums text-muted-foreground">
-                {dailyDone} of {daily.length}
+              <span className="flex items-center gap-4">
+                {daily.length > 0 && (
+                  <span className="text-[13px] tabular-nums text-muted-foreground">
+                    {dailyDone} of {daily.length}
+                  </span>
+                )}
+                <AsideLink to="/habits">All habits</AsideLink>
               </span>
             )
           }
@@ -328,10 +340,24 @@ function TodayPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2.5">
-              {daily.map((todo) => (
-                <HabitPill key={todo._id} todo={todo} onToggle={toggleTodo} onTimer={timerAction} />
-              ))}
+            <div className="space-y-4">
+              {daily.length > 0 && (
+                <div className="flex flex-wrap gap-2.5">
+                  {daily.map((todo) => (
+                    <HabitPill key={todo._id} todo={todo} onToggle={toggleTodo} onTimer={timerAction} />
+                  ))}
+                </div>
+              )}
+              {periodic.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">This week and month</p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {periodic.map((todo) => (
+                      <HabitPill key={todo._id} todo={todo} onToggle={toggleTodo} onTimer={timerAction} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </Section>
@@ -360,35 +386,36 @@ function TodayPage() {
       )}
 
       <Section title="To do" aside={<AsideLink to="/todos/today">All tasks</AsideLink>}>
-        {todosLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="h-14 animate-pulse rounded-2xl bg-card" />
-            ))}
-          </div>
-        ) : due.length === 0 ? (
-          <p className="font-serif text-xl italic text-soft">Nothing left to do. Nice.</p>
-        ) : (
-          <>
-            <div className="divide-y divide-border">
-              {due.slice(0, TODO_LIMIT).map((todo) => (
-                <div key={todo._id} className="py-0.5">
-                  <div className="-mx-3">
-                    <TodoItem todo={todo} onToggle={toggleTodo} onTimer={timerAction} />
-                  </div>
-                </div>
+        <TasksUiProvider>
+          <NewTaskInput
+            defaults={{ when: todayKeyValue }}
+            projects={data.projects}
+            areas={data.areas}
+            onCreate={data.createTodo}
+            placeholder="Add a task for today"
+          />
+          {todosLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-11 animate-pulse rounded-xl bg-card" />
               ))}
             </div>
-            {due.length > TODO_LIMIT && (
-              <Link
-                to="/todos/today"
-                className="mt-3 inline-block text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {due.length - TODO_LIMIT} more in Todos →
-              </Link>
-            )}
-          </>
-        )}
+          ) : due.length === 0 ? (
+            <p className="py-3 font-serif text-xl italic text-soft">Nothing left to do. Nice.</p>
+          ) : (
+            <>
+              <TaskList todos={due.slice(0, TODO_LIMIT)} context={rowContext} />
+              {due.length > TODO_LIMIT && (
+                <Link
+                  to="/todos/today"
+                  className="mt-3 inline-block text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {due.length - TODO_LIMIT} more in Tasks
+                </Link>
+              )}
+            </>
+          )}
+        </TasksUiProvider>
       </Section>
 
       <WorkoutsTodayCard />

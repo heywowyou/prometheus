@@ -147,6 +147,16 @@ function TopPicksRow({ config, picks, onChange }: TopPicksRowProps) {
         <h2 className="section-title sm:text-[2rem]">{config.plural}</h2>
       </div>
 
+      {picks.length === 0 ? (
+        // An empty category is one quiet line, not five empty frames.
+        <button
+          type="button"
+          onClick={() => setSlot(0)}
+          className="flex w-full items-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3.5 text-left text-sm text-muted-foreground transition-colors hover:border-muted-foreground/60 hover:text-foreground"
+        >
+          <Plus className="h-4 w-4" /> Pick your top {TOP_PICKS_LIMIT} {config.plural.toLowerCase()}
+        </button>
+      ) : (
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={picks.map((log) => log._id)} strategy={rectSortingStrategy}>
           <ul className="grid grid-cols-5 items-start gap-2 sm:gap-4">
@@ -159,6 +169,7 @@ function TopPicksRow({ config, picks, onChange }: TopPicksRowProps) {
           </ul>
         </SortableContext>
       </DndContext>
+      )}
 
       <TopPickSearchDialog
         open={slot !== null}

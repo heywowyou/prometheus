@@ -101,7 +101,7 @@ export default function NotesHomePage() {
           <Search className="h-5 w-5 text-muted-foreground" />
           <span>
             <span className="block text-sm text-foreground">Search</span>
-            <span className="block text-xs text-muted-foreground">Ctrl K from anywhere in notes</span>
+            <span className="block text-xs text-muted-foreground">Notes, tasks and more. Ctrl K from anywhere</span>
           </span>
         </button>
       </div>

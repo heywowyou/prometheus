@@ -18,6 +18,8 @@ import {
 
 /** What a new event starts with (a clicked slot or a dragged range). */
 export interface EventDraft {
+  /** Prefilled title (an event typed in search). */
+  title?: string;
   allDay: boolean;
   startDay: string;
   endDay: string;
@@ -87,7 +89,7 @@ const fromOccurrence = (occurrence: CalendarOccurrence): FormState => {
 };
 
 const fromDraft = (draft: EventDraft): FormState => ({
-  title: "",
+  title: draft.title ?? "",
   allDay: draft.allDay,
   startDay: draft.startDay,
   startTime: hhmm(draft.startMinutes),

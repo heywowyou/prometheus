@@ -14,6 +14,7 @@ export const queryKeys = {
     historyOf: (id: string) => ["todos", "history", id] as const,
     history: (id: string, days: number) => ["todos", "history", id, days] as const,
     lists: () => ["todos", "lists"] as const,
+    habitCompletions: (days: number) => ["todos", "history", "all", days] as const,
     logbook: () => ["todos", "logbook"] as const,
   },
   calendar: {

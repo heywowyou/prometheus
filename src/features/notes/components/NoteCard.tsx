@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Pin, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -53,11 +53,9 @@ function NoteCard({
   onDeleteForever,
   onTagClick,
 }: NoteCardProps) {
-  const navigate = useNavigate();
   const isGrid = layout === "grid";
   const inTrash = view === "trash";
   const title = note.title.trim() || "Untitled";
-  const open = () => navigate(`/notes/${note._id}`);
 
   const dateLine =
     inTrash && note.deletedAt
@@ -68,19 +66,11 @@ function NoteCard({
       : relativeDate(note.updatedAt);
 
   return (
+    // Stretched link: the title link covers the whole card, and the tag and
+    // menu buttons sit above it, so no interactive element is nested in another.
     <div
-      role="link"
-      tabIndex={0}
-      onClick={open}
-      onKeyDown={(event) => {
-        if (event.target !== event.currentTarget) return;
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          open();
-        }
-      }}
       className={cn(
-        "group relative cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group relative transition-colors has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
         isGrid
           ? "flex min-h-[10rem] flex-col rounded-3xl border border-border bg-card p-5 hover:border-muted-foreground/50"
           : "flex items-start gap-3 border-t border-border py-4",
@@ -95,14 +85,15 @@ function NoteCard({
       )}
 
       <div className={cn("min-w-0 flex-1", isGrid && "flex flex-col pr-6")}>
-        <p
+        <Link
+          to={`/notes/${note._id}`}
           className={cn(
-            "truncate font-serif text-xl leading-snug text-foreground transition-colors group-hover:text-rating",
+            "block truncate font-serif text-xl leading-snug text-foreground transition-colors outline-none before:absolute before:inset-0 group-hover:text-rating",
             !note.title.trim() && "italic text-soft",
           )}
         >
           {title}
-        </p>
+        </Link>
 
         {isGrid && (
           <p className="mt-2 line-clamp-3 flex-1 text-[13px] leading-relaxed text-muted-foreground">
@@ -111,7 +102,7 @@ function NoteCard({
         )}
 
         {note.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="relative z-10 mt-2 flex w-fit flex-wrap gap-1">
             {note.tags.slice(0, MAX_VISIBLE_TAGS).map((tag) => (
               <button
                 key={tag}
@@ -144,8 +135,8 @@ function NoteCard({
       </div>
 
       <div
-        onClick={(event) => event.stopPropagation()}
         className={cn(
+          "relative z-10",
           // Hover reveals the menu on desktop; keyboard focus, an open menu and
           // touch screens (no hover) keep it visible.
           "shrink-0 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 has-[[data-state=open]]:opacity-100 touch:opacity-100",
