@@ -7,7 +7,6 @@ import { Typography } from "@tiptap/extension-typography"
 import { TextStyle } from "@tiptap/extension-text-style"
 import { TextAlign } from "@tiptap/extension-text-align"
 import { TaskList } from "@tiptap/extension-task-list"
-import { TaskItem } from "@tiptap/extension-task-item"
 import { Highlight } from "@tiptap/extension-highlight"
 import { Placeholder, Selection } from "@tiptap/extensions"
 import {
@@ -18,6 +17,7 @@ import {
   UnsetAllMarks,
   ResetMarksOnEnter,
   FileHandler,
+  TaskItem,
 } from "../extensions"
 import { cn } from "@lib/utils"
 import { fileToBase64, getOutput, randomId } from "../utils"
