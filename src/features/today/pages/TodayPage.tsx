@@ -4,6 +4,7 @@ import { Check, ImageIcon, NotebookPen, Pause, Play, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@clerk/clerk-react";
 import { cn } from "@lib/utils";
+import { AppIcon } from "@components/ui/icon-picker";
 import { relativeDate } from "@lib/date/relative";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
@@ -197,6 +198,8 @@ function HabitPill({
         ) : (
           <Play className="h-3.5 w-3.5 shrink-0 fill-current text-muted-foreground" />
         )
+      ) : todo.icon ? (
+        <AppIcon name={todo.icon} className={cn("h-4 w-4", skipped ? "text-muted-foreground" : "text-soft")} />
       ) : null}
       <span className={cn("truncate", todo.completed && "line-through decoration-soft/50")}>
         {todo.text}

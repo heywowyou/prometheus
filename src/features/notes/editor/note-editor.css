@@ -123,13 +123,13 @@
   @apply my-2 flex gap-3 rounded-2xl border border-border bg-card px-4 py-3;
 }
 
-.note-editor .callout-emoji,
-.note-render .callout-emoji {
-  @apply flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-lg text-lg leading-none;
+.note-editor .callout-icon,
+.note-render .callout-icon {
+  @apply flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-lg text-soft;
 }
 
-.note-editor button.callout-emoji:hover {
-  @apply bg-secondary;
+.note-editor button.callout-icon:hover {
+  @apply bg-secondary text-foreground;
 }
 
 .note-editor .callout-content,

@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@components/ui/select";
 import { cn } from "@lib/utils";
+import { SmilePlus } from "lucide-react";
+import { AppIcon, IconPicker } from "@components/ui/icon-picker";
 import {
   MAX_DURATION_GOAL,
   type InteractionType,
@@ -28,6 +30,7 @@ type HabitCadence = Exclude<RecurrenceType, "none">;
 
 interface HabitFormValues {
   text: string;
+  icon: string;
   recurrenceType: HabitCadence;
   /** Daily habits: 7 = every day, otherwise days a week. */
   perWeek: number;
@@ -37,6 +40,7 @@ interface HabitFormValues {
 
 const initialValues = (task: Todo | null, defaultRecurrence: HabitCadence): HabitFormValues => ({
   text: task?.text ?? "",
+  icon: task?.icon ?? "",
   recurrenceType: task && task.recurrenceType !== "none" ? task.recurrenceType : defaultRecurrence,
   perWeek: task?.perWeek ?? 7,
   interactionType: task?.interactionType ?? "checkbox",
@@ -60,6 +64,8 @@ export interface TaskSubmitValues {
   dueDate: string | null;
   /** Daily habits: days a week, or null for every day. */
   perWeek: number | null;
+  /** A Lucide icon name, "" for none. */
+  icon: string;
 }
 
 interface TaskModalProps {
@@ -100,6 +106,7 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
         durationGoal: minutes,
         dueDate: null,
         perWeek: values.recurrenceType === "daily" && values.perWeek < 7 ? values.perWeek : null,
+        icon: values.icon,
       });
       onClose();
     } catch {
@@ -118,6 +125,17 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
       <div className="space-y-5 py-2">
         <div className="space-y-1.5">
           <Label htmlFor="habit-text">Habit</Label>
+          <div className="flex gap-2">
+          <IconPicker value={values.icon} onChange={(icon) => set("icon", icon)}>
+            <button
+              type="button"
+              aria-label={values.icon ? "Change icon" : "Add an icon"}
+              title={values.icon ? "Change icon" : "Add an icon"}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <AppIcon name={values.icon} className="h-[18px] w-[18px] text-foreground" fallback={<SmilePlus className="h-[18px] w-[18px]" strokeWidth={1.75} />} />
+            </button>
+          </IconPicker>
           <Input
             id="habit-text"
             type="text"
@@ -132,6 +150,7 @@ function TaskModalBody({ onClose, task = null, onSubmit, defaultRecurrence }: Bo
             }}
             autoFocus
           />
+          </div>
         </div>
 
         <div className="space-y-1.5">

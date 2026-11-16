@@ -40,6 +40,8 @@ export interface CreateTodoPayload extends TaskFieldsPayload {
   dueDate?: string;
   /** Daily habits: days a week to aim for (1-6), null for every day. */
   perWeek?: number | null;
+  /** A Lucide icon name, "" for none. */
+  icon?: string;
 }
 
 /** `dueDate: null` clears the deadline. */

@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { FileText, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { AppIcon } from "@components/ui/icon-picker";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
 import { getErrorMessage } from "@lib/api/errors";
@@ -8,83 +9,14 @@ import { useUploadApi } from "@features/media/api/upload-api";
 import type { NoteCover } from "../types/note-types";
 import { COVER_GRADIENTS } from "../note-decor";
 
-/** A page's emoji, or a document glyph when it has none. */
+/** A page's Lucide icon, or a document glyph when it has none. */
 export function NoteIcon({ icon, className }: { icon?: string; className?: string }) {
-  if (icon) {
-    return (
-      <span aria-hidden className={cn("inline-flex shrink-0 items-center justify-center leading-none", className)}>
-        {icon}
-      </span>
-    );
-  }
-  return <FileText aria-hidden className={cn("shrink-0 text-muted-foreground", className)} strokeWidth={1.75} />;
-}
-
-const EMOJI_GROUPS: Array<{ label: string; emojis: string[] }> = [
-  { label: "Common", emojis: ["📝", "📌", "💡", "✅", "⭐", "🔥", "📚", "🎯", "🧠", "🗂️", "📅", "🗓️", "✍️", "📖", "🔖", "📎"] },
-  { label: "Life", emojis: ["🏠", "🍳", "🛒", "✈️", "🧳", "🏖️", "🎁", "💰", "🩺", "🧘", "🏋️", "🚴", "🏃", "⚽", "🎸", "🎧"] },
-  { label: "Work", emojis: ["💼", "💻", "🛠️", "⚙️", "🧪", "📈", "📊", "🗺️", "🧭", "🚀", "🔒", "🔑", "📨", "☎️", "🤝", "🏆"] },
-  { label: "Media", emojis: ["🎬", "📺", "🎮", "🎵", "📷", "🎨", "🖋️", "🎭", "📻", "🍿", "🕹️", "🎲", "🖼️", "🎤", "📽️", "🎞️"] },
-  { label: "Nature", emojis: ["🌱", "🌿", "🌻", "🌙", "☀️", "🌊", "⛰️", "🌲", "🍂", "❄️", "🌧️", "🌈", "🐾", "🦊", "🐈", "🐕"] },
-  { label: "Symbols", emojis: ["❤️", "💚", "💙", "🖤", "⚡", "✨", "💬", "❓", "❗", "⚠️", "🔴", "🟢", "🔵", "🟡", "⚪", "⚫"] },
-];
-
-/** A grid of emojis to set as a page icon. */
-export function IconPicker({
-  value,
-  onChange,
-  children,
-}: {
-  value?: string;
-  onChange: (icon: string) => void;
-  children: ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  const pick = (icon: string) => {
-    onChange(icon);
-    setOpen(false);
-  };
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent align="start" className="w-[22rem] p-3">
-        <div className="max-h-72 space-y-3 overflow-y-auto pr-1">
-          {EMOJI_GROUPS.map((group) => (
-            <div key={group.label}>
-              <p className="mb-1.5 px-1 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {group.label}
-              </p>
-              <div className="grid grid-cols-8 gap-0.5">
-                {group.emojis.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => pick(emoji)}
-                    aria-label={`Use ${emoji}`}
-                    className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-lg text-xl hover:bg-secondary",
-                      value === emoji && "bg-raised",
-                    )}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        {value && (
-          <button
-            type="button"
-            onClick={() => pick("")}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-border py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Remove icon
-          </button>
-        )}
-      </PopoverContent>
-    </Popover>
+    <AppIcon
+      name={icon}
+      className={cn("text-soft", className)}
+      fallback={<FileText aria-hidden className={cn("shrink-0 text-muted-foreground", className)} strokeWidth={1.75} />}
+    />
   );
 }
 

@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@components/ui/dropdown-menu";
 import { ProgressRing } from "@components/ui/progress-ring";
+import { AppIcon } from "@components/ui/icon-picker";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
 import { cn } from "@lib/utils";
@@ -237,7 +238,7 @@ function TodoItem({
             ) : (
               <span
                 className={cn(
-                  "truncate font-serif text-[1.1875rem] leading-snug",
+                  "flex min-w-0 items-center gap-2 truncate font-serif text-[1.1875rem] leading-snug",
                   todo.completed
                     ? "text-muted-foreground line-through decoration-muted-foreground/60"
                     : skipped
@@ -245,7 +246,8 @@ function TodoItem({
                       : "text-foreground",
                 )}
               >
-                {todo.text}
+                {todo.icon && <AppIcon name={todo.icon} className="h-[1.05rem] w-[1.05rem] text-soft" />}
+                <span className="truncate">{todo.text}</span>
               </span>
             )}
             {(detail || due) && (

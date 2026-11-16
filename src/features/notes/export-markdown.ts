@@ -1,3 +1,19 @@
+/** Obsidian callout type per callout icon (and per emoji, for notes saved before icons). */
+const CALLOUT_TYPES: Record<string, string> = {
+  lightbulb: "tip",
+  pin: "note",
+  "triangle-alert": "warning",
+  "circle-check": "success",
+  "circle-question-mark": "question",
+  flame: "important",
+  "💡": "tip",
+  "📌": "note",
+  "⚠️": "warning",
+  "✅": "success",
+  "❓": "question",
+  "🔥": "important",
+};
+
 /** A filesystem-safe name from the note title: "Trip ideas: Japan" → "trip-ideas-japan". */
 const fileNameFor = (title: string): string =>
   title
@@ -67,15 +83,16 @@ export const noteToMarkdown = async (title: string, html: string): Promise<strin
     filter: (node) => node.nodeName === "SPAN" && node.hasAttribute("data-mention-kind"),
     replacement: (content) => `@${content.trim()}`,
   });
-  // Callouts as Obsidian callouts: "> [!note] 💡" then the body, quoted.
+  // Callouts as Obsidian callouts ("> [!tip]"), their icon picking the callout type.
   service.addRule("callout", {
     filter: (node) => node.nodeName === "DIV" && node.getAttribute("data-type") === "callout",
     replacement: (_content, node) => {
       const element = node as HTMLElement;
-      const emoji = element.getAttribute("data-emoji") ?? "";
+      const icon = element.getAttribute("data-icon") ?? element.getAttribute("data-emoji") ?? "";
+      const type = CALLOUT_TYPES[icon] ?? "note";
       const inner = element.querySelector(".callout-content")?.innerHTML ?? "";
       const body = service.turndown(inner).trim().replace(/\n/g, "\n> ");
-      return `\n\n> [!note] ${emoji}\n> ${body}\n\n`;
+      return `\n\n> [!${type}]\n> ${body}\n\n`;
     },
   });
 

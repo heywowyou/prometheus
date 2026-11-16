@@ -1,11 +1,12 @@
 /* Tiptap extension module: node definitions and helpers ship next to their node views. */
 /* eslint-disable react-refresh/only-export-components */
+import { NoteIcon } from "../components/PageDecor";
 import { mergeAttributes, Node, type Editor, type Range } from "@tiptap/react";
 import { NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from "@tiptap/react";
 import Suggestion from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import { useNavigate } from "react-router-dom";
-import { FileText, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useNoteIndex } from "../hooks/useNotes";
 import { titleOf } from "../note-tree";
@@ -50,7 +51,7 @@ function NoteLinkView({ node, selected }: ReactNodeViewProps) {
       title={entry ? `Open ${label}` : "This page no longer exists"}
     >
       <span className="note-link-icon" aria-hidden>
-        {entry?.icon || <FileText className="inline h-[0.9em] w-[0.9em]" />}
+        <NoteIcon icon={entry?.icon} className="inline h-[0.9em] w-[0.9em]" />
       </span>
       {label}
     </NodeViewWrapper>
@@ -130,7 +131,7 @@ export const NoteLink = Node.create<NoteLinkOptions>({
             .map<SuggestionItem>((entry) => ({
               key: entry._id,
               title: titleOf(entry),
-              icon: entry.icon ? <span>{entry.icon}</span> : <FileText className="h-4 w-4" />,
+              icon: <NoteIcon icon={entry.icon} className="h-4 w-4" />,
               run: (editor, range) => insertNoteLink(editor, range, entry._id, titleOf(entry)),
             }));
           const title = query.replace(/\]+$/, "").trim();

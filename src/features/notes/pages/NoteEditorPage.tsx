@@ -51,7 +51,8 @@ import type { MentionSources } from "../editor/item-mention";
 import type { SlashActions } from "../editor/slash-command";
 import TableBubbleMenu from "../editor/TableBubbleMenu";
 import TagInput from "../components/TagInput";
-import { CoverPicker, IconPicker, NoteIcon } from "../components/PageDecor";
+import { CoverPicker, NoteIcon } from "../components/PageDecor";
+import { IconPicker } from "@components/ui/icon-picker";
 import MoveToDialog from "../components/MoveToDialog";
 import VersionHistoryDialog from "../components/VersionHistoryDialog";
 import BacklinksPanel from "../components/BacklinksPanel";
@@ -533,11 +534,11 @@ function NoteEditor({ note, save, onRestored }: EditorProps) {
                 disabled={inTrash}
                 aria-label="Change icon"
                 className={cn(
-                  "relative mb-2 flex h-16 w-16 items-center justify-center rounded-2xl text-[3.25rem] leading-none transition-colors hover:bg-secondary",
-                  cover && "-mt-10",
+                  "relative mb-3 flex h-16 w-16 items-center justify-center rounded-2xl transition-colors hover:bg-secondary",
+                  cover && "-mt-10 border border-border bg-card",
                 )}
               >
-                {icon}
+                <NoteIcon icon={icon} className="h-10 w-10 text-foreground" />
               </button>
             </IconPicker>
           )}

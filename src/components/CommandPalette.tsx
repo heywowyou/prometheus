@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@components/ui/dialog";
 import { NAV_ITEMS } from "@app/navigation";
 import { cn } from "@lib/utils";
+import { AppIcon } from "@components/ui/icon-picker";
 import { useNoteActions, useNoteIndex, useNotes } from "@features/notes/hooks/useNotes";
 import { NoteIcon } from "@features/notes/components/PageDecor";
 import { dailyTitle, titleOf } from "@features/notes/note-tree";
@@ -170,7 +171,7 @@ function PaletteBody({ initialQuery, close }: { initialQuery: string; close: () 
       out.push({
         key: `habit-${habit._id}`,
         group: "Habits",
-        icon: <Sprout className="h-4 w-4 text-rating" />,
+        icon: <AppIcon name={habit.icon} className="h-4 w-4 text-rating" fallback={<Sprout className="h-4 w-4 text-rating" />} />,
         title: habit.text,
         subtitle: habit.recurrenceType,
         run: go("/habits"),

@@ -1,11 +1,12 @@
 /* Tiptap extension module: node definitions and helpers ship next to their node views. */
 /* eslint-disable react-refresh/only-export-components */
+import { NoteIcon } from "../components/PageDecor";
 import { mergeAttributes, Node } from "@tiptap/react";
 import { NodeViewWrapper, ReactNodeViewRenderer, type ReactNodeViewProps } from "@tiptap/react";
 import Suggestion from "@tiptap/suggestion";
 import { PluginKey } from "@tiptap/pm/state";
 import { useNavigate } from "react-router-dom";
-import { Check, CheckSquare, Dumbbell, FileText, ImageIcon, Play } from "lucide-react";
+import { Check, CheckSquare, Dumbbell, ImageIcon, Play } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useMediaLogs } from "@features/media/hooks/useMediaLogs";
 import { configForType } from "@features/media/media-config";
@@ -272,7 +273,7 @@ export const ItemMention = Node.create<ItemMentionOptions>({
                 key: `note:${entry._id}`,
                 group: "Pages",
                 title: titleOf(entry),
-                icon: entry.icon ? <span>{entry.icon}</span> : <FileText className="h-4 w-4" />,
+                icon: <NoteIcon icon={entry.icon} className="h-4 w-4" />,
                 run: (editor: Parameters<SuggestionItem["run"]>[0], range: Parameters<SuggestionItem["run"]>[1]) =>
                   insertNoteLink(editor, range, entry._id, titleOf(entry)),
               })),

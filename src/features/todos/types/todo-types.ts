@@ -31,6 +31,8 @@ export interface RepeatRule {
   weekdays: number[];
   /** `fixed`: on schedule; `afterCompletion`: counted from the day it's done. */
   mode: "fixed" | "afterCompletion";
+  /** Monthly only: day of the month (1-31, clamped), or -1 for the last day. */
+  monthDay?: number | null;
 }
 
 export interface ChecklistItem {
@@ -66,6 +68,8 @@ export interface Todo {
   perWeek?: number | null;
   /** Daily habits with `perWeek`: days done this week. */
   thisWeek?: number;
+  /** A Lucide icon name ("dumbbell"), or "" / absent for none. */
+  icon?: string;
   /** One-time tasks only: the day it's due, `YYYY-MM-DD`. */
   dueDate?: string | null;
   /** Manual position within its section, set by drag and drop. */
