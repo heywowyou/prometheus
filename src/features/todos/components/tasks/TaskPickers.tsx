@@ -3,7 +3,7 @@ import { Archive, Bell, Box, Check, Circle, Flag, Inbox, Layers, Moon, Repeat, S
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
 import { cn } from "@lib/utils";
 import { toDayKey } from "../../due";
-import { describeRepeat } from "../../task-parse";
+import { describeRepeat, ordinalDay } from "../../task-parse";
 import { dayLabel, nextMonday, shiftDayKey } from "../../task-views";
 import type { RepeatRule, TodoArea, TodoProject } from "../../types/todo-types";
 import MiniCalendar from "./MiniCalendar";
@@ -188,6 +188,7 @@ const PRESETS: Array<{ label: string; rule: RepeatRule }> = [
   { label: "Every weekday", rule: { every: 1, unit: "week", weekdays: [1, 2, 3, 4, 5], mode: "fixed" } },
   { label: "Every week", rule: { every: 1, unit: "week", weekdays: [], mode: "fixed" } },
   { label: "Every month", rule: { every: 1, unit: "month", weekdays: [], mode: "fixed" } },
+  { label: "Every month on the 1st", rule: { every: 1, unit: "month", weekdays: [], mode: "fixed", monthDay: 1 } },
   { label: "Every year", rule: { every: 1, unit: "year", weekdays: [], mode: "fixed" } },
 ];
 
@@ -206,6 +207,7 @@ const sameRule = (a: RepeatRule | null, b: RepeatRule) =>
   a?.every === b.every &&
   a.unit === b.unit &&
   a.mode === b.mode &&
+  (a.monthDay ?? null) === (b.monthDay ?? null) &&
   [...a.weekdays].sort().join() === [...b.weekdays].sort().join();
 
 /** Presets first; "Custom" opens every N units, weekdays and schedule mode. */
@@ -282,7 +284,7 @@ export function RepeatPicker({
               <select
                 value={draft.unit}
                 onChange={(event) =>
-                  update({ unit: event.target.value as RepeatRule["unit"], weekdays: [] })
+                  update({ unit: event.target.value as RepeatRule["unit"], weekdays: [], monthDay: null })
                 }
                 className="rounded-md border border-border bg-secondary px-2 py-1 text-foreground"
               >
@@ -315,6 +317,27 @@ export function RepeatPicker({
                   );
                 })}
               </div>
+            )}
+            {draft.unit === "month" && (
+              <label className="flex items-center gap-2">
+                On
+                <select
+                  value={draft.monthDay ?? 0}
+                  onChange={(event) => {
+                    const day = Number(event.target.value);
+                    update({ monthDay: day === 0 ? null : day });
+                  }}
+                  className="min-w-0 flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-foreground"
+                >
+                  <option value={0}>the same day each month</option>
+                  {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
+                    <option key={day} value={day}>
+                      {ordinalDay(day)}
+                    </option>
+                  ))}
+                  <option value={-1}>the last day</option>
+                </select>
+              </label>
             )}
             <div className="flex rounded-full bg-secondary p-0.5 text-xs">
               {(

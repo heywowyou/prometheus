@@ -146,6 +146,15 @@ const readRepeat = (raw: string): RepeatRule | null => {
   if (text === "yearly" || text === "annually" || text === "every year") return { ...base, unit: "year" };
   if (text === "every weekday" || text === "every weekdays") return { ...base, unit: "week", weekdays: [1, 2, 3, 4, 5] };
   if (text === "every weekend") return { ...base, unit: "week", weekdays: [0, 6] };
+  // A set day of the month: "every month on the 1st", "every 15th", "le 1er de chaque mois".
+  const monthDayMatch =
+    /^(?:every month|monthly) on the (?:(\d{1,2})(?:st|nd|rd|th)?|(last) day)$/.exec(text) ??
+    /^every (\d{1,2})(?:st|nd|rd|th)(?: of the month)?$/.exec(text) ??
+    /^(?:le |tous les )(?:(\d{1,2})(?:er|e)?|(dernier) jour) (?:de chaque|du) mois$/.exec(text);
+  if (monthDayMatch) {
+    const day = monthDayMatch[2] ? -1 : Number(monthDayMatch[1]);
+    if (day === -1 || (day >= 1 && day <= 31)) return { ...base, unit: "month", monthDay: day };
+  }
   let match = /^every (other |\d{1,3} )?(day|week|month|year)s?$/.exec(text);
   if (match) {
     const every = match[1] === "other " ? 2 : match[1] ? Number(match[1]) : 1;
@@ -163,7 +172,7 @@ const readRepeat = (raw: string): RepeatRule | null => {
 };
 
 const REPEAT_PATTERN = new RegExp(
-  `(?:^|\\s)(daily|weekly|monthly|yearly|annually|every (?:weekdays?|weekend|(?:other |\\d{1,3} )?(?:days?|weeks?|months?|years?)|(?:${WEEKDAY_WORD})(?:\\s*(?:,|and|&)\\s*(?:${WEEKDAY_WORD}))*))(?=\\s|$)`,
+  `(?:^|\\s)((?:every month|monthly) on the (?:\\d{1,2}(?:st|nd|rd|th)?|last day)|every \\d{1,2}(?:st|nd|rd|th)(?: of the month)?|(?:le |tous les )(?:\\d{1,2}(?:er|e)?|dernier jour) (?:de chaque|du) mois|daily|weekly|monthly|yearly|annually|every (?:weekdays?|weekend|(?:other |\\d{1,3} )?(?:days?|weeks?|months?|years?)|(?:${WEEKDAY_WORD})(?:\\s*(?:,|and|&)\\s*(?:${WEEKDAY_WORD}))*))(?=\\s|$)`,
   "i",
 );
 const DEADLINE_PATTERN = new RegExp(`(?:^|\\s)((?:due|deadline|by) @?(${DATE_EXPR}))(?=\\s|$|[.,])`, "i");
@@ -308,6 +317,14 @@ export const parseTask = (raw: string, context: ParseContext = {}): ParsedTask =
 
 const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** "the 1st", "the 22nd", "the last day". */
+export const ordinalDay = (day: number): string => {
+  if (day === -1) return "the last day";
+  const tens = day % 100;
+  const suffix = tens >= 11 && tens <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[day % 10] ?? "th";
+  return `the ${day}${suffix}`;
+};
+
 /** "Every day", "Every 2 weeks on Mon, Thu", "Monthly, after done". */
 export const describeRepeat = (rule: RepeatRule): string => {
   const unit = rule.unit;
@@ -324,6 +341,7 @@ export const describeRepeat = (rule: RepeatRule): string => {
         ? "Every weekday"
         : `${label} on ${days.map((day) => WEEKDAY_SHORT[day]).join(", ")}`;
   }
+  if (unit === "month" && rule.monthDay) label += ` on ${ordinalDay(rule.monthDay)}`;
   if (rule.mode === "afterCompletion") label += ", after done";
   return label;
 };
