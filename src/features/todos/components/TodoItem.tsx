@@ -1,19 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  CalendarClock,
-  CalendarDays,
-  Check,
-  Coffee,
-  Ellipsis,
-  PauseCircle,
-  Pause,
-  Pencil,
-  Play,
-  Repeat2,
-  RotateCcw,
-  Shredder,
-  Type,
-} from "lucide-react";
+import { CalendarClock, Check, Ellipsis, Pause, Play, Repeat2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -24,10 +10,13 @@ import {
 } from "@components/ui/dropdown-menu";
 import { ProgressRing } from "@components/ui/progress-ring";
 import { AppIcon } from "@components/ui/icon-picker";
+import { ActionSheet } from "@components/ui/action-sheet";
+import { useLongPress } from "@lib/hooks/useLongPress";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
 import { cn } from "@lib/utils";
 import { describeDue, type DueTone } from "../due";
+import { habitActions } from "../habit-actions";
 import {
   timerElapsedMs,
   type RecurrenceType,
@@ -97,7 +86,8 @@ function TodoItem({
 
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(todo.text);
-  const renameFromMenuRef = useRef(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const longPress = useLongPress(() => setSheetOpen(true), { disabled: renaming });
 
   // Complete the task once the running timer reaches its goal — once per run,
   // also when the page opens on a timer that finished while it was closed.
@@ -134,6 +124,16 @@ function TodoItem({
     if (text && text !== todo.text) onRename?.(todo._id, text);
   };
 
+  const handlers = { onToggle, onTimer, onEdit, onSkip, onHistory, onPause, onConvert, onDelete };
+  const actionHandlers = { ...handlers, onRename: onRename ? startRename : undefined };
+  const menuActions = habitActions(todo, actionHandlers, { elapsedMs: elapsed });
+  // The hold sheet also offers the tap action itself.
+  const sheetActions = habitActions(
+    todo,
+    actionHandlers,
+    { elapsedMs: elapsed, includeTick: true },
+  );
+
   const detail = (() => {
     if (skipped) return todo.recurrenceType === "daily" ? "Rest day" : "Skipped this time";
     if (isTimer && !todo.completed && elapsed > 0) {
@@ -153,9 +153,10 @@ function TodoItem({
     // the real toggle or timer button inside it, so controls are never nested.
     <div
       className={cn(
-        "group relative flex min-h-[3.5rem] cursor-pointer select-none items-center overflow-hidden rounded-2xl px-3 py-2.5 transition-colors hover:bg-secondary/60 has-[[data-row-main]:focus-visible]:ring-2 has-[[data-row-main]:focus-visible]:ring-ring",
+        "group relative flex min-h-[3.5rem] cursor-pointer select-none items-center [-webkit-touch-callout:none] overflow-hidden rounded-2xl px-3 py-2.5 transition-colors hover:bg-secondary/60 has-[[data-row-main]:focus-visible]:ring-2 has-[[data-row-main]:focus-visible]:ring-ring",
       )}
       onClick={activate}
+      {...longPress}
       onKeyDown={(event) => {
         if (event.key === "F2" && !renaming) {
           event.preventDefault();
@@ -297,80 +298,25 @@ function TodoItem({
             // After "Rename", keep focus in the new input rather than handing
             // it back to the trigger (which would blur and end the rename).
             onCloseAutoFocus={(event) => {
-              if (renameFromMenuRef.current) {
-                renameFromMenuRef.current = false;
-                event.preventDefault();
-              }
+              if (renaming) event.preventDefault();
             }}
           >
-            {onRename && (
-              <DropdownMenuItem
-                onClick={() => {
-                  renameFromMenuRef.current = true;
-                  startRename();
-                }}
-              >
-                <Type className="mr-2 h-3.5 w-3.5" />
-                Rename
-              </DropdownMenuItem>
-            )}
-            {onEdit && (
-              <DropdownMenuItem onClick={() => onEdit(todo)}>
-                <Pencil className="mr-2 h-3.5 w-3.5" />
-                Edit
-              </DropdownMenuItem>
-            )}
-            {isTimer && !todo.completed && (
-              <DropdownMenuItem onClick={() => onToggle(todo._id)}>
-                <Check className="mr-2 h-3.5 w-3.5" />
-                Mark done
-              </DropdownMenuItem>
-            )}
-            {isTimer && !todo.completed && elapsed > 0 && onTimer && (
-              <DropdownMenuItem onClick={() => onTimer(todo._id, "reset")}>
-                <RotateCcw className="mr-2 h-3.5 w-3.5" />
-                Reset timer
-              </DropdownMenuItem>
-            )}
-            {isRecurring && onSkip && !todo.completed && (
-              <DropdownMenuItem onClick={() => onSkip(todo._id)}>
-                <Coffee className="mr-2 h-3.5 w-3.5" />
-                {skipped ? "Undo skip" : todo.recurrenceType === "daily" ? "Skip today" : todo.recurrenceType === "weekly" ? "Skip this week" : "Skip this month"}
-              </DropdownMenuItem>
-            )}
-            {isRecurring && onHistory && (
-              <DropdownMenuItem onClick={() => onHistory(todo)}>
-                <CalendarDays className="mr-2 h-3.5 w-3.5" />
-                History
-              </DropdownMenuItem>
-            )}
-            {isRecurring && onPause && (
-              <DropdownMenuItem onClick={() => onPause(todo._id)}>
-                <PauseCircle className="mr-2 h-3.5 w-3.5" />
-                Pause
-              </DropdownMenuItem>
-            )}
-            {isRecurring && onConvert && (
-              <DropdownMenuItem onClick={() => onConvert(todo)}>
-                <Repeat2 className="mr-2 h-3.5 w-3.5" />
-                Turn into a repeating task
-              </DropdownMenuItem>
-            )}
-            {onDelete && (
-              <>
-                <DropdownMenuSeparator />
+            {menuActions.map(({ key, label, icon: Icon, onSelect, destructive }) => (
+              <div key={key}>
+                {destructive && <DropdownMenuSeparator />}
                 <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => onDelete(todo)}
+                  className={destructive ? "text-destructive focus:text-destructive" : undefined}
+                  onClick={onSelect}
                 >
-                  <Shredder className="mr-2 h-3.5 w-3.5" />
-                  Delete
+                  <Icon className="mr-2 h-3.5 w-3.5" />
+                  {label}
                 </DropdownMenuItem>
-              </>
-            )}
+              </div>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <ActionSheet open={sheetOpen} onOpenChange={setSheetOpen} title={todo.text} actions={sheetActions} />
     </div>
   );
 }

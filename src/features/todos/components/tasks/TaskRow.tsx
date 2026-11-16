@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Bell, Box, Circle, FileText, Flag, ListChecks, Moon, Repeat, Star } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/ui/sheet";
 import { useMediaQuery } from "@lib/hooks/useMediaQuery";
+import { useLongPress } from "@lib/hooks/useLongPress";
 import { cn } from "@lib/utils";
 import { daysUntil } from "../../due";
 import { dayLabel, isDay } from "../../task-views";
@@ -43,6 +44,9 @@ export default function TaskRow({
 }) {
   const phone = useMediaQuery("(max-width: 767px)");
   const cardRef = useRef<HTMLDivElement>(null);
+  // Phones: tap ticks the task, press and hold opens it. The hold fires on
+  // release, because holding then moving drags the row to reorder it.
+  const longPress = useLongPress(() => onOpenChange(true), { onRelease: true, disabled: !phone });
   const today = new Date();
 
   // Desktop card: click outside or Escape closes it.
@@ -101,7 +105,7 @@ export default function TaskRow({
         role="button"
         tabIndex={0}
         data-task-row
-        onClick={() => onOpenChange(true)}
+        onClick={() => (phone ? context.actions.toggle(todo._id) : onOpenChange(true))}
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget) return;
           if (event.key === "Enter" || event.key === " ") {
@@ -110,8 +114,14 @@ export default function TaskRow({
           }
         }}
         {...dragHandleProps}
+        {...longPress}
+        onPointerDown={(event) => {
+          // Both the drag sensor and the hold listen here.
+          (dragHandleProps?.onPointerDown as ((event: unknown) => void) | undefined)?.(event);
+          longPress.onPointerDown(event);
+        }}
         className={cn(
-          "group flex min-h-[2.75rem] cursor-default items-center gap-3 rounded-xl px-2.5 py-2 outline-none transition-colors hover:bg-secondary/50 focus-visible:bg-secondary/60",
+          "group flex min-h-[2.75rem] cursor-default select-none items-center [-webkit-touch-callout:none] gap-3 rounded-xl px-2.5 py-2 outline-none transition-colors hover:bg-secondary/50 focus-visible:bg-secondary/60",
           todo.completed && "opacity-55",
         )}
       >

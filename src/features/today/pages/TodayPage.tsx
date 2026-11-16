@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Check, ImageIcon, NotebookPen, Pause, Play, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@clerk/clerk-react";
 import { cn } from "@lib/utils";
 import { AppIcon } from "@components/ui/icon-picker";
+import { ActionSheet } from "@components/ui/action-sheet";
+import { useLongPress } from "@lib/hooks/useLongPress";
+import TaskModal from "@features/todos/components/TaskModal";
+import { habitActions } from "@features/todos/habit-actions";
 import { relativeDate } from "@lib/date/relative";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
@@ -149,11 +153,18 @@ function HabitPill({
   todo,
   onToggle,
   onTimer,
+  onSkip,
+  onEdit,
 }: {
   todo: Todo;
   onToggle: (id: string) => void;
   onTimer: (id: string, action: TimerAction) => void;
+  onSkip: (id: string) => void;
+  onEdit: (todo: Todo) => void;
 }) {
+  // Press and hold (phones): skip, edit, reset… without leaving Today.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const longPress = useLongPress(() => setSheetOpen(true));
   const running = isRunning(todo);
   const now = useNow(running);
   const isTimer = todo.interactionType === "timer";
@@ -174,13 +185,15 @@ function HabitPill({
       : `Mark ${todo.text} done`;
 
   return (
+    <>
     <button
       type="button"
       onClick={activate}
+      {...longPress}
       aria-label={label}
       aria-pressed={todo.completed}
       className={cn(
-        "flex h-11 max-w-full items-center gap-2 rounded-full border px-4 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex h-11 max-w-full select-none items-center gap-2 rounded-full border px-4 text-sm transition-colors [-webkit-touch-callout:none] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         todo.completed
           ? "border-raised bg-raised text-soft"
           : skipped
@@ -220,6 +233,17 @@ function HabitPill({
         </span>
       ) : null}
     </button>
+    <ActionSheet
+      open={sheetOpen}
+      onOpenChange={setSheetOpen}
+      title={todo.text}
+      actions={habitActions(
+        todo,
+        { onToggle, onTimer, onSkip, onEdit },
+        { elapsedMs: timerElapsedMs(todo, now), includeTick: true },
+      )}
+    />
+    </>
   );
 }
 
@@ -241,7 +265,8 @@ function TodayPage() {
   const now = useMemo(() => new Date(liveNow), [liveNow]);
 
   const data = useTaskData();
-  const { todos, loading: todosLoading, toggleTodo, timerAction } = data;
+  const { todos, loading: todosLoading, toggleTodo, timerAction, skipTodo, updateTodo } = data;
+  const [editingHabit, setEditingHabit] = useState<Todo | null>(null);
   const rowContext = useRowContext(data, { showList: true });
   const { logs, loading: mediaLoading } = useMediaLogs();
   const { notes, loading: notesLoading } = useNotes({ view: "active" });
@@ -377,7 +402,14 @@ function TodayPage() {
               {daily.length > 0 && (
                 <div className="flex flex-wrap gap-2.5">
                   {daily.map((todo) => (
-                    <HabitPill key={todo._id} todo={todo} onToggle={toggleTodo} onTimer={timerAction} />
+                    <HabitPill
+                      key={todo._id}
+                      todo={todo}
+                      onToggle={toggleTodo}
+                      onTimer={timerAction}
+                      onSkip={skipTodo}
+                      onEdit={setEditingHabit}
+                    />
                   ))}
                 </div>
               )}
@@ -386,7 +418,14 @@ function TodayPage() {
                   <p className="mb-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">This week and month</p>
                   <div className="flex flex-wrap gap-2.5">
                     {periodic.map((todo) => (
-                      <HabitPill key={todo._id} todo={todo} onToggle={toggleTodo} onTimer={timerAction} />
+                      <HabitPill
+                      key={todo._id}
+                      todo={todo}
+                      onToggle={toggleTodo}
+                      onTimer={timerAction}
+                      onSkip={skipTodo}
+                      onEdit={setEditingHabit}
+                    />
                     ))}
                   </div>
                 </div>
@@ -395,6 +434,15 @@ function TodayPage() {
           )}
         </Section>
       )}
+
+      <TaskModal
+        isOpen={editingHabit !== null}
+        onClose={() => setEditingHabit(null)}
+        task={editingHabit}
+        onSubmit={(values) =>
+          editingHabit ? updateTodo(editingHabit._id, { ...values, dueDate: undefined }) : Promise.resolve()
+        }
+      />
 
       <div id="focus" className="scroll-mt-28">
         <FocusTimer />
