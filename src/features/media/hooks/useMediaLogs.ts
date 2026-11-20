@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@lib/query/keys";
+import { haptic } from "@lib/haptics";
 import {
   useMediaApi,
   type CreateMediaLogPayload,
@@ -89,7 +90,10 @@ export const useMediaLogs = (type?: MediaLogType) => {
     updateLog: (id: string, payload: UpdateMediaLogPayload) =>
       updateLog.mutateAsync({ id, payload }),
     deleteLog: (id: string) => deleteLog.mutate(id),
-    toggleFavorite: (id: string) => toggleFavorite.mutate(id),
+    toggleFavorite: (id: string) => {
+      haptic("selection");
+      toggleFavorite.mutate(id);
+    },
     refetch: query.refetch,
   };
 };

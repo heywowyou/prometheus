@@ -19,6 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@lib/utils";
+import { dragHaptics } from "@lib/haptics";
 import type { MediaTypeConfig } from "@features/media/media-config";
 import { resolveCoverUrl, type MediaLog } from "@features/media/types/media-types";
 import { TOP_PICKS_LIMIT } from "../api/profile-api";
@@ -157,7 +158,7 @@ function TopPicksRow({ config, picks, onChange }: TopPicksRowProps) {
           <Plus className="h-4 w-4" /> Pick your top {TOP_PICKS_LIMIT} {config.singular}s
         </button>
       ) : (
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} {...dragHaptics(handleDragEnd)}>
         <SortableContext items={picks.map((log) => log._id)} strategy={rectSortingStrategy}>
           <ul className="grid grid-cols-5 items-start gap-2 sm:gap-4">
             {picks.map((log, index) => (

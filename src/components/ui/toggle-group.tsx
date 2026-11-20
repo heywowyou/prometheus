@@ -3,6 +3,7 @@ import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 import { type VariantProps } from "class-variance-authority"
 
 import { cn } from "@lib/utils"
+import { haptic } from "@lib/haptics"
 import { toggleVariants } from "@components/ui/toggle"
 
 const ToggleGroupContext = React.createContext<
@@ -34,12 +35,16 @@ const ToggleGroupItem = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
     VariantProps<typeof toggleVariants>
->(({ className, children, variant, size, ...props }, ref) => {
+>(({ className, children, variant, size, onClick, ...props }, ref) => {
   const context = React.useContext(ToggleGroupContext)
 
   return (
     <ToggleGroupPrimitive.Item
       ref={ref}
+      onClick={(event) => {
+        haptic("selection")
+        onClick?.(event)
+      }}
       className={cn(
         toggleVariants({
           variant: context.variant || variant,

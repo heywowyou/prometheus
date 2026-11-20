@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "@components/ui/tooltip";
 import { Toaster } from "@components/ui/sonner";
 import { createQueryClient } from "@lib/query/queryClient";
+import { refreshOnReturn } from "@lib/query/refresh-on-return";
 import { DEFAULT_ROUTE } from "@app/navigation";
 import App from "./App";
 import "./index.css";
@@ -33,6 +34,8 @@ if (SENTRY_DSN) {
 }
 
 const queryClient = createQueryClient();
+// Changes made elsewhere (Claude, another device) show up when you come back.
+refreshOnReturn(queryClient);
 
 // Keeps the reminder worker registered once notifications were turned on.
 if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {

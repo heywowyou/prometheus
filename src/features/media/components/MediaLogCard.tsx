@@ -1,4 +1,7 @@
-import { Heart, ImageIcon, Star } from "lucide-react";
+import { useState } from "react";
+import { Eye, Heart, HeartOff, ImageIcon, Pencil, Shredder, Star } from "lucide-react";
+import { ActionSheet, type SheetAction } from "@components/ui/action-sheet";
+import { useLongPress } from "@lib/hooks/useLongPress";
 import { cn } from "@lib/utils";
 import { STATUS_META, creditLine } from "../media-status";
 import { resolveCoverUrl, type MediaLog } from "../types/media-types";
@@ -12,20 +15,39 @@ interface MediaLogCardProps {
   density: CardDensity;
   onOpen: (log: MediaLog) => void;
   onToggleFavorite: (id: string) => void;
+  /** Phones: press and hold offers these next to Open and Favorite. */
+  onEdit?: (log: MediaLog) => void;
+  onDelete?: (log: MediaLog) => void;
 }
 
 /**
  * A cover tile. Clicking opens the detail view, which holds every action;
  * only "favorite" stays on the tile, as the one-tap action people repeat.
  */
-function MediaLogCard({ log, coverAspect, density, onOpen, onToggleFavorite }: MediaLogCardProps) {
+function MediaLogCard({ log, coverAspect, density, onOpen, onToggleFavorite, onEdit, onDelete }: MediaLogCardProps) {
   const cover = resolveCoverUrl(log.cover);
   const compact = density === "compact";
   const status = log.status && log.status !== "finished" ? STATUS_META[log.status] : null;
   const meta = [log.releaseYear, creditLine(log)].filter(Boolean).join(" · ");
 
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const longPress = useLongPress(() => setSheetOpen(true));
+  const actions: SheetAction[] = [
+    { key: "open", label: "Open", icon: Eye, onSelect: () => onOpen(log) },
+    {
+      key: "favorite",
+      label: log.favorite ? "Remove from favorites" : "Add to favorites",
+      icon: log.favorite ? HeartOff : Heart,
+      onSelect: () => onToggleFavorite(log._id),
+    },
+    ...(onEdit ? [{ key: "edit", label: "Edit", icon: Pencil, onSelect: () => onEdit(log) }] : []),
+    ...(onDelete
+      ? [{ key: "delete", label: "Delete", icon: Shredder, destructive: true, confirm: false, onSelect: () => onDelete(log) }]
+      : []),
+  ];
+
   return (
-    <article className="group relative">
+    <article {...longPress} className="group relative select-none rounded-2xl [-webkit-touch-callout:none]">
       <button
         type="button"
         onClick={() => onOpen(log)}
@@ -109,6 +131,13 @@ function MediaLogCard({ log, coverAspect, density, onOpen, onToggleFavorite }: M
           )}
         />
       </button>
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={log.title}
+        description={meta || undefined}
+        actions={actions}
+      />
     </article>
   );
 }

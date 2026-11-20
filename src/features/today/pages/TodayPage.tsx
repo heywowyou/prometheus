@@ -8,7 +8,7 @@ import { AppIcon } from "@components/ui/icon-picker";
 import { ActionSheet } from "@components/ui/action-sheet";
 import { useLongPress } from "@lib/hooks/useLongPress";
 import TaskModal from "@features/todos/components/TaskModal";
-import { habitActions } from "@features/todos/habit-actions";
+import { habitActions, habitSummary } from "@features/todos/habit-actions";
 import { relativeDate } from "@lib/date/relative";
 import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
@@ -204,7 +204,7 @@ function HabitPill({
       )}
     >
       {todo.completed ? (
-        <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={3} />
+        <Check className="check-pop h-3.5 w-3.5 shrink-0" strokeWidth={3} />
       ) : isTimer ? (
         running ? (
           <Pause className="h-3.5 w-3.5 shrink-0 fill-current text-rating" />
@@ -237,6 +237,7 @@ function HabitPill({
       open={sheetOpen}
       onOpenChange={setSheetOpen}
       title={todo.text}
+      description={habitSummary(todo)}
       actions={habitActions(
         todo,
         { onToggle, onTimer, onSkip, onEdit },

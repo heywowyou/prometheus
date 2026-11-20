@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { queryKeys } from "@lib/query/keys";
+import { haptic } from "@lib/haptics";
 import { useTodosApi, type CreateTodoPayload, type UpdateTodoPayload } from "../api/todos-api";
 import type { TimerAction, Todo } from "../types/todo-types";
 import { dayLabel } from "../task-views";
@@ -225,18 +226,34 @@ export const useTodos = () => {
     todos: query.data ?? [],
     loading: query.isPending,
     error: query.error,
-    createTodo: (payload: CreateTodoPayload) => createTodo.mutateAsync(payload),
+    createTodo: (payload: CreateTodoPayload) => {
+      haptic("light");
+      return createTodo.mutateAsync(payload);
+    },
     updateTodo: (id: string, payload: UpdateTodoPayload) =>
       updateTodo.mutateAsync({ id, payload }),
-    toggleTodo: (id: string) => toggleTodo.mutate(id),
-    skipTodo: (id: string) => skipTodo.mutate(id),
+    toggleTodo: (id: string) => {
+      // Ticking feels done; unticking is a lighter touch.
+      const todo = queryClient.getQueryData<Todo[]>(listKey)?.find((item) => item._id === id);
+      haptic(todo?.completed ? "light" : "success");
+      toggleTodo.mutate(id);
+    },
+    skipTodo: (id: string) => {
+      haptic("selection");
+      skipTodo.mutate(id);
+    },
     convertTodo: (id: string, to: "habit" | "task") => convertTodo.mutateAsync({ id, to }),
     duplicateTodo,
     reorderTodos: (ids: string[]) => reorder.mutate(ids),
-    timerAction: (id: string, action: TimerAction) =>
-      updateTimer.mutate({ id, action }),
+    timerAction: (id: string, action: TimerAction) => {
+      haptic(action === "start" ? "light" : "selection");
+      updateTimer.mutate({ id, action });
+    },
     pauseTodo: (id: string) => pauseTodo.mutate(id),
-    deleteTodo: (id: string) => deleteTodo.mutate(id),
+    deleteTodo: (id: string) => {
+      haptic("light");
+      deleteTodo.mutate(id);
+    },
     refetch: query.refetch,
   };
 };

@@ -262,6 +262,8 @@ function MediaPanel({ config }: MediaPanelPageProps) {
                 density={density}
                 onOpen={(target) => setOpenId(target._id)}
                 onToggleFavorite={toggleFavorite}
+                onEdit={setEditLog}
+                onDelete={setPendingDelete}
               />
             ))}
           </div>

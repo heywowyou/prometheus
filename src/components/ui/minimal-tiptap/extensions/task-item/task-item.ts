@@ -1,4 +1,5 @@
 import { TaskItem as BaseTaskItem } from "@tiptap/extension-task-item"
+import { haptic } from "@lib/haptics"
 
 /** A finger that moves further than this is scrolling, not tapping. */
 const TAP_SLOP_PX = 10
@@ -27,6 +28,7 @@ export const TaskItem = BaseTaskItem.extend({
         if (typeof position !== "number") return
         const current = editor.state.doc.nodeAt(position)
         if (!current) return
+        haptic(checked ? "success" : "light")
         editor.view.dispatch(editor.state.tr.setNodeMarkup(position, undefined, { ...current.attrs, checked }))
       }
 

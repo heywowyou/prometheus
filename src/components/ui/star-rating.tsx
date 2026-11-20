@@ -1,5 +1,6 @@
 import { Star } from "lucide-react";
 import { cn } from "@lib/utils";
+import { haptic } from "@lib/haptics";
 
 interface StarRatingProps {
   /** Filled stars, 0 to `max`. */
@@ -51,7 +52,10 @@ function StarRating({
             role="radio"
             aria-checked={value === starValue}
             aria-label={`${starValue} of ${max}`}
-            onClick={() => onChange(starValue)}
+            onClick={() => {
+              haptic("selection");
+              onChange(starValue);
+            }}
             className="cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             {icon}

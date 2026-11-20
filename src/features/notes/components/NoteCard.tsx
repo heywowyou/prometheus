@@ -1,5 +1,19 @@
-import { Link } from "react-router-dom";
-import { Pin, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Archive,
+  ArchiveRestore,
+  Copy,
+  FileText,
+  MoreHorizontal,
+  Pin,
+  PinOff,
+  RotateCcw,
+  Shredder,
+  Trash2,
+} from "lucide-react";
+import { ActionSheet, type SheetAction } from "@components/ui/action-sheet";
+import { useLongPress } from "@lib/hooks/useLongPress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,12 +79,60 @@ function NoteCard({
         )} days left`
       : relativeDate(note.updatedAt);
 
+  // Phones: press and hold the card for its actions (the same as the menu).
+  const navigate = useNavigate();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const longPress = useLongPress(() => setSheetOpen(true));
+  const sheetActions: SheetAction[] = inTrash
+    ? [
+        { key: "restore", label: "Restore", icon: RotateCcw, onSelect: () => onRestore(note._id) },
+        {
+          key: "delete",
+          label: "Delete forever",
+          icon: Shredder,
+          destructive: true,
+          // Asks in its own dialog.
+          confirm: false,
+          onSelect: () => onDeleteForever(note),
+        },
+      ]
+    : [
+        { key: "open", label: "Open", icon: FileText, onSelect: () => navigate(`/notes/${note._id}`) },
+        ...(!note.archived
+          ? [
+              {
+                key: "pin",
+                label: note.pinned ? "Unpin" : "Pin",
+                icon: note.pinned ? PinOff : Pin,
+                onSelect: () => onPin(note._id, !note.pinned),
+              },
+            ]
+          : []),
+        { key: "duplicate", label: "Duplicate", icon: Copy, onSelect: () => onDuplicate(note._id) },
+        {
+          key: "archive",
+          label: note.archived ? "Unarchive" : "Archive",
+          icon: note.archived ? ArchiveRestore : Archive,
+          onSelect: () => (note.archived ? onUnarchive(note._id) : onArchive(note._id)),
+        },
+        {
+          key: "trash",
+          label: "Move to trash",
+          icon: Trash2,
+          destructive: true,
+          // The trash keeps it for a while; no second tap needed.
+          confirm: false,
+          onSelect: () => onTrash(note._id),
+        },
+      ];
+
   return (
     // Stretched link: the title link covers the whole card, and the tag and
     // menu buttons sit above it, so no interactive element is nested in another.
     <div
+      {...longPress}
       className={cn(
-        "group relative transition-colors has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
+        "group relative select-none transition-colors [-webkit-touch-callout:none] has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-ring",
         isGrid
           ? "flex min-h-[10rem] flex-col rounded-3xl border border-border bg-card p-5 hover:border-muted-foreground/50"
           : "flex items-start gap-3 border-t border-border py-4",
@@ -197,6 +259,13 @@ function NoteCard({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={title}
+        description={dateLine}
+        actions={sheetActions}
+      />
     </div>
   );
 }

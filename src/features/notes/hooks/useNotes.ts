@@ -294,6 +294,9 @@ export const useNote = (id: string | undefined) => {
       }
     },
     onSuccess: (updated) => {
+      // A refetch started before this save landed would bring the old body
+      // back over it (and the open editor would show it): drop it.
+      void queryClient.cancelQueries({ queryKey: queryKeys.notes.detail(updated._id) });
       queryClient.setQueryData(queryKeys.notes.detail(updated._id), updated);
       // List order, excerpts, tag counts and links all depend on the saved body.
       refreshNotes(queryClient);

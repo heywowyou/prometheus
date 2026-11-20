@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent, type SyntheticEvent } from "react";
+import { haptic } from "@lib/haptics";
 
-const HOLD_MS = 450;
+export const HOLD_MS = 420;
 /** A finger that drifts further than this is scrolling or dragging, not holding. */
 const SLOP_PX = 10;
+/**
+ * The press look (a slight sink) starts after this, so a finger that starts
+ * a scroll on a row doesn't make it flicker.
+ */
+const PRESS_LOOK_MS = 90;
+
+const fromHere = (event: SyntheticEvent) =>
+  event.currentTarget instanceof Node && event.target instanceof Node && event.currentTarget.contains(event.target);
 
 interface Options {
   /**
@@ -18,9 +27,15 @@ interface Options {
  * Press and hold on touch screens. Mouse input is ignored, so desktop clicks
  * and right-clicks behave as before. The click that ends a long press is
  * swallowed, so the row's tap action doesn't also run.
+ *
+ * While the finger is down the element gets `data-pressing` (styled in
+ * index.css: it sinks a little over the hold), and the hold ends with a
+ * haptic tick, like a native context menu.
  */
 export function useLongPress(onLongPress: () => void, { onRelease = false, disabled = false }: Options = {}) {
   const timer = useRef<number | null>(null);
+  const lookTimer = useRef<number | null>(null);
+  const target = useRef<HTMLElement | null>(null);
   const start = useRef<{ x: number; y: number; at: number } | null>(null);
   const swallowClick = useRef(false);
   const callback = useRef(onLongPress);
@@ -28,25 +43,41 @@ export function useLongPress(onLongPress: () => void, { onRelease = false, disab
     callback.current = onLongPress;
   }, [onLongPress]);
 
+  const unpress = useCallback(() => {
+    if (lookTimer.current !== null) window.clearTimeout(lookTimer.current);
+    lookTimer.current = null;
+    target.current?.removeAttribute("data-pressing");
+  }, []);
+
   const clear = useCallback(() => {
     if (timer.current !== null) window.clearTimeout(timer.current);
     timer.current = null;
-  }, []);
+    unpress();
+  }, [unpress]);
   useEffect(() => clear, [clear]);
 
   const fire = useCallback(() => {
     swallowClick.current = true;
     start.current = null;
-    navigator.vibrate?.(10);
+    unpress();
+    haptic("hold");
     callback.current();
-  }, []);
+  }, [unpress]);
 
   const onPointerDown = useCallback(
     (event: ReactPointerEvent) => {
       swallowClick.current = false;
       if (disabled || event.pointerType === "mouse" || !event.isPrimary) return;
+      // Events from a portal (the sheet this hold opened) bubble here through
+      // React, not through the page: they aren't presses on this element.
+      if (!fromHere(event)) return;
       start.current = { x: event.clientX, y: event.clientY, at: Date.now() };
       clear();
+      target.current = event.currentTarget as HTMLElement;
+      lookTimer.current = window.setTimeout(() => {
+        lookTimer.current = null;
+        target.current?.setAttribute("data-pressing", "");
+      }, PRESS_LOOK_MS);
       if (!onRelease) timer.current = window.setTimeout(fire, HOLD_MS);
     },
     [clear, disabled, fire, onRelease],
@@ -89,5 +120,14 @@ export function useLongPress(onLongPress: () => void, { onRelease = false, disab
     [disabled],
   );
 
-  return { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: cancel, onClickCapture, onContextMenu };
+  return {
+    "data-press": "",
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel: cancel,
+    onPointerLeave: cancel,
+    onClickCapture,
+    onContextMenu,
+  };
 }

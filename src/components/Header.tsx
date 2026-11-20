@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@components/u
 import { DEFAULT_ROUTE, MORE_ITEMS, NAV_ITEMS, PHONE_TABS } from "@app/navigation";
 import { useCommandPalette } from "@app/command-palette";
 import { cn } from "@lib/utils";
+import { haptic } from "@lib/haptics";
 import FocusPill from "@features/focus/components/FocusPill";
 
 /** The serif wordmark, also the way home. */
@@ -67,9 +68,10 @@ function TabLink({ to, label, icon: Icon }: { to: string; label: string; icon: t
   return (
     <NavLink
       to={to}
+      onClick={() => haptic("selection")}
       className={({ isActive }) =>
         cn(
-          "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors",
+          "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors active:[&>span:first-child]:scale-90",
           isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
         )
       }
@@ -78,7 +80,7 @@ function TabLink({ to, label, icon: Icon }: { to: string; label: string; icon: t
         <>
           <span
             className={cn(
-              "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
+              "flex h-8 w-14 items-center justify-center rounded-full transition-[background-color,transform] duration-150",
               isActive ? "bg-raised" : "group-hover:bg-secondary",
             )}
           >
@@ -163,16 +165,19 @@ function Header({ wide = false }: { wide?: boolean }) {
         ))}
         <button
           type="button"
-          onClick={() => setMoreOpen(true)}
+          onClick={() => {
+            haptic("selection");
+            setMoreOpen(true);
+          }}
           aria-label="More: calendar, workouts, media and profile"
           className={cn(
-            "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors",
+            "group flex min-w-0 flex-1 flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] font-medium transition-colors active:[&>span:first-child]:scale-90",
             inMore ? "text-foreground" : "text-muted-foreground",
           )}
         >
           <span
             className={cn(
-              "flex h-8 w-14 items-center justify-center rounded-full transition-colors",
+              "flex h-8 w-14 items-center justify-center rounded-full transition-[background-color,transform] duration-150",
               inMore ? "bg-raised" : "group-hover:bg-secondary",
             )}
           >

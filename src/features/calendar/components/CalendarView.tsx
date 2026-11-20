@@ -13,6 +13,7 @@ import type {
 import type { DateClickArg, DropArg, EventResizeDoneArg } from "@fullcalendar/interaction";
 import { Check, Flag } from "lucide-react";
 import { cn } from "@lib/utils";
+import { haptic } from "@lib/haptics";
 import { toDayKey } from "@features/todos/due";
 import type { Todo } from "@features/todos/types/todo-types";
 import { minutesOfDay, hhmm } from "../calendar-dates";
@@ -262,9 +263,20 @@ export default function CalendarView({
         select={select}
         dateClick={dateClick}
         eventClick={eventClick}
-        eventDrop={change}
-        eventResize={change}
-        drop={drop}
+        eventDragStart={() => haptic("hold")}
+        eventResizeStart={() => haptic("hold")}
+        eventDrop={(arg) => {
+          haptic("drop");
+          change(arg);
+        }}
+        eventResize={(arg) => {
+          haptic("drop");
+          change(arg);
+        }}
+        drop={(arg) => {
+          haptic("drop");
+          drop(arg);
+        }}
       />
     </div>
   );

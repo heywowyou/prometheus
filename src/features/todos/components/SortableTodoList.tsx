@@ -19,6 +19,7 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@lib/utils";
+import { dragHaptics } from "@lib/haptics";
 import TodoItem from "./TodoItem";
 import type { Todo } from "../types/todo-types";
 
@@ -101,7 +102,7 @@ function SortableTodoList({ todos, onReorder, ...handlers }: SortableTodoListPro
       sensors={sensors}
       collisionDetection={closestCenter}
       modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-      onDragEnd={handleDragEnd}
+      {...dragHaptics(handleDragEnd)}
     >
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <div>

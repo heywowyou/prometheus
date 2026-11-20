@@ -16,7 +16,7 @@ import { formatClock } from "@lib/date/duration";
 import { useNow } from "@lib/hooks/useNow";
 import { cn } from "@lib/utils";
 import { describeDue, type DueTone } from "../due";
-import { habitActions } from "../habit-actions";
+import { habitActions, habitSummary } from "../habit-actions";
 import {
   timerElapsedMs,
   type RecurrenceType,
@@ -155,7 +155,10 @@ function TodoItem({
       className={cn(
         "group relative flex min-h-[3.5rem] cursor-pointer select-none items-center [-webkit-touch-callout:none] overflow-hidden rounded-2xl px-3 py-2.5 transition-colors hover:bg-secondary/60 has-[[data-row-main]:focus-visible]:ring-2 has-[[data-row-main]:focus-visible]:ring-ring",
       )}
-      onClick={activate}
+      onClick={(event) => {
+        // A tap on the hold sheet's backdrop (a portal) bubbles here through React.
+        if (event.currentTarget.contains(event.target as Node)) activate();
+      }}
       {...longPress}
       onKeyDown={(event) => {
         if (event.key === "F2" && !renaming) {
@@ -213,7 +216,7 @@ function TodoItem({
                   : "border-muted-foreground/70 group-hover:border-foreground",
             )}
           >
-            {todo.completed && <Check className="h-3 w-3 text-foreground" strokeWidth={3} />}
+            {todo.completed && <Check className="check-pop h-3 w-3 text-foreground" strokeWidth={3} />}
             {skipped && <span className="h-[1.5px] w-2 rounded-full bg-muted-foreground" />}
           </button>
         )}
@@ -316,7 +319,13 @@ function TodoItem({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <ActionSheet open={sheetOpen} onOpenChange={setSheetOpen} title={todo.text} actions={sheetActions} />
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={todo.text}
+        description={habitSummary(todo)}
+        actions={sheetActions}
+      />
     </div>
   );
 }

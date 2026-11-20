@@ -1,11 +1,36 @@
+import { useState } from "react";
 import { useClerk, useUser } from "@clerk/clerk-react";
-import { Download, LogOut, UserCog } from "lucide-react";
+import { Download, LogOut, UserCog, Vibrate } from "lucide-react";
 import { Button } from "@components/ui/button";
+import { Switch } from "@components/ui/switch";
+import { hapticsEnabled, hapticsSupported, setHapticsEnabled } from "@lib/haptics";
 import PageLoader from "@components/feedback/PageLoader";
 import { useDataExport } from "@app/useDataExport";
 import { MEDIA_TYPE_CONFIGS } from "@features/media/media-config";
 import { useProfile } from "../hooks/useProfile";
 import TopPicksRow from "../components/TopPicksRow";
+
+/** Phones only: the vibration on taps, ticks and holds. */
+function HapticsSetting() {
+  const [on, setOn] = useState(hapticsEnabled);
+  if (!hapticsSupported()) return null;
+  return (
+    <label className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+      <Vibrate className="h-4 w-4 shrink-0 text-soft" />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-[15px] text-foreground">Haptics</span>
+        <span className="text-xs text-muted-foreground">A light tap when you tick, hold or drag</span>
+      </span>
+      <Switch
+        checked={on}
+        onCheckedChange={(next) => {
+          setOn(next);
+          setHapticsEnabled(next);
+        }}
+      />
+    </label>
+  );
+}
 
 /**
  * Who you are and what you love: the Clerk name and avatar, then the five
@@ -57,6 +82,8 @@ function ProfilePage() {
           </div>
         </div>
       </header>
+
+      <HapticsSetting />
 
       {loading || !profile ? (
         <PageLoader />

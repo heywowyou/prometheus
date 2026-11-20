@@ -33,6 +33,8 @@ export default function TaskRow({
   open,
   onOpenChange,
   dragHandleProps,
+  sortable = false,
+  ignoreClick,
   autoFocusTitle,
 }: {
   todo: Todo;
@@ -40,13 +42,18 @@ export default function TaskRow({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dragHandleProps?: Record<string, unknown>;
+  /** In a reorderable list: the drag's lift doubles as the hold (see TaskList). */
+  sortable?: boolean;
+  /** True right after a drag, when the click that ends it must not tick. */
+  ignoreClick?: () => boolean;
   autoFocusTitle?: boolean;
 }) {
   const phone = useMediaQuery("(max-width: 767px)");
   const cardRef = useRef<HTMLDivElement>(null);
-  // Phones: tap ticks the task, press and hold opens it. The hold fires on
-  // release, because holding then moving drags the row to reorder it.
-  const longPress = useLongPress(() => onOpenChange(true), { onRelease: true, disabled: !phone });
+  // Phones: tap ticks the task, press and hold opens it. In a reorderable
+  // list the drag sensor owns the hold (lift, then move to reorder or let go
+  // to open); elsewhere the hold opens the task as soon as it's reached.
+  const longPress = useLongPress(() => onOpenChange(true), { disabled: !phone || sortable });
   const today = new Date();
 
   // Desktop card: click outside or Escape closes it.
@@ -105,7 +112,11 @@ export default function TaskRow({
         role="button"
         tabIndex={0}
         data-task-row
-        onClick={() => (phone ? context.actions.toggle(todo._id) : onOpenChange(true))}
+        onClick={() => {
+          if (ignoreClick?.()) return;
+          if (phone) context.actions.toggle(todo._id);
+          else onOpenChange(true);
+        }}
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget) return;
           if (event.key === "Enter" || event.key === " ") {

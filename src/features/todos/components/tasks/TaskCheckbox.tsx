@@ -26,7 +26,7 @@ export default function TaskCheckbox({
         onToggle();
       }}
       className={cn(
-        "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border-[1.5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "relative flex h-[18px] w-[18px] shrink-0 items-center before:absolute before:-inset-[11px] before:content-[''] justify-center rounded-[5px] border-[1.5px] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         checked
           ? "border-rating bg-rating text-rating-foreground"
           : tone === "overdue"
@@ -37,7 +37,7 @@ export default function TaskCheckbox({
         className,
       )}
     >
-      {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+      {checked && <Check className="check-pop h-3 w-3" strokeWidth={3} />}
     </button>
   );
 }

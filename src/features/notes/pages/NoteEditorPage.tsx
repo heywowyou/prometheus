@@ -185,10 +185,12 @@ interface EditorProps {
   note: Note;
   save: (payload: UpdateNotePayload) => Promise<unknown>;
   onRestored: () => void;
+  /** The page changed elsewhere (Claude, another device): show the new copy. */
+  onExternalChange: () => void;
 }
 
 /** Keyed on the note id by the route component, so state seeds from the note. */
-function NoteEditor({ note, save, onRestored }: EditorProps) {
+function NoteEditor({ note, save, onRestored, onExternalChange }: EditorProps) {
   const navigate = useNavigate();
   const { uploadCover } = useUploadApi();
   const actions = useNoteActions();
@@ -213,7 +215,17 @@ function NoteEditor({ note, save, onRestored }: EditorProps) {
   const contentRef = useRef(note.content ?? "");
   const imageInput = useRef<HTMLInputElement>(null);
 
-  const { status, schedule, flush } = useDebouncedSave<UpdateNotePayload>({ save });
+  // Versions this editor wrote itself: their echo from the server isn't news.
+  const ownVersions = useRef(new Set<string | undefined>([note.updatedAt]));
+  const saveOwn = useCallback(
+    async (payload: UpdateNotePayload) => {
+      const saved = (await save(payload)) as Partial<Note> | undefined;
+      ownVersions.current.add(saved?.updatedAt);
+      return saved;
+    },
+    [save],
+  );
+  const { status, schedule, flush } = useDebouncedSave<UpdateNotePayload>({ save: saveOwn });
 
   // The editor's extensions are built once; they read live data through refs.
   const indexRef = useRef<NoteIndexEntry[]>(entries);
@@ -296,6 +308,33 @@ function NoteEditor({ note, save, onRestored }: EditorProps) {
     placeholder: "Type / for blocks, [[ to link a page, @ to mention",
     extraExtensions: extensions,
   });
+
+  // Edits made elsewhere (Claude through the connector, another device) reach
+  // the cached note when the app refetches; the editor only read the note
+  // when it mounted. When the stored copy differs from what's on screen and
+  // nothing typed here is waiting to be saved, show the stored copy. While
+  // typing in the page, ask first rather than moving the cursor.
+  const differsFromScreen =
+    (note.content ?? "") !== contentRef.current ||
+    note.title !== title ||
+    (note.icon ?? "") !== icon ||
+    (note.tags ?? []).join("\u0000") !== tags.join("\u0000");
+  const idle = status === "idle" || status === "saved";
+  const fromElsewhere = !ownVersions.current.has(note.updatedAt);
+  useEffect(() => {
+    if (!fromElsewhere || !differsFromScreen || !idle || inTrash) return;
+    const editing = editor?.isFocused || document.activeElement?.matches("input, textarea");
+    if (!editing) {
+      onExternalChange();
+      return;
+    }
+    toast("This page changed elsewhere", {
+      id: `note-changed-${note._id}`,
+      duration: Infinity,
+      action: { label: "Show latest", onClick: onExternalChange },
+    });
+  }, [fromElsewhere, differsFromScreen, idle, inTrash, editor, note._id, note.updatedAt, onExternalChange]);
+  useEffect(() => () => void toast.dismiss(`note-changed-${note._id}`), [note._id]);
 
   // Focus mode hides the app's chrome (header, tab bar, page sidebar).
   useEffect(() => {
@@ -704,6 +743,7 @@ function NoteEditorPage() {
   const { note, loading, error, save } = useNote(id);
   // Bumped after a version restore, to remount the editor on the restored body.
   const [revision, setRevision] = useState(0);
+  const showLatest = useCallback(() => setRevision((value) => value + 1), []);
 
   // A note that can't be loaded (deleted, or not ours) sends us back.
   useEffect(() => {
@@ -720,6 +760,7 @@ function NoteEditorPage() {
       note={note}
       save={save}
       onRestored={() => setRevision((value) => value + 1)}
+      onExternalChange={showLatest}
     />
   );
 }

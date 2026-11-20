@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useApiClient } from "@lib/api/api-client";
 import { PHASE_LABELS, onFocusFinish, useFocusState, type FocusPhase } from "./focus-store";
 import { playChime } from "./chime";
+import { haptic } from "@lib/haptics";
 
 const MESSAGES: Record<FocusPhase, { title: string; body: string }> = {
   focus: { title: "Focus block done", body: "Time for a break." },
@@ -37,6 +38,7 @@ export const useFocusAlerts = () => {
       onFocusFinish((finished, next) => {
         const message = MESSAGES[finished];
         playChime();
+        haptic("warning");
         toast(message.title, { description: `${message.body} Next: ${PHASE_LABELS[next].toLowerCase()}.` });
         void notifyInBackground(message.title, message.body);
       }),

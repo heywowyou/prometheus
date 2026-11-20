@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { Check, ChevronRight, Circle } from "lucide-react"
 
 import { cn } from "@lib/utils"
+import { haptic } from "@lib/haptics"
 
 const DropdownMenu = DropdownMenuPrimitive.Root
 
@@ -78,9 +79,13 @@ const DropdownMenuItem = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & {
     inset?: boolean
   }
->(({ className, inset, ...props }, ref) => (
+>(({ className, inset, onSelect, ...props }, ref) => (
   <DropdownMenuPrimitive.Item
     ref={ref}
+    onSelect={(event) => {
+      haptic("selection")
+      onSelect?.(event)
+    }}
     className={cn(
       "relative flex cursor-default select-none items-center gap-2 rounded-xl px-2.5 py-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
       inset && "pl-8",

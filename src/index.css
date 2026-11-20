@@ -101,6 +101,43 @@
       font-size: max(16px, 1em);
     }
   }
+
+  /*
+   * Press and hold (useLongPress): the item sinks slowly while the finger
+   * holds it, so the hold reads as "something is coming", then springs back
+   * when the menu opens or the finger moves away.
+   */
+  [data-press] {
+    transition:
+      transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 150ms ease;
+  }
+  [data-press][data-pressing] {
+    transform: scale(0.97);
+    background-color: color-mix(in srgb, var(--secondary) 75%, transparent);
+    transition:
+      transform 420ms cubic-bezier(0.3, 0.7, 0.4, 1),
+      background-color 150ms ease;
+  }
+
+  /* Done: the check pops once. */
+  @keyframes check-pop {
+    0% { transform: scale(0.6); }
+    55% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+  .check-pop {
+    animation: check-pop 280ms cubic-bezier(0.3, 1.4, 0.5, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-press][data-pressing] {
+      transform: none;
+    }
+    .check-pop {
+      animation: none;
+    }
+  }
 }
 
 @layer components {

@@ -94,7 +94,22 @@ export function habitActions(
   }
   if (handlers.onDelete) {
     const onDelete = handlers.onDelete;
-    actions.push({ key: "delete", label: "Delete", icon: Shredder, onSelect: () => onDelete(todo), destructive: true });
+    actions.push({ key: "delete", label: "Delete", icon: Shredder, onSelect: () => onDelete(todo), destructive: true, confirm: false });
   }
   return actions;
+}
+
+/** One quiet line under the habit's name in its hold sheet. */
+export function habitSummary(todo: Todo): string | undefined {
+  if (todo.recurrenceType === "none") return undefined;
+  const cadence =
+    todo.recurrenceType === "daily"
+      ? todo.perWeek
+        ? `${Math.min(todo.thisWeek ?? 0, todo.perWeek)} of ${todo.perWeek} this week`
+        : "Every day"
+      : todo.recurrenceType === "weekly"
+        ? "Once a week"
+        : "Once a month";
+  const state = todo.completed ? "done" : todo.skipped ? "resting" : null;
+  return [cadence, state].filter(Boolean).join(" · ");
 }

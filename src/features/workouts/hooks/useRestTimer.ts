@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNow } from "@lib/hooks/useNow";
+import { hapticsEnabled } from "@lib/haptics";
 
 const STORAGE_KEY = "prometheus.rest-timer";
 
@@ -127,7 +128,7 @@ export const useRestTimer = () => {
   // Rest over: buzz where supported (not iOS), then clear after a moment.
   useEffect(() => {
     if (!finished) return;
-    navigator.vibrate?.([200, 100, 200]);
+    if (hapticsEnabled()) navigator.vibrate?.([200, 100, 200]);
     const timeout = setTimeout(() => {
       setState(null);
       persist(null);

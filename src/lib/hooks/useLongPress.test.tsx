@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import { createPortal } from "react-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useLongPress } from "./useLongPress";
 
@@ -62,5 +63,32 @@ describe("useLongPress", () => {
     expect(onHold).not.toHaveBeenCalled();
     fireEvent.pointerUp(screen.getByRole("button"));
     expect(onHold).toHaveBeenCalledOnce();
+  });
+
+  it("shows the press while holding and drops it when the finger moves", () => {
+    render(<Row onHold={() => undefined} onTap={() => undefined} />);
+    const row = screen.getByRole("button");
+    press("touch");
+    expect(row.hasAttribute("data-pressing")).toBe(false);
+    act(() => vi.advanceTimersByTime(120));
+    expect(row.hasAttribute("data-pressing")).toBe(true);
+    fireEvent.pointerMove(row, { clientX: 10, clientY: 40 });
+    expect(row.hasAttribute("data-pressing")).toBe(false);
+  });
+
+  it("ignores presses that come from a portal rendered inside it", () => {
+    const onHold = vi.fn();
+    function WithPortal() {
+      const longPress = useLongPress(onHold);
+      return (
+        <div data-testid="row" {...longPress}>
+          {createPortal(<button type="button">in sheet</button>, document.body)}
+        </div>
+      );
+    }
+    render(<WithPortal />);
+    fireEvent.pointerDown(screen.getByText("in sheet"), { pointerType: "touch", isPrimary: true });
+    act(() => vi.advanceTimersByTime(1000));
+    expect(onHold).not.toHaveBeenCalled();
   });
 });

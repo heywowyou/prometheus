@@ -3,7 +3,6 @@ import { GripVertical, Pencil, Play } from "lucide-react";
 import {
   DndContext,
   KeyboardSensor,
-  PointerSensor,
   TouchSensor,
   closestCenter,
   useSensor,
@@ -20,6 +19,8 @@ import {
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@lib/utils";
+import { dragHaptics } from "@lib/haptics";
+import { MouseSensor } from "@lib/dnd/sensors";
 import type { Routine } from "../types/workout-types";
 
 interface RoutineListProps {
@@ -100,7 +101,7 @@ function RoutineRow({ routine, names, onStart, starting, upNext }: RowProps) {
 /** Routines in Start-tab order; drag the grip (touch: press and hold) to reorder. */
 function RoutineList({ routines, names, onStart, onReorder, starting, upNextId }: RoutineListProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
     // A short hold, so a scroll that starts on the grip still scrolls.
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -119,7 +120,7 @@ function RoutineList({ routines, names, onStart, onReorder, starting, upNextId }
       sensors={sensors}
       collisionDetection={closestCenter}
       modifiers={[restrictToVerticalAxis, restrictToParentElement]}
-      onDragEnd={handleDragEnd}
+      {...dragHaptics(handleDragEnd)}
     >
       <SortableContext items={ids} strategy={verticalListSortingStrategy}>
         <ul className="space-y-3">
