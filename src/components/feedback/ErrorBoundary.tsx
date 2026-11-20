@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@components/ui/button";
+import { isStaleChunkError, reloadForNewBuild } from "@lib/stale-chunks";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -31,6 +32,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
+    // A page's code from the build before the last deploy: load the new one.
+    if (isStaleChunkError(error) && reloadForNewBuild()) return;
     console.error("Unhandled render error", error, info.componentStack);
     Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
   }
